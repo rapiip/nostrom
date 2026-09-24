@@ -512,7 +512,8 @@ than paying whatever a wallet defaults to.
 
 ## Verification status
 
-- Compiles with solc 0.8.24, optimizer on (200 runs), `evmVersion: paris`.
+- Compiles with solc 0.8.24, optimizer on (200 runs), `evmVersion: cancun`,
+  `metadata.bytecodeHash: "none"`.
 - **70/70 tests pass.**
   - `Nostrom.test.js` (38): heartbeat, permissionless execution, exact deadline
     boundary, reentrancy, atomic failure, hostile ERC-20s, access control, admin

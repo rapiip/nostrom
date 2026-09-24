@@ -100,8 +100,11 @@ MetaMask → dropdown network (kiri atas) → **Add a network** →
 2. Buka faucet testnet resmi (link ada di dev docs Botchain).
 3. Paste alamat → minta test BOT → tunggu 1–2 menit → cek saldo.
 
-Deploy factory butuh sekitar **3.100.000 gas**, jadi pastikan saldo cukup.
+Deploy factory butuh sekitar **3.000.000 gas**, jadi pastikan saldo cukup.
 Kalau faucet memberi sedikit, minta beberapa kali atau tunggu cooldown.
+
+> Kalau Anda hanya butuh satu vault untuk agent sendiri, `Nostrom.sol` cuma
+> ~1.688.000 gas — 44% lebih murah. Lihat bagian **Biaya** di atas.
 
 ---
 
@@ -251,7 +254,7 @@ registry saja.
 
 | Operasi | Gas | Siapa yang bayar |
 |---|---|---|
-| Deploy `NostromFactory` | ~3.071.000 | Anda, sekali saja |
+| Deploy `NostromFactory` | ~2.994.000 | Anda, sekali saja |
 | `createVault` | ~343.000 | user, tiap bikin vault |
 | `createVaultAndFund` | ~338.000 | user |
 | `ping()` | ~37.600 | agen AI, tiap heartbeat |
@@ -259,7 +262,15 @@ registry saja.
 | `executeDeadManSwitch()` | ~74.400 | keeper siapa pun |
 
 Sebagai perbandingan, kalau tiap user harus deploy vault penuh sendiri biayanya
-~1.723.000 gas. Pola clone menghemat **80%** per user.
+~1.688.000 gas. Pola clone menghemat **80%** per user.
+
+Angka deploy di atas sudah termasuk dua optimasi compiler: target `cancun`
+(memakai opcode `PUSH0`, yang sudah aktif di BOT Chain) dan membuang trailer
+metadata CBOR — total ~77.000 gas lebih murah dari setelan sebelumnya. Keduanya
+tidak mengubah perilaku kontrak sama sekali.
+
+Reproduksi sendiri dengan `npx hardhat run scripts/measure-gas.js`, atau
+bandingkan setelan compiler dengan `node scripts/tune-gas.js`.
 
 ---
 

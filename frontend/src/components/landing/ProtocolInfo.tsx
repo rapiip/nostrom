@@ -23,7 +23,7 @@ import { Section } from "./Section";
  */
 
 const GAS = [
-  { op: "Deploy NostromFactory", gas: "~3,071,000", payer: "you, once" },
+  { op: "Deploy NostromFactory", gas: "~2,994,000", payer: "you, once" },
   { op: "createVault", gas: "~343,000", payer: "each user" },
   { op: "createVaultAndFund", gas: "~338,000", payer: "each user" },
   { op: "ping()", gas: "~37,600", payer: "the agent, every heartbeat" },
@@ -41,7 +41,7 @@ export function ProtocolInfo() {
       index="05"
       eyebrow="Protocol"
       title="Parameters, addresses and costs."
-      lede="BOT Chain is EVM-compatible with a Geth-compatible JSON-RPC surface, so the standard toolchain applies with no chain-specific SDK. Contracts compile with solc 0.8.24, optimizer on at 200 runs, targeting the paris EVM so the bytecode contains no PUSH0 opcode and stays portable."
+      lede="BOT Chain is EVM-compatible with a Geth-compatible JSON-RPC surface, so the standard toolchain applies with no chain-specific SDK. Contracts compile with solc 0.8.24, optimizer on at 200 runs, targeting the cancun EVM — BOT Chain has Shanghai and Cancun active, so PUSH0 is available and the bytecode is smaller."
     >
       <div ref={ref} className="grid gap-x-14 gap-y-14 lg:grid-cols-2">
         {/* --- Networks --- */}
