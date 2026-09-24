@@ -35,6 +35,41 @@ dana user. Ini penting supaya orang lain mau memakai platform Anda.
 
 ---
 
+## Biaya: tidak ada fee protokol, hanya gas jaringan
+
+Nostrom **tidak memungut biaya apa pun** — tidak ada fee pembuatan vault, tidak
+ada potongan saat dana diselamatkan, tidak ada yang bisa ditarik deployer. Semua
+angka di bawah adalah gas yang dibayar ke validator BOT Chain, bukan ke kontrak.
+
+Pilihan kontrak adalah pengendali biaya terbesar:
+
+| Kebutuhan Anda | Deploy | Gas |
+|---|---|---|
+| **Satu vault untuk agent Anda sendiri** | `Nostrom.sol` | ~1.688.000 |
+| Platform untuk dipakai orang lain | `NostromFactory.sol` | ~2.994.000, lalu ~343.000 per vault |
+
+Kalau Anda hanya butuh vault untuk diri sendiri, **`Nostrom.sol` 44% lebih murah**
+daripada men-deploy factory. Factory baru lebih hemat mulai **vault ketiga**:
+
+| Jumlah vault | Via factory | Standalone | Lebih murah |
+|---|---|---|---|
+| 1 | 3.337.626 | 1.687.525 | standalone |
+| 2 | 3.680.977 | 3.375.050 | standalone |
+| 3 | 4.024.328 | 5.062.575 | **factory** |
+
+Dua hal lain yang menurunkan biaya nyata:
+
+- **Harga gas ditentukan jaringan, bukan kode ini.** Deploy yang sama jadi lebih
+  murah saat chain sepi. Di MetaMask, cek/ubah gas price sebelum konfirmasi
+  daripada menerima default.
+- **Coba di testnet dulu.** Chain 968 memakai BOT dari faucet (gratis) dan
+  perilakunya identik dengan mainnet. Semua langkah panduan ini sama.
+
+Kalau Anda tetap butuh factory, sisa panduan ini sudah memakai setelan compiler
+termurah yang aman untuk BOT Chain (lihat langkah 6).
+
+---
+
 ## Phase 1 — Wallet
 
 Install MetaMask dari metamask.io, buat wallet baru, **catat 12 Secret Recovery
@@ -81,8 +116,16 @@ Kalau faucet memberi sedikit, minta beberapa kali atau tunggu cooldown.
 4. Klik ikon **Solidity Compiler** (`<S>`).
 5. Compiler version: **0.8.24** (harus cocok dengan `pragma solidity 0.8.24;`).
 6. Buka **Advanced Configurations**:
-   - **EVM Version**: `paris`
+   - **EVM Version**: `cancun`
    - **Enable optimization**: dicentang, runs `200`
+
+   > Kedua setelan ini harus sama dengan `hardhat.config.js`, kalau tidak
+   > bytecode-nya berbeda dan verifikasi di explorer akan gagal.
+   >
+   > `cancun` dipakai karena BOT Chain sudah mengaktifkan Shanghai dan Cancun di
+   > mainnet maupun testnet, jadi opcode `PUSH0` tersedia. Bytecode jadi lebih
+   > kecil dan deploy ~77.000 gas lebih murah tanpa perubahan perilaku. Pakai
+   > `paris` hanya kalau Anda men-deploy ke chain lain yang belum Shanghai.
 7. Klik **Compile NostromFactory.sol** → tunggu centang hijau.
 
 > Kalau muncul warning (bukan error) soal ukuran kontrak, itu normal — factory

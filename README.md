@@ -468,17 +468,45 @@ Run `npx hardhat run scripts/measure-gas.js` to reproduce.
 
 | Operation | Gas | Paid by |
 |---|---|---|
-| Deploy `NostromFactory` | ~3,071,000 | you, once |
+| Deploy `NostromFactory` | ~2,994,000 | you, once |
 | `createVault` | ~343,000 | each user |
 | `createVaultAndFund` | ~338,000 | each user |
 | `createVaultDeterministic` | ~330,000 | each user |
 | `ping()` | ~37,600 | the agent, every heartbeat |
 | `deposit()` | ~25,700 | each user |
 | `executeDeadManSwitch()` (native only) | ~74,400 | any keeper |
-| *(comparison)* standalone `Nostrom.sol` deploy | ~1,723,000 | — |
+| *(comparison)* standalone `Nostrom.sol` deploy | ~1,688,000 | — |
 
 Creating a vault through the factory costs **80% less** than deploying a vault
 outright.
+
+### Choosing the cheaper deployment
+
+There are **no protocol fees anywhere in Nostrom** — no creation fee, no cut of a
+rescue, nothing for the deployer to collect. Every cost below is network gas paid
+to BOT Chain validators.
+
+Which contract you deploy is by far the largest lever on that cost:
+
+| You need | Deploy | Gas |
+|---|---|---|
+| One vault, for your own agent | `Nostrom.sol` | ~1,688,000 |
+| A platform others can use | `NostromFactory.sol` | ~2,994,000, then ~343,000 per vault |
+
+If you only ever want a vault for yourself, the standalone contract is **44%
+cheaper** than deploying the factory. The factory becomes the cheaper option from
+the **third vault onward** — each vault after the factory exists costs ~343,000
+instead of ~1,688,000:
+
+| Vaults | Via factory | Standalone each | Cheaper |
+|---|---|---|---|
+| 1 | 3,337,626 | 1,687,525 | standalone |
+| 2 | 3,680,977 | 3,375,050 | standalone |
+| 3 | 4,024,328 | 5,062,575 | **factory** |
+
+Gas is also priced by the network, not by this code — the same deployment costs
+less when the chain is quiet. Check the current gas price before deploying rather
+than paying whatever a wallet defaults to.
 
 ---
 
@@ -503,10 +531,39 @@ value to it.
 
 ### A note on `evmVersion`
 
-The config targets `paris` so the bytecode contains no `PUSH0` opcode, keeping it
-portable across EVM chains that have not activated Shanghai. If BOT Chain confirms
-Shanghai/Cancun support, switching to `shanghai` or `cancun` in `hardhat.config.js`
-yields slightly cheaper gas.
+The config targets `cancun`. BOT Chain has both Shanghai and Cancun active on
+mainnet and testnet — confirmed by reading `withdrawalsRoot` and `blobGasUsed`
+from the latest block on `rpc.botchain.ai` (677) and `rpc.bohr.life` (968) — so
+the `PUSH0` opcode is available. Using it produces smaller bytecode, which makes
+deployment ~77,000 gas cheaper for the factory and ~36,000 cheaper for a
+standalone vault, with no behavioural change.
+
+Set `GAS_EVM=paris` if you ever need to deploy the same source to a chain that
+has not activated Shanghai; that bytecode must not contain `PUSH0`.
+
+The build also sets `metadata.bytecodeHash: "none"`, dropping the CBOR metadata
+trailer Solidity normally appends. The EVM never reads it, and every byte of
+deployed code costs 200 gas, so removing it saves ~18,000 gas. Source
+verification still works — the explorer recompiles and compares — it just forgoes
+a metadata-hash "full match". Set `GAS_METADATA=keep` if your verifier needs it.
+
+### Why `optimizer.runs` is 200 and not lower
+
+Lowering `runs` shrinks the bytecode and makes deployment cheaper, which looks
+like a free win. It is not: it also makes `ping()` more expensive, and `ping()`
+is the one call that recurs for the entire life of every vault.
+
+Measured with `node scripts/tune-gas.js`:
+
+| `runs` | factory deploy | `ping()` |
+|---|---|---|
+| 1 | 2,949,574 | 37,749 |
+| 200 | 2,994,275 | 37,583 |
+
+`runs: 1` saves ~45,000 gas once, then costs an extra ~166 gas on every
+heartbeat. That is a net loss after roughly 270 pings — about 11 days of hourly
+heartbeats. Optimising a one-time cost at the expense of a perpetual one is a
+false economy, so the recurring call wins.
 
 ### Contract verification
 
