@@ -1,0 +1,10 @@
+dist/
+node_modules/
+.env
+.env.*
+!.env.example
+*.local
+.vite/
+
+# Verification harness output (screenshots + report)
+.verify/

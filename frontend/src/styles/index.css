@@ -1,0 +1,311 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   NOSTROM DESIGN SYSTEM
+   ---------------------------------------------------------------------------
+   The visual language is derived from what the protocol actually does: a
+   countdown that must be continuously reset by a proof-of-life signal.
+
+     - Instrument-panel base. Near-black, hairline rules, no gradients.
+     - Colour is SEMANTIC, never decorative:
+         signal (green) = agent alive
+         amber          = grace period running low
+         red            = heartbeat lapsed / switch fired
+     - Monospace for every piece of on-chain data (addresses, amounts, times)
+       so digits align in columns and hashes are legible.
+     - Tight radii and 1px borders. Hierarchy comes from type and space, not
+       from stacked cards and shadows.
+
+   Shared verbatim by the landing page and the vault console.
+   =========================================================================== */
+
+@theme {
+  /* --- Surfaces (darkest to lightest) --- */
+  --color-ink-950: #08090a; /* page */
+  --color-ink-900: #0c0e10; /* section / panel */
+  --color-ink-850: #111417; /* raised panel */
+  --color-ink-800: #16191d; /* input, inset */
+  --color-ink-750: #1c2024; /* hover on raised */
+
+  /* --- Hairlines --- */
+  --color-line: #1d2226;
+  --color-line-strong: #2b3238;
+
+  /* --- Text ---
+     text-faint is the lightest tier and is used for 11px labels and hints, so it
+     must still clear 4.5:1 against every surface it lands on (ink-950 through
+     ink-800). Measured: 5.3:1 on ink-950, 4.7:1 on ink-800. Do not darken it
+     without re-measuring. */
+  --color-text: #e8eaeb;
+  --color-text-dim: #949ca3;
+  --color-text-faint: #7d858c;
+
+  /* --- Semantic status --- */
+  --color-signal: #7dd3a0; /* ALIVE — also the single brand accent */
+  --color-signal-dim: #2f6b4d;
+  --color-warn: #e3b341; /* grace low */
+  --color-warn-dim: #6b5321;
+  --color-danger: #e5534b; /* lapsed / triggered */
+  --color-danger-dim: #6b2a26;
+
+  /* --- Typography --- */
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+
+  /* --- Radii: tight. Infrastructure, not consumer app. --- */
+  --radius-sm: 3px;
+  --radius-DEFAULT: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* --- Motion --- */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===========================================================================
+   Base
+   =========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv05" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Display type: tight tracking at large sizes reads as engineered rather
+     than friendly. Applied via the .display utility, not globally. */
+  .display {
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+
+  /* Small uppercase label — the workhorse of the data-dense sections.
+     11px rather than 10px: it carries real information (field names, units,
+     column headers), so legibility beats compactness. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  /* Tabular numerals so countdowns don't jitter as digits change. */
+  .tnum {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-ink-950);
+  }
+
+  /* Visible, consistent focus ring everywhere. Never removed. */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Dark, unobtrusive scrollbars to match the instrument-panel surface. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-950);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border: 2px solid var(--color-ink-950);
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a424a;
+  }
+}
+
+/* ===========================================================================
+   Protocol motifs
+   =========================================================================== */
+
+@layer components {
+  /* The measuring grid. A faint 1px lattice that signals precision without
+     becoming a decorative "blockchain" background. */
+  .grid-field {
+    background-image:
+      linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  }
+
+  /* Hairline separator that fades at both ends — used between sections so the
+     page reads as a continuous instrument rather than stacked boxes. */
+  .rule-fade {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-line-strong) 15%,
+      var(--color-line-strong) 85%,
+      transparent
+    );
+  }
+
+  /* Live status dot. The ring pulse is the protocol's core metaphor, so it is
+     the one place a repeating animation is justified. */
+  .pulse-dot {
+    position: relative;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: currentColor;
+    flex: none;
+  }
+  .pulse-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    border: 1px solid currentColor;
+    animation: pulse-ring 2.4s var(--ease-out-quint) infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.7);
+      opacity: 0.9;
+    }
+    70%,
+    100% {
+      transform: scale(2.1);
+      opacity: 0;
+    }
+  }
+
+  /* ECG trace: the stroke is drawn once on reveal, then a highlight sweeps
+     along it to read as a live signal. */
+  .trace-draw {
+    stroke-dasharray: var(--trace-len, 1200);
+    stroke-dashoffset: var(--trace-len, 1200);
+    animation: trace-in 2s var(--ease-out-quint) forwards;
+  }
+
+  @keyframes trace-in {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .trace-sweep {
+    stroke-dasharray: 26 1400;
+    animation: trace-sweep 4.5s linear infinite;
+  }
+
+  @keyframes trace-sweep {
+    from {
+      stroke-dashoffset: 1426;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Scroll reveal. Applied by an IntersectionObserver adding .in-view. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.6s var(--ease-out-quint),
+      transform 0.6s var(--ease-out-quint);
+  }
+  .reveal.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Indeterminate progress used while a transaction is in the mempool: we do
+     not know how long confirmation takes, and must not imply we do. */
+  .indeterminate {
+    position: relative;
+    overflow: hidden;
+  }
+  .indeterminate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: currentColor;
+    animation: indeterminate 1.3s ease-in-out infinite;
+  }
+
+  @keyframes indeterminate {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(350%);
+    }
+  }
+}
+
+/* ===========================================================================
+   Reduced motion — render the final state, drop the animation.
+   =========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .trace-draw {
+    stroke-dashoffset: 0;
+  }
+
+  .trace-sweep,
+  .pulse-dot::after {
+    display: none;
+  }
+
+  .indeterminate::after {
+    width: 100%;
+    animation: none;
+    opacity: 0.4;
+  }
+}

@@ -1,0 +1,38 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Hardhat
+artifacts/
+cache/
+typechain-types/
+coverage/
+coverage.json
+
+# Deployment records (may contain addresses you want to keep, remove if desired)
+deployments/*.json
+
+# Frontend build output and verification artefacts
+frontend/dist/
+frontend/.verify/
+frontend/.vite/
+
+# Logs from local nodes / dev servers
+*.log
+
+# Agent tooling / skill definitions — editor configuration, not project code.
+# Remove this line if you want your steering docs versioned with the protocol.
+.kiro/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python (agent helper)
+__pycache__/
+*.pyc
+.venv/
+venv/

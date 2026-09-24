@@ -1,0 +1,30 @@
+# Normalise line endings in the repository to LF, regardless of the checkout OS.
+# Without this, a Windows checkout commits CRLF and every file looks modified to
+# contributors on macOS/Linux.
+* text=auto eol=lf
+
+# Solidity, JS/TS and config are all text.
+*.sol   text eol=lf
+*.js    text eol=lf
+*.cjs   text eol=lf
+*.mjs   text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.py    text eol=lf
+*.yml   text eol=lf
+
+# Lockfiles are generated; collapse them in diffs and reviews.
+package-lock.json  linguist-generated=true -diff
+
+# Generated from the Hardhat artifacts by frontend/scripts/sync-abis.mjs.
+frontend/src/contracts/abis.ts  linguist-generated=true -diff
+
+# Binary.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

@@ -1,0 +1,33 @@
+{
+  "name": "nostrom",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nostrom - Dead-Man's Switch / Fail-Safe Vault for autonomous AI agent treasuries on BOT Chain",
+  "license": "MIT",
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "demo": "hardhat run scripts/demo.js",
+    "gas": "hardhat run scripts/measure-gas.js",
+    "deploy:factory:testnet": "hardhat run scripts/deploy-factory.js --network botchainTestnet",
+    "deploy:factory:mainnet": "hardhat run scripts/deploy-factory.js --network botchainMainnet",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network botchainTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network botchainMainnet",
+    "status:testnet": "hardhat run scripts/status.js --network botchainTestnet",
+    "status:mainnet": "hardhat run scripts/status.js --network botchainMainnet",
+    "heartbeat": "node agent/nostrom-heartbeat.js",
+    "keeper": "node scripts/keeper.js",
+    "scan:secrets": "node scan-secrets.cjs",
+    "app:install": "npm --prefix frontend install",
+    "app:abis": "npm --prefix frontend run sync:abis",
+    "app:dev": "npm --prefix frontend run dev",
+    "app:build": "npm --prefix frontend run build",
+    "app:lint": "npm --prefix frontend run lint",
+    "app:preview": "npm --prefix frontend run preview"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "5.0.0",
+    "dotenv": "16.4.7",
+    "hardhat": "2.29.1"
+  }
+}

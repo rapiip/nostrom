@@ -1,0 +1,43 @@
+{
+  "name": "nostrom-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Landing page + vault console for the Nostrom dead-man's switch protocol on BOT Chain",
+  "license": "MIT",
+  "scripts": {
+    "sync:abis": "node scripts/sync-abis.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --max-warnings 0",
+    "preview": "vite preview",
+    "verify:ui": "node scripts/verify-ui.cjs",
+    "verify:flows": "node scripts/verify-flows.cjs"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10",
+    "@tanstack/react-query": "5.103.2",
+    "clsx": "2.1.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4",
+    "viem": "2.56.8",
+    "wagmi": "3.7.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "9.39.1",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "globals": "16.5.0",
+    "puppeteer-core": "24.29.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.48.0",
+    "vite": "8.3.0"
+  }
+}
