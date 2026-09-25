@@ -104,10 +104,10 @@ export function VaultDetail() {
             title="No Nostrom vault at this address"
             description={
               <>
-                No active Nostrom vault contract was found at{" "}
-                <span className="tnum break-all">{parsed}</span> on{" "}
-                {wallet.chainName ?? `chain ${wallet.chainId}`}. Please verify the contract
-                address and ensure your wallet is connected to the correct network.
+                The call to <code className="font-mono text-[12px]">status()</code> failed, so either
+                nothing is deployed at <span className="tnum break-all">{parsed}</span> on{" "}
+                {wallet.chainName ?? `chain ${wallet.chainId}`}, or the contract there is not a
+                Nostrom vault. If you expected a vault, check you are on the right network.
               </>
             }
             action={

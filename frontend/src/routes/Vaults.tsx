@@ -67,9 +67,14 @@ function VaultsInner() {
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Your vaults</h1>
           <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-text-dim">
-            Portfolio overview of all vaults created by{" "}
-            <span className="tnum text-text">{wallet.address?.slice(0, 10)}…</span>. Displays real-time
-            health, balances, and operational status.
+            Every vault created by{" "}
+            <span className="tnum text-text">{wallet.address?.slice(0, 10)}…</span>.{" "}
+            {/* The registry is keyed by the CREATING account and that link never
+                changes, so this list is not "vaults you own". A transferred vault
+                still appears here. Calling it a portfolio implied ownership and
+                hid the distinction the owner column exists to show. */}
+            This index is keyed by the creating account and never changes, so a vault you
+            transferred away still appears here — check the owner column.
           </p>
         </div>
         <div className="flex items-center gap-2">

@@ -32,7 +32,8 @@ export function Lookup() {
       <div>
         <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Open a vault</h1>
         <p className="mt-1.5 text-[13px] leading-relaxed text-text-dim">
-          Inspect real-time health, balance, countdown timers, and recovery settings for any deployed Nostrom vault contract.
+          Any Nostrom vault address, whether or not you own it and whether or not it came from the
+          factory this app knows about. Read-only unless you hold a key the contract recognises.
         </p>
       </div>
 
@@ -43,7 +44,7 @@ export function Lookup() {
             <Field
               label="Address"
               result={value ? result : undefined}
-              hint="Enter any active Nostrom vault contract address on BOT Chain to inspect its live state."
+              hint="Works for a factory clone or a standalone Nostrom.sol deployment — both expose the same status() and ping() interface."
             >
               {(a11y) => (
                 <Input
@@ -73,8 +74,21 @@ export function Lookup() {
         </PanelBody>
       </Panel>
 
-      <Notice tone="info" title="Registry verification">
-        Nostrom automatically validates addresses against the official factory registry. Unregistered or custom deployments remain fully inspectable and executable.
+      {/* This warning is deliberately a warning, not a reassurance.
+          Any contract can implement the same function signatures, so an address
+          that merely "looks like" a vault can be a look-alike built to receive
+          deposits. `isVault()` is the factory's own check and the repository
+          README says to gate a frontend on it — but it can only vouch for vaults
+          from the factory this app is configured with. Telling the user that
+          unverified addresses are "fully inspectable" while omitting that they
+          are also unverified inverts the intent of the check. */}
+      <Notice tone="warn" title="Verify before you deposit">
+        When a factory is configured, Nostrom checks{" "}
+        <code className="font-mono text-[12px]">isVault()</code> and flags any address it cannot
+        vouch for. That check cannot cover a vault from another factory or a standalone deployment,
+        and any contract can copy this interface — so read the source on the explorer before sending
+        funds to a vault you did not create yourself. Monitoring and execution are safe on any
+        address; depositing is not.
       </Notice>
     </div>
   );

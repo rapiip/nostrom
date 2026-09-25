@@ -254,9 +254,12 @@ function CreateVaultInner() {
                   <div className="flex items-start gap-2">
                     <Info size={14} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
                     <span>
-                      Recommended heartbeat frequency: every{" "}
-                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> (one-third
-                      of the timeout window). Official agent libraries configure this interval automatically.
+                      Ping at most every{" "}
+                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> — a
+                      third of the timeout, so two missed transactions in a row are still
+                      survivable. The heartbeat clients in{" "}
+                      <code className="font-mono text-[12px]">agent/</code> clamp to this
+                      automatically.
                     </span>
                   </div>
                 </Notice>
@@ -267,7 +270,7 @@ function CreateVaultInner() {
           <Panel>
             <PanelHeader
               title="Initial deposit"
-              description="Optional initial funding. You can also fund the vault at any time after creation."
+              description="Optional. A vault with a zero balance is armed but has nothing to protect. You can fund it at any time after creation."
             />
             <PanelBody className="flex flex-col gap-5">
               <Field
@@ -317,7 +320,7 @@ function CreateVaultInner() {
                       <Field
                         label="Salt label"
                         result={saltResult}
-                        hint="A short label or 32-byte hex salt for deterministic CREATE2 address deployment. Must be unique for your account."
+                        hint="A short label, hashed to a bytes32 salt. Or paste a raw 32-byte hex value. Reusing a label you already used will revert — the salt is namespaced per caller, so only your own reuse collides."
                       >
                         {(a11y) => (
                           <Input
