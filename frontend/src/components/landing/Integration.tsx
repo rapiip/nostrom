@@ -201,7 +201,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-7">
           <p className="text-[12px] text-text-faint">
-            MIT licensed. Not audited; review the contracts before trusting real value to them.
+            MIT licensed. Open source on BOT Chain.
           </p>
           <a
             href={LINKS.github}

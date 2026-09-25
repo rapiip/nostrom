@@ -99,8 +99,7 @@ export function AppShell() {
           <div className="flex flex-col gap-3">
             {wallet.chainId === 968 && (
               <Notice tone="info">
-                Connected to <span className="text-text">BOT Chain Testnet</span>. Vaults created
-                here hold testnet BOT and have no real value.
+                Connected to <span className="text-text">BOT Chain Testnet</span>.
               </Notice>
             )}
             {wallet.isFactoryMissing && (
@@ -120,7 +119,7 @@ export function AppShell() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-3 px-5 py-6 sm:px-8">
           <p className="text-[12px] text-text-faint">
-            Not audited. Verify contract addresses before depositing.
+            Nostrom · Autonomous dead man's switch on BOT Chain.
           </p>
           <Link
             to="/"

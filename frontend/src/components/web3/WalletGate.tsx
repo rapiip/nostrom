@@ -149,11 +149,8 @@ export function FactoryMissingNotice({
         title="No factory configured for this network"
         description={
           <>
-            Nostrom has no <span className="tnum">NostromFactory</span> address for{" "}
-            {chainName ?? `chain ${chainId}`}, so it cannot list or create vaults here. Deploy one
-            with <span className="tnum">npm run deploy:factory:testnet</span> and set{" "}
-            <span className="tnum">VITE_FACTORY_ADDRESS_{chainId}</span> in{" "}
-            <span className="tnum">frontend/.env</span>.
+            No factory contract is configured for {chainName ?? `chain ${chainId}`}.
+            Switch to a supported network to create or discover vaults, or look up an existing vault by address.
           </>
         }
         action={

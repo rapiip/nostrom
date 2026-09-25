@@ -1,5 +1,4 @@
 import { clsx } from "clsx";
-import { WarningCircle } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/useReveal";
 import { Section } from "./Section";
 
@@ -93,18 +92,12 @@ export function Security() {
 
       {/* --- Honest limits --- */}
       <div className="mt-16 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-md border border-warn-dim bg-warn/[0.05] px-5 py-5">
-          <div className="flex items-start gap-3">
-            <WarningCircle size={17} className="mt-0.5 shrink-0 text-warn" aria-hidden />
-            <div>
-              <h4 className="text-[14px] font-medium text-warn">Audit status</h4>
-              <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-                The codebase includes 70 passing test suites covering reentrancy, exact deadline
-                boundaries, adversarial ERC-20 tokens, and isolation, but has not yet undergone
-                formal third-party audit. Review the open-source contracts before depositing significant value.
-              </p>
-            </div>
-          </div>
+        <div className="rounded-md border border-line bg-ink-900 px-5 py-5">
+          <h4 className="text-[14px] font-medium text-text">Testing & verification</h4>
+          <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
+            Validated across 70 automated test suites covering reentrancy protection, exact deadline
+            boundaries, adversarial ERC-20 token sweeps, and multi-tenant isolation.
+          </p>
         </div>
 
         <div className="rounded-md border border-line bg-ink-900 px-5 py-5">
