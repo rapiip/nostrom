@@ -29,10 +29,21 @@ export function GraceTrack({
 
   const heights = { sm: "h-1", md: "h-1.5", lg: "h-2" } as const;
 
+  const glows = {
+    ALIVE: "shadow-[0_0_8px_rgba(125,211,160,0.5)]",
+    EXPIRING: "shadow-[0_0_8px_rgba(227,179,65,0.5)]",
+    EXECUTABLE: "shadow-[0_0_8px_rgba(229,83,75,0.5)]",
+    TRIGGERED: "",
+    UNCONFIGURED: "",
+  } as const;
+
   return (
     <div className={className}>
       <div
-        className={clsx("relative w-full overflow-hidden rounded-full bg-ink-800", heights[height])}
+        className={clsx(
+          "relative w-full overflow-hidden rounded-full border border-line-strong/30 bg-ink-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]",
+          heights[height],
+        )}
         role="meter"
         aria-valuenow={Math.round(pct)}
         aria-valuemin={0}
@@ -55,6 +66,7 @@ export function GraceTrack({
           className={clsx(
             "relative h-full rounded-full transition-[width] duration-1000 ease-linear",
             meta.fill,
+            glows[view.phase],
           )}
           style={{ width: `${pct}%` }}
         />

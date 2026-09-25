@@ -48,7 +48,7 @@ export function Hero() {
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link
                 to="/app/new"
-                className="group inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline transition-colors duration-150 hover:bg-signal/90"
+                className="group inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_20px_-3px_rgba(125,211,160,0.35)] active:scale-[0.985]"
               >
                 Create a vault
                 <ArrowRight
@@ -59,7 +59,7 @@ export function Hero() {
               </Link>
               <a
                 href="#how"
-                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-5 text-[14px] text-text no-underline transition-colors duration-150 hover:border-text-faint hover:bg-ink-750"
+                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-5 text-[14px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]"
               >
                 <BookOpen size={14} aria-hidden />
                 How it works
@@ -68,7 +68,7 @@ export function Hero() {
 
             {/* Concrete protocol facts, not vanity metrics. Everything here is a
                 verifiable property of the contracts. */}
-            <dl className="mt-12 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-line pt-8 sm:grid-cols-3">
+            <dl className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3">
               <HeroFact
                 label="Execution"
                 value="Permissionless"
@@ -95,11 +95,11 @@ export function Hero() {
 
 function HeroFact({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div>
+    <div className="rounded border border-line/80 bg-ink-900/60 p-3.5 backdrop-blur-xs transition-colors hover:border-line-strong">
       <dt className="label">{label}</dt>
-      <dd className="mt-2">
+      <dd className="mt-1.5">
         <span className="block text-[14px] font-medium text-text">{value}</span>
-        <span className="mt-0.5 block text-[12px] leading-snug text-text-faint">{note}</span>
+        <span className="mt-0.5 block text-[11px] leading-snug text-text-faint">{note}</span>
       </dd>
     </div>
   );

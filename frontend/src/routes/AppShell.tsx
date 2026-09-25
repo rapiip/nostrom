@@ -62,10 +62,10 @@ export function AppShell() {
                   end={end}
                   className={({ isActive }) =>
                     clsx(
-                      "inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[13px] no-underline transition-colors duration-150",
+                      "inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[13px] no-underline transition-all duration-150",
                       isActive
-                        ? "bg-ink-850 text-text"
-                        : "text-text-dim hover:bg-ink-900 hover:text-text",
+                        ? "border border-line-strong/70 bg-ink-850 text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                        : "border border-transparent text-text-dim hover:bg-ink-900 hover:text-text",
                     )
                   }
                 >

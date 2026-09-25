@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { GasPump, LockKey, ShieldCheck } from "@phosphor-icons/react";
 import { useReveal } from "@/hooks/useReveal";
 import { Section } from "./Section";
 
@@ -92,17 +93,23 @@ export function Security() {
 
       {/* --- Honest limits --- */}
       <div className="mt-16 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-md border border-line bg-ink-900 px-5 py-5">
-          <h4 className="text-[14px] font-medium text-text">Testing & verification</h4>
-          <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
+        <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck size={16} className="text-signal" aria-hidden />
+            <h4 className="text-[14px] font-medium text-text">Testing & verification</h4>
+          </div>
+          <p className="mt-2.5 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
             Validated across 70 automated test suites covering reentrancy protection, exact deadline
             boundaries, adversarial ERC-20 token sweeps, and multi-tenant isolation.
           </p>
         </div>
 
-        <div className="rounded-md border border-line bg-ink-900 px-5 py-5">
-          <h4 className="text-[14px] font-medium text-text">Trust boundary</h4>
-          <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
+        <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
+          <div className="flex items-center gap-2.5">
+            <LockKey size={16} className="text-text-dim" aria-hidden />
+            <h4 className="text-[14px] font-medium text-text">Trust boundary</h4>
+          </div>
+          <p className="mt-2.5 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
             Each vault owner retains administrative control: they can withdraw at will and change
             the recovery destination while the vault is active. Nostrom protects against{" "}
             <span className="text-text">agent process failure</span>, not owner compromise. Assign
@@ -111,9 +118,12 @@ export function Security() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-md border border-line bg-ink-900 px-5 py-5">
-        <h4 className="text-[14px] font-medium text-text">Agent gas reserves</h4>
-        <p className="mt-2 max-w-[78ch] text-[13px] leading-relaxed text-text-dim">
+      <div className="mt-6 rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
+        <div className="flex items-center gap-2.5">
+          <GasPump size={16} className="text-warn" aria-hidden />
+          <h4 className="text-[14px] font-medium text-text">Agent gas reserves</h4>
+        </div>
+        <p className="mt-2.5 max-w-[78ch] text-[13px] leading-relaxed text-text-dim">
           If the agent wallet runs out of gas for transaction fees, it cannot submit heartbeats and the
           fail-safe will trigger. Bundled clients check balances and address validity at startup to prevent
           accidental lockouts. Monitor agent wallet balances in production.
@@ -171,7 +181,7 @@ function ArchitectureDiagram() {
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {vaults.map((v) => (
-              <div key={v.label} className="rounded border border-line bg-ink-850 px-3.5 py-3.5">
+              <div key={v.label} className="rounded border border-line bg-ink-850 px-3.5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <div className="flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-signal" aria-hidden />
                   <span className="text-[13px] font-medium text-text">{v.label}</span>
@@ -180,7 +190,7 @@ function ArchitectureDiagram() {
                   <Row k="owner" v={v.owner} />
                   <Row k="agent" v="agent key" />
                   <Row k="recovery" v={v.cold} />
-                  <Row k="balance" v="isolated" tone="text-signal" />
+                  <Row k="balance" v="isolated" tone="text-signal font-medium" />
                 </dl>
               </div>
             ))}

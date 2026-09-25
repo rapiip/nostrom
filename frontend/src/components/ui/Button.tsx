@@ -27,24 +27,24 @@ type Size = "sm" | "md" | "lg";
  */
 const VARIANTS: Record<Variant, string> = {
   primary: [
-    "bg-signal text-ink-950 border-signal font-medium",
-    "hover:bg-signal/90 active:bg-signal/80",
-    "disabled:bg-ink-800 disabled:text-text-faint disabled:border-line-strong",
+    "bg-signal text-ink-950 border-signal font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]",
+    "hover:bg-signal/90 hover:shadow-[0_0_20px_-3px_rgba(125,211,160,0.35)] active:bg-signal/85 active:scale-[0.985]",
+    "disabled:bg-ink-800 disabled:text-text-faint disabled:border-line-strong disabled:shadow-none disabled:scale-100",
   ].join(" "),
   secondary: [
-    "bg-ink-850 text-text border-line-strong",
-    "hover:bg-ink-750 hover:border-text-faint active:bg-ink-800",
-    "disabled:bg-ink-800 disabled:text-text-faint disabled:border-line",
+    "bg-ink-850 text-text border-line-strong shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "hover:bg-ink-750 hover:border-text-faint active:bg-ink-800 active:scale-[0.985]",
+    "disabled:bg-ink-800 disabled:text-text-faint disabled:border-line disabled:shadow-none disabled:scale-100",
   ].join(" "),
   ghost: [
     "bg-transparent text-text-dim border-transparent",
-    "hover:text-text hover:bg-ink-850 active:bg-ink-800",
-    "disabled:text-text-faint disabled:bg-transparent",
+    "hover:text-text hover:bg-ink-850 active:bg-ink-800 active:scale-[0.985]",
+    "disabled:text-text-faint disabled:bg-transparent disabled:scale-100",
   ].join(" "),
   danger: [
-    "bg-transparent text-danger border-danger-dim",
-    "hover:bg-danger/10 hover:border-danger active:bg-danger/15",
-    "disabled:text-text-faint disabled:border-line disabled:bg-transparent",
+    "bg-transparent text-danger border-danger-dim shadow-[inset_0_1px_0_rgba(229,83,75,0.12)]",
+    "hover:bg-danger/10 hover:border-danger hover:shadow-[0_0_16px_-3px_rgba(229,83,75,0.3)] active:bg-danger/15 active:scale-[0.985]",
+    "disabled:text-text-faint disabled:border-line disabled:bg-transparent disabled:shadow-none disabled:scale-100",
   ].join(" "),
 };
 
@@ -87,7 +87,7 @@ export function Button({
       aria-busy={loading || undefined}
       className={clsx(
         "inline-flex items-center justify-center rounded border",
-        "transition-colors duration-150",
+        "transition-all duration-150 ease-out",
         // No blanket opacity: each variant defines a legible disabled surface.
         "disabled:cursor-not-allowed",
         !isDisabled && "cursor-pointer",
@@ -147,7 +147,7 @@ export function ButtonLink({
       {...rest}
       className={clsx(
         "inline-flex cursor-pointer items-center justify-center rounded border no-underline",
-        "transition-colors duration-150",
+        "transition-all duration-150 ease-out",
         VARIANTS[variant],
         SIZES[size],
         full && "w-full",

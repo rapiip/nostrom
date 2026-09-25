@@ -68,7 +68,7 @@ export function VaultDetail() {
           action={
             <Link
               to="/app/lookup"
-              className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-signal bg-signal px-4 text-[13px] font-medium text-ink-950 no-underline transition-colors hover:bg-signal/90"
+              className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-signal bg-signal px-4 text-[13px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_16px_-3px_rgba(125,211,160,0.3)] active:scale-[0.985]"
             >
               Look up a vault
             </Link>
@@ -117,7 +117,7 @@ export function VaultDetail() {
                 </Button>
                 <Link
                   to="/app/lookup"
-                  className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline transition-colors hover:bg-ink-750"
+                  className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]"
                 >
                   Try another address
                 </Link>

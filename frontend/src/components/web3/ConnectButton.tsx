@@ -96,7 +96,7 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
         aria-haspopup="menu"
         className={clsx(
           "flex cursor-pointer items-center gap-2.5 rounded border border-line-strong bg-ink-850 px-3",
-          "min-h-[44px] transition-colors duration-150 hover:border-text-faint hover:bg-ink-750",
+          "min-h-[44px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]",
         )}
       >
         <span className="pulse-dot text-signal" aria-hidden />
@@ -114,7 +114,7 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
       {menuOpen && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-md border border-line-strong bg-ink-900 shadow-2xl shadow-ink-950"
+          className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-md border border-line-strong bg-ink-900/98 shadow-[0_12px_36px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md"
         >
           <div className="border-b border-line px-4 py-3.5">
             <span className="label">Connected account</span>

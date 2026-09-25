@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import { useReveal } from "@/hooks/useReveal";
 import { Section } from "./Section";
 
@@ -92,16 +93,32 @@ export function Capabilities() {
       title="Role-based permissions and access control."
       lede="Security is rooted in strict separation of privileges. The agent key, active in a running process, can only report liveness. Treasury control remains strictly with the owner and pre-configured cold storage."
     >
-      <div ref={ref} className="grid gap-x-14 gap-y-12 lg:grid-cols-3">
+      <div ref={ref} className="grid gap-6 lg:grid-cols-3">
         {GROUPS.map((group) => (
-          <div key={group.role} className="reveal">
-            <h3 className={`text-[15px] font-medium ${group.tone}`}>{group.role}</h3>
-            <p className="mt-1.5 max-w-[34ch] text-[12px] leading-relaxed text-text-faint">
+          <div
+            key={group.role}
+            className="reveal rounded-md border border-line bg-ink-900/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)] transition-colors hover:border-line-strong"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h3 className={`text-[15px] font-medium ${group.tone}`}>{group.role}</h3>
+              <span
+                className={clsx(
+                  "size-1.5 rounded-full",
+                  group.tone === "text-signal"
+                    ? "bg-signal"
+                    : group.tone === "text-danger"
+                      ? "bg-danger"
+                      : "bg-text",
+                )}
+                aria-hidden
+              />
+            </div>
+            <p className="mt-1.5 text-[12px] leading-relaxed text-text-faint">
               {group.constraint}
             </p>
-            <dl className="mt-5">
+            <dl className="mt-5 space-y-3">
               {group.items.map((item) => (
-                <div key={item.name} className="border-t border-line py-3.5 last:border-b">
+                <div key={item.name} className="border-t border-line/60 pt-3">
                   <dt className="text-[13px] font-medium leading-relaxed text-text">{item.name}</dt>
                   <dd className="mt-1 text-[13px] leading-relaxed text-text-dim">{item.desc}</dd>
                 </div>

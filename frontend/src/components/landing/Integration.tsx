@@ -47,7 +47,7 @@ export function Integration() {
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
                 to="/app/new"
-                className="group inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline transition-colors duration-150 hover:bg-signal/90"
+                className="group inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_20px_-3px_rgba(125,211,160,0.35)] active:scale-[0.985]"
               >
                 Create a vault
                 <ArrowRight
@@ -58,7 +58,7 @@ export function Integration() {
               </Link>
               <Link
                 to="/app/keeper"
-                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-5 text-[14px] text-text no-underline transition-colors duration-150 hover:border-text-faint hover:bg-ink-750"
+                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-5 text-[14px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]"
               >
                 <Terminal size={14} aria-hidden />
                 Run a keeper
@@ -77,7 +77,7 @@ export function Integration() {
 
 function CodeBlock() {
   return (
-    <div className="overflow-hidden rounded-md border border-line bg-ink-900">
+    <div className="overflow-hidden rounded-md border border-line bg-ink-900 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.02)]">
       <div className="flex items-center justify-between gap-4 border-b border-line px-4 py-2.5">
         <span className="label">agent/nostrom-heartbeat.js</span>
         <span className="tnum text-[11px] text-text-faint">Node · ethers v6</span>

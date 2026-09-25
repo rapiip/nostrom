@@ -281,7 +281,7 @@ function KeeperRow({
           <div className="flex items-center gap-2">
             <Link
               to={`/app/vault/${view.address}`}
-              className="inline-flex min-h-[36px] cursor-pointer items-center gap-1 rounded px-2 text-[12px] text-text-dim no-underline transition-colors hover:bg-ink-800 hover:text-text"
+              className="inline-flex min-h-[32px] cursor-pointer items-center gap-1 rounded border border-line-strong bg-ink-850 px-2.5 text-[12px] text-text-dim no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 hover:text-text active:scale-[0.985]"
             >
               Inspect
               <ArrowRight size={11} aria-hidden />

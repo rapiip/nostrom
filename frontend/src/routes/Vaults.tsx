@@ -83,7 +83,7 @@ function VaultsInner() {
           </Button>
           <Link
             to="/app/new"
-            className="inline-flex min-h-[40px] cursor-pointer items-center gap-1.5 rounded border border-signal bg-signal px-3.5 text-[13px] font-medium text-ink-950 no-underline transition-colors duration-150 hover:bg-signal/90"
+            className="inline-flex min-h-[40px] cursor-pointer items-center gap-1.5 rounded border border-signal bg-signal px-3.5 text-[13px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_16px_-3px_rgba(125,211,160,0.3)] active:scale-[0.985]"
           >
             <Plus size={13} aria-hidden />
             New vault
@@ -168,7 +168,7 @@ function VaultsInner() {
             action={
               <Link
                 to="/app/new"
-                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline transition-colors duration-150 hover:bg-signal/90"
+                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_20px_-3px_rgba(125,211,160,0.35)] active:scale-[0.985]"
               >
                 <Plus size={14} aria-hidden />
                 Create your first vault
@@ -269,7 +269,7 @@ function VaultRow({
         {/* Action */}
         <Link
           to={`/app/vault/${view.address}`}
-          className="group inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 justify-self-start rounded border border-line-strong bg-ink-850 px-3 text-[13px] text-text no-underline transition-colors duration-150 hover:border-text-faint hover:bg-ink-750 md:justify-self-end"
+          className="group inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 justify-self-start rounded border border-line-strong bg-ink-850 px-3 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985] md:justify-self-end"
         >
           Manage
           <ArrowRight

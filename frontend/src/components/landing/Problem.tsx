@@ -63,13 +63,16 @@ export function Problem() {
             {FAILURES.map((f, i) => (
               <div
                 key={f.cause}
-                className="flex gap-4 border-b border-line py-4 first:border-t first:border-line"
+                className="flex items-start gap-4 border-b border-line py-4 first:border-t first:border-line transition-colors hover:bg-ink-900/40"
               >
-                <span className="tnum pt-0.5 text-[11px] text-text-faint">
+                <span className="tnum pt-0.5 text-[11px] font-mono text-text-faint">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="min-w-0">
-                  <dt className="text-[14px] text-text">{f.cause}</dt>
+                <div className="min-w-0 flex-1">
+                  <dt className="flex items-center gap-2 text-[14px] font-medium text-text">
+                    <span className="size-1.5 shrink-0 rounded-full bg-danger/80" aria-hidden />
+                    {f.cause}
+                  </dt>
                   <dd className="mt-1 text-[13px] leading-relaxed text-text-dim">
                     {f.consequence}
                   </dd>
@@ -92,9 +95,9 @@ export function Problem() {
             {NON_SOLUTIONS.map((s) => (
               <div
                 key={s.approach}
-                className="border-b border-line py-4 first:border-t first:border-line"
+                className="border-b border-line py-4 first:border-t first:border-line transition-colors hover:bg-ink-900/40"
               >
-                <dt className="text-[14px] text-text">{s.approach}</dt>
+                <dt className="text-[14px] font-medium text-text">{s.approach}</dt>
                 <dd className="mt-1 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
                   {s.why}
                 </dd>
@@ -102,10 +105,10 @@ export function Problem() {
             ))}
           </dl>
 
-          <div className="mt-8 border-l-2 border-signal pl-5">
-            <p className="max-w-[48ch] text-[15px] leading-[1.6] text-text">
+          <div className="mt-8 rounded-r-md border-l-2 border-signal bg-signal/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+            <p className="max-w-[48ch] text-[15px] leading-[1.65] text-text">
               Every one of these needs a living participant to act. Nostrom inverts that: the absence
-              of action <span className="text-signal">is</span> the trigger, and the party who acts
+              of action <span className="font-medium text-signal">is</span> the trigger, and the party who acts
               on it does not need to be you.
             </p>
           </div>

@@ -103,9 +103,12 @@ export function Input({ suffix, invalid, mono = false, className, ...rest }: Inp
   return (
     <div
       className={clsx(
-        "flex items-center gap-2 rounded border bg-ink-800 transition-colors duration-150",
-        "focus-within:border-signal",
-        invalid ? "border-danger" : "border-line-strong hover:border-text-faint",
+        "flex items-center gap-2 rounded border bg-ink-800 transition-all duration-150",
+        "shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]",
+        "focus-within:border-signal focus-within:ring-1 focus-within:ring-signal/30",
+        invalid
+          ? "border-danger focus-within:border-danger focus-within:ring-danger/30"
+          : "border-line-strong hover:border-text-faint",
         className,
       )}
     >
@@ -165,13 +168,21 @@ export function SegmentedGroup({
             onClick={() => onChange(opt.value)}
             title={opt.note}
             className={clsx(
-              "cursor-pointer rounded border px-3 py-2.5 text-left transition-colors duration-150",
+              "cursor-pointer rounded border px-3.5 py-2.5 text-left transition-all duration-150",
               selected
-                ? "border-signal bg-signal/[0.08] text-text"
-                : "border-line-strong bg-ink-800 text-text-dim hover:border-text-faint hover:text-text",
+                ? "border-signal bg-signal/[0.08] text-text shadow-[inset_0_1px_0_rgba(125,211,160,0.2)]"
+                : "border-line-strong bg-ink-800 text-text-dim hover:border-text-faint hover:text-text hover:bg-ink-750",
             )}
           >
-            <span className="block text-[13px] font-medium">{opt.label}</span>
+            <div className="flex items-center justify-between gap-1">
+              <span className="block text-[13px] font-medium">{opt.label}</span>
+              {selected && (
+                <span
+                  className="size-1.5 shrink-0 rounded-full bg-signal shadow-[0_0_6px_rgba(125,211,160,0.8)]"
+                  aria-hidden
+                />
+              )}
+            </div>
             {opt.note && (
               <span className="mt-0.5 block text-[11px] leading-snug text-text-faint">
                 {opt.note}

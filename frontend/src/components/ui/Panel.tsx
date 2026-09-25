@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import type { ReactNode } from "react";
+import { CheckCircle, Info, ShieldWarning, Warning } from "@phosphor-icons/react";
 
 /**
  * Layout and data-display primitives.
@@ -30,7 +31,9 @@ export function Panel({
     <Tag
       className={clsx(
         "rounded-md border",
-        inset ? "border-line bg-ink-800" : "border-line bg-ink-900",
+        inset
+          ? "border-line bg-ink-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]"
+          : "border-line bg-ink-900 shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.02)]",
         className,
       )}
     >
@@ -192,13 +195,13 @@ export function Stat({
       <div className="mt-2 flex items-baseline gap-1.5" title={title}>
         <span
           className={clsx(
-            "tnum truncate text-[22px] leading-none font-medium tracking-[-0.02em]",
+            "tnum truncate text-[24px] sm:text-[26px] leading-tight font-medium tracking-tight",
             tones[tone],
           )}
         >
           {value}
         </span>
-        {unit && <span className="text-[12px] text-text-faint">{unit}</span>}
+        {unit && <span className="font-mono text-[12px] text-text-faint">{unit}</span>}
       </div>
       {hint && <div className="mt-1.5 text-[12px] leading-snug text-text-faint">{hint}</div>}
     </div>
@@ -250,7 +253,11 @@ export function EmptyState({
 }) {
   return (
     <div className={clsx("flex flex-col items-center px-6 py-14 text-center", className)}>
-      {icon && <div className="mb-4 text-text-faint">{icon}</div>}
+      {icon && (
+        <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-line-strong bg-ink-850 text-text-dim shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.4)]">
+          {icon}
+        </div>
+      )}
       <p className="text-[15px] font-medium text-text">{title}</p>
       {description && (
         <p className="mt-2 max-w-md text-[13px] leading-relaxed text-text-dim">{description}</p>
@@ -263,6 +270,13 @@ export function EmptyState({
 /* ===========================================================================
    Inline notices
    =========================================================================== */
+
+const NOTICE_ICONS = {
+  info: Info,
+  signal: CheckCircle,
+  warn: Warning,
+  danger: ShieldWarning,
+} as const;
 
 export function Notice({
   tone = "info",
@@ -291,22 +305,37 @@ export function Notice({
     danger: "text-danger",
   } as const;
 
+  const Icon = NOTICE_ICONS[tone];
+
   return (
     <div
-      className={clsx("rounded border px-3.5 py-3", tones[tone], className)}
+      className={clsx(
+        "rounded border px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]",
+        tones[tone],
+        className,
+      )}
       // Danger notices report a state the user must act on, so announce them.
       role={tone === "danger" ? "alert" : undefined}
     >
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+      <div className="flex items-start gap-3">
+        <Icon size={16} className={clsx("mt-0.5 shrink-0", titleTones[tone])} aria-hidden />
         <div className="min-w-0 flex-1">
-          {title && (
-            <p className={clsx("text-[13px] font-medium", titleTones[tone])}>{title}</p>
-          )}
-          {children && (
-            <div className={clsx("text-[13px] leading-relaxed", title && "mt-1")}>{children}</div>
-          )}
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+            <div className="min-w-0 flex-1">
+              {title && (
+                <p className={clsx("text-[13px] font-medium leading-snug", titleTones[tone])}>
+                  {title}
+                </p>
+              )}
+              {children && (
+                <div className={clsx("text-[13px] leading-relaxed", title && "mt-1")}>
+                  {children}
+                </div>
+              )}
+            </div>
+            {action && <div className="shrink-0">{action}</div>}
+          </div>
         </div>
-        {action && <div className="shrink-0">{action}</div>}
       </div>
     </div>
   );

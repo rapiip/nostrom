@@ -76,11 +76,11 @@ export function HowItWorks() {
         {STEPS.map((step, i) => {
           const tone = TONES[step.tone];
           return (
-            <li key={step.n} className={clsx("reveal relative pl-9 sm:pl-12", i > 0 && "mt-12")}>
+            <li key={step.n} className={clsx("reveal relative pl-9 sm:pl-12", i > 0 && "mt-8")}>
               {/* Node on the rail. */}
               <span
                 className={clsx(
-                  "absolute top-1.5 left-0 flex size-[15px] items-center justify-center rounded-full border bg-ink-950 sm:size-[19px]",
+                  "absolute top-4 left-0 flex size-[15px] items-center justify-center rounded-full border bg-ink-950 sm:size-[19px]",
                   tone.border,
                 )}
                 aria-hidden
@@ -88,28 +88,32 @@ export function HowItWorks() {
                 <span className={clsx("size-1.5 rounded-full sm:size-2", tone.dot)} />
               </span>
 
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className={clsx("tnum text-[11px] font-medium", tone.text)}>{step.n}</span>
-                <h3 className="text-[17px] font-medium tracking-[-0.01em] text-text">
-                  {step.title}
-                </h3>
-                <span className="text-[11px] font-medium uppercase tracking-wider text-text-faint">
-                  {step.tag}
-                </span>
+              <div className="rounded-lg border border-transparent p-4 -ml-4 transition-all duration-150 hover:border-line hover:bg-ink-900/50">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className={clsx("tnum text-[11px] font-medium font-mono", tone.text)}>
+                    {step.n}
+                  </span>
+                  <h3 className="text-[17px] font-medium tracking-[-0.01em] text-text">
+                    {step.title}
+                  </h3>
+                  <span className="rounded border border-line bg-ink-800 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-text-faint">
+                    {step.tag}
+                  </span>
+                </div>
+
+                <p className="mt-3 max-w-[68ch] text-[14px] leading-[1.65] text-text-dim">
+                  {step.body}
+                </p>
+
+                <p
+                  className={clsx(
+                    "mt-3 max-w-[64ch] border-l-2 pl-3.5 text-[13px] leading-relaxed text-text-faint",
+                    tone.border,
+                  )}
+                >
+                  {step.detail}
+                </p>
               </div>
-
-              <p className="mt-3.5 max-w-[68ch] text-[14px] leading-[1.65] text-text-dim">
-                {step.body}
-              </p>
-
-              <p
-                className={clsx(
-                  "mt-3 max-w-[64ch] border-l pl-3.5 text-[13px] leading-relaxed text-text-faint",
-                  tone.border,
-                )}
-              >
-                {step.detail}
-              </p>
             </li>
           );
         })}

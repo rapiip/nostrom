@@ -23,8 +23,8 @@ export function StatusBadge({
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-2 rounded border",
-        size === "sm" ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-[12px]",
+        "inline-flex items-center gap-1.5 rounded border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+        size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-[12px]",
         meta.border,
         meta.tone,
         "bg-current/[0.07]",
