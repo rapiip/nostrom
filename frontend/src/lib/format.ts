@@ -142,6 +142,19 @@ export function formatCount(n: bigint | number | undefined): string {
   return Number(n).toLocaleString();
 }
 
+/**
+ * Thousands-grouped integer with a FIXED separator, for gas figures and other
+ * protocol constants that are quoted verbatim in the docs.
+ *
+ * Deliberately not locale-aware, unlike formatCount: several locales use "." as
+ * the group separator, so a visitor there would read "2.994.000" where "." is
+ * also their decimal mark. For a number that must match what the README and the
+ * gas report print, one stable rendering is worth more than localisation.
+ */
+export function formatGas(n: number): string {
+  return n.toLocaleString("en-US");
+}
+
 /** Percentage of the grace window still remaining, clamped to 0..100. */
 export function gracePercent(secondsRemaining: bigint, timeoutPeriod: bigint): number {
   if (timeoutPeriod <= 0n) return 0;

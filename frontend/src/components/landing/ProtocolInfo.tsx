@@ -2,7 +2,7 @@ import { clsx } from "clsx";
 import { ArrowSquareOut } from "@phosphor-icons/react";
 import { supportedChains } from "@/config/chains";
 import { factoryAddress, LINKS, PROTOCOL } from "@/config/contracts";
-import { formatCount, formatDuration, truncateAddress } from "@/lib/format";
+import { formatCount, formatDuration, formatGas, truncateAddress } from "@/lib/format";
 import { useFactoryInfo } from "@/hooks/useVault";
 import { useReveal } from "@/hooks/useReveal";
 import { AddressDisplay } from "@/components/ui/Address";
@@ -22,13 +22,52 @@ import { Section } from "./Section";
  * measurements rather than promises.
  */
 
-const GAS = [
-  { op: "Factory deployment", gas: "~2,994,000", payer: "one-time setup" },
-  { op: "Create vault", gas: "~343,000", payer: "per vault creation" },
-  { op: "Create vault & deposit", gas: "~338,000", payer: "atomic creation + initial deposit" },
-  { op: "Liveness heartbeat", gas: "~37,600", payer: "the agent, per ping" },
-  { op: "Deposit funds", gas: "~25,700", payer: "per deposit" },
-  { op: "Execute fail-safe", gas: "~74,400", payer: "any keeper during evacuation" },
+/**
+ * Measured gas, split into two groups.
+ *
+ * The figures span 25,700 to 2,994,000 — a 116x range. Scaling one set of bars
+ * across all of it would compress every operation into an invisible sliver and
+ * the table would lose the comparison the bars exist to provide. Deployment and
+ * per-operation costs are also decisions a reader makes at different times, so
+ * they are grouped and each group is scaled to its own maximum: like compared
+ * with like.
+ *
+ * The deployment group then shows the actual decision — a standalone vault is
+ * 44% cheaper than the factory if you only ever need one vault — as a length
+ * difference rather than as two numbers to mentally divide.
+ */
+const GAS_GROUPS: {
+  heading: string;
+  note: string;
+  rows: { op: string; gas: number; note: string }[];
+}[] = [
+  {
+    heading: "Deployment",
+    note: "Paid once. The factory only becomes the cheaper route from the third vault onward.",
+    rows: [
+      {
+        op: "Factory deployment",
+        gas: 2994000,
+        note: "Once, for a platform others can use",
+      },
+      {
+        op: "Standalone vault",
+        gas: 1688000,
+        note: "Once, for a single agent of your own",
+      },
+    ],
+  },
+  {
+    heading: "Per operation",
+    note: "Paid by whoever calls the function.",
+    rows: [
+      { op: "Create vault", gas: 343000, note: "Each user, via the factory" },
+      { op: "Create vault & deposit", gas: 338000, note: "Atomic creation plus initial deposit" },
+      { op: "Execute fail-safe", gas: 74400, note: "Any keeper, during evacuation" },
+      { op: "Liveness heartbeat", gas: 37600, note: "The agent, every ping" },
+      { op: "Deposit funds", gas: 25700, note: "Each deposit" },
+    ],
+  },
 ];
 
 export function ProtocolInfo() {
@@ -161,20 +200,54 @@ export function ProtocolInfo() {
 
           <h3 className="mt-12 text-[15px] font-medium text-text">Measured gas</h3>
           <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-            Factory proxies reduce deployment gas by approximately 80% compared to standalone contracts.
+            Nostrom charges no protocol fee. Every figure below is network gas, reproduced with{" "}
+            <span className="tnum text-text">scripts/measure-gas.js</span>.
           </p>
-          <dl className="mt-5">
-            {GAS.map((g) => (
-              <div
-                key={g.op}
-                className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-0.5 border-t border-line py-2.5 last:border-b"
-              >
-                <dt className="text-[13px] font-medium text-text">{g.op}</dt>
-                <dd className="tnum text-[12px] text-text">{g.gas}</dd>
-                <p className="col-span-2 text-[11px] text-text-faint">{g.payer}</p>
+
+          {GAS_GROUPS.map((group) => {
+            const max = Math.max(...group.rows.map((r) => r.gas));
+            return (
+              <div key={group.heading} className="mt-7">
+                <div className="flex items-baseline justify-between gap-4">
+                  <h4 className="label">{group.heading}</h4>
+                  <span className="tnum text-[11px] text-text-faint">
+                    bars relative to {formatGas(max)}
+                  </span>
+                </div>
+                <p className="mt-1.5 max-w-[52ch] text-[12px] leading-relaxed text-text-faint">
+                  {group.note}
+                </p>
+
+                <dl className="mt-3.5">
+                  {group.rows.map((r) => (
+                    <div key={r.op} className="border-t border-line py-3 last:border-b">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+                        <dt className="text-[13px] font-medium text-text">{r.op}</dt>
+                        <dd className="tnum text-[12px] text-text">~{formatGas(r.gas)}</dd>
+                      </div>
+
+                      {/* Proportional bar. Neutral by design: the palette reserves
+                          green/amber/red for vault liveness, and gas is not a
+                          status. Magnitude is carried by length, not by hue. */}
+                      <div
+                        className="mt-2 h-1 w-full overflow-hidden rounded-full bg-ink-800"
+                        role="presentation"
+                      >
+                        <div
+                          className="h-full rounded-full bg-text-dim"
+                          // Floored at 1.5% so the smallest row still reads as a
+                          // bar rather than as an empty track.
+                          style={{ width: `${Math.max(1.5, (r.gas / max) * 100)}%` }}
+                        />
+                      </div>
+
+                      <p className="mt-1.5 text-[11px] text-text-faint">{r.note}</p>
+                    </div>
+                  ))}
+                </dl>
               </div>
-            ))}
-          </dl>
+            );
+          })}
 
           <a
             href={LINKS.botchainDocs}

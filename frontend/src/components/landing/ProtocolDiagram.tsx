@@ -48,6 +48,55 @@ const STAGE_COPY: Record<Stage, { label: string; detail: string; tone: string }>
   },
 };
 
+/** The lifecycle in order. Drives the stage track, so it is the single source of
+ *  sequence — STAGE_COPY is keyed, not ordered. */
+const STAGE_ORDER: Stage[] = ["healthy", "silence", "lapsed", "rescue"];
+
+/**
+ * Per-stage colour classes for the stage track.
+ *
+ * Spelled out per stage rather than composed from a template string because
+ * Tailwind resolves class names statically — an interpolated `border-${tone}`
+ * would be purged from the build and silently render uncoloured.
+ */
+const ACCENT: Record<
+  Stage,
+  { ring: string; ringPast: string; dot: string; dotPast: string; fill: string; text: string }
+> = {
+  healthy: {
+    ring: "border-signal",
+    ringPast: "border-signal-dim",
+    dot: "bg-signal",
+    dotPast: "bg-signal-dim",
+    fill: "bg-signal-dim",
+    text: "text-signal",
+  },
+  silence: {
+    ring: "border-warn",
+    ringPast: "border-warn-dim",
+    dot: "bg-warn",
+    dotPast: "bg-warn-dim",
+    fill: "bg-warn-dim",
+    text: "text-warn",
+  },
+  lapsed: {
+    ring: "border-danger",
+    ringPast: "border-danger-dim",
+    dot: "bg-danger",
+    dotPast: "bg-danger-dim",
+    fill: "bg-danger-dim",
+    text: "text-danger",
+  },
+  rescue: {
+    ring: "border-danger",
+    ringPast: "border-danger-dim",
+    dot: "bg-danger",
+    dotPast: "bg-danger-dim",
+    fill: "bg-danger-dim",
+    text: "text-danger",
+  },
+};
+
 /** Stage durations in ms. One full cycle is ~13s. */
 const TIMELINE: { stage: Stage; ms: number }[] = [
   { stage: "healthy", ms: 5200 },
@@ -82,10 +131,18 @@ export function ProtocolDiagram({ className }: { className?: string }) {
   // Readout state, updated at ~4Hz rather than once per frame. Text that changes
   // 60 times a second is unreadable anyway, and re-rendering the surrounding DOM
   // at frame rate would waste the saving the canvas exists to make.
-  const [readout, setReadout] = useState<{ stage: Stage; gracePct: number; beats: number }>({
+  const [readout, setReadout] = useState<{
+    stage: Stage;
+    gracePct: number;
+    beats: number;
+    index: number;
+    progress: number;
+  }>({
     stage: "healthy",
     gracePct: 100,
     beats: 0,
+    index: 0,
+    progress: 0,
   });
 
   useEffect(() => {
@@ -134,13 +191,15 @@ export function ProtocolDiagram({ className }: { className?: string }) {
     };
 
     /** Paints one frame and returns the readout values, without touching state. */
-    const draw = (elapsed: number): { stage: Stage; gracePct: number; beats: number } | null => {
+    const draw = (
+      elapsed: number,
+    ): { stage: Stage; gracePct: number; beats: number; index: number; progress: number } | null => {
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
       if (w === 0 || h === 0) return null;
 
-      const { stage: s, localT } = stageAt(elapsed);
+      const { stage: s, localT, index } = stageAt(elapsed);
 
       // --- grace gauge -----------------------------------------------------
       let pct: number;
@@ -173,12 +232,12 @@ export function ProtocolDiagram({ className }: { className?: string }) {
       // --- paint -----------------------------------------------------------
       ctx.clearRect(0, 0, w, h);
 
-      // Geometry: the trace occupies the upper ~72% and the grace gauge sits just
+      // Geometry: the trace occupies the upper ~80% and the grace gauge sits just
       // below it. Keeping them close reads as one instrument rather than two
-      // unrelated graphics with a gap between them.
-      const traceH = h * 0.72;
+      // unrelated graphics with a band of dead black between them.
+      const traceH = h * 0.8;
       const traceMid = traceH * 0.5;
-      const gaugeY = h - 20;
+      const gaugeY = h - 22;
 
       // Baseline grid: sparse vertical ticks, one horizontal baseline.
       ctx.strokeStyle = COLORS.line;
@@ -193,37 +252,81 @@ export function ProtocolDiagram({ className }: { className?: string }) {
       ctx.stroke();
 
       const color = s === "healthy" ? COLORS.signal : s === "silence" ? COLORS.warn : COLORS.danger;
+      const rgb = s === "healthy" ? "125, 211, 160" : s === "silence" ? "227, 179, 65" : "229, 83, 75";
+
+      const step = w / (SAMPLES - 1);
+      const AMP = traceH * 0.42;
+      const yAt = (v: number) => traceMid - v * AMP;
+
+      // Trace path, built once and reused for the fill, the glow and the stroke.
+      const tracePath = new Path2D();
+      for (let i = 0; i < trace.length; i++) {
+        const x = i * step;
+        const y = yAt(trace[i] ?? 0);
+        if (i === 0) tracePath.moveTo(x, y);
+        else tracePath.lineTo(x, y);
+      }
+
+      // Area under the curve. A monitor trace reads as a signal with mass rather
+      // than a hairline, and the gradient keeps the fill from competing with the
+      // stroke for attention.
+      const area = new Path2D(tracePath);
+      area.lineTo((trace.length - 1) * step, traceMid);
+      area.lineTo(0, traceMid);
+      area.closePath();
+      const grad = ctx.createLinearGradient(0, traceMid - AMP, 0, traceMid);
+      grad.addColorStop(0, `rgba(${rgb}, 0.2)`);
+      grad.addColorStop(1, `rgba(${rgb}, 0)`);
+      ctx.fillStyle = grad;
+      ctx.fill(area);
+
+      // Phosphor glow. Drawn as a wide, low-alpha pass under the crisp stroke
+      // because canvas shadowBlur is expensive enough to cost frames at 60fps.
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.strokeStyle = `rgba(${rgb}, 0.18)`;
+      ctx.lineWidth = 5;
+      ctx.stroke(tracePath);
 
       // The trace itself.
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      const step = w / (SAMPLES - 1);
-      for (let i = 0; i < trace.length; i++) {
-        const x = i * step;
-        const y = traceMid - (trace[i] ?? 0) * (traceH * 0.34);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+      ctx.stroke(tracePath);
 
-      // Leading cursor dot: the "live" read head.
-      const lastY = traceMid - (trace[trace.length - 1] ?? 0) * (traceH * 0.34);
+      // Leading cursor dot: the "live" read head, with a halo so it stays
+      // visible where it sits on top of the bright part of the trace.
+      const lastY = yAt(trace[trace.length - 1] ?? 0);
+      const lastX = (trace.length - 1) * step;
+      ctx.fillStyle = `rgba(${rgb}, 0.22)`;
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc((trace.length - 1) * step, lastY, 2.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 2.5, 0, Math.PI * 2);
       ctx.fill();
 
       // --- grace gauge -----------------------------------------------------
-      const gaugeH = 3;
+      // Taller than a hairline so it reads as a gauge being consumed rather than
+      // as a divider between two graphics, with an outlined track behind it so
+      // the spent remainder stays legible.
+      const gaugeH = 6;
       ctx.fillStyle = "#16191d";
       ctx.fillRect(0, gaugeY, w, gaugeH);
+      ctx.strokeStyle = COLORS.line;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, gaugeY + 0.5, w - 1, gaugeH - 1);
 
       const fillW = (w * Math.max(0, Math.min(100, pct))) / 100;
-      ctx.fillStyle = pct > 20 ? (s === "healthy" ? COLORS.signal : COLORS.warn) : COLORS.danger;
+      const gaugeColor = pct > 20 ? (s === "healthy" ? COLORS.signal : COLORS.warn) : COLORS.danger;
+      ctx.fillStyle = gaugeColor;
       ctx.fillRect(0, gaugeY, fillW, gaugeH);
+
+      // Bright leading edge on the fill: the point the countdown has reached.
+      if (fillW > 1 && pct > 0) {
+        ctx.fillStyle = "#e8eaeb";
+        ctx.fillRect(Math.max(0, fillW - 1), gaugeY, 1, gaugeH);
+      }
 
       // Quartile ticks on the gauge.
       ctx.fillStyle = "#08090a";
@@ -233,7 +336,7 @@ export function ProtocolDiagram({ className }: { className?: string }) {
 
       // Deadline marker at the far right of the gauge.
       ctx.fillStyle = pct <= 0 ? COLORS.danger : COLORS.lineStrong;
-      ctx.fillRect(w - 1, gaugeY - 4, 1, gaugeH + 8);
+      ctx.fillRect(w - 1, gaugeY - 5, 1, gaugeH + 10);
 
       // --- rescue flow -----------------------------------------------------
       // A packet travels the gauge to the deadline marker: the treasury leaving
@@ -260,6 +363,11 @@ export function ProtocolDiagram({ className }: { className?: string }) {
         gracePct: Math.round(Math.max(0, pct)),
         beats:
           Math.floor(elapsed / CYCLE) * 3 + (s === "healthy" ? Math.floor(localT * 3) + 1 : 3),
+        index,
+        // Quantised to 5% steps. The stage track animates its connector fill with
+        // a CSS transition, so it does not need frame-accurate values, and coarse
+        // steps keep the surrounding DOM from re-rendering on every readout tick.
+        progress: Math.round(localT * 20) / 20,
       };
     };
 
@@ -292,7 +400,10 @@ export function ProtocolDiagram({ className }: { className?: string }) {
       if (next && ts - lastReadoutAt > 250) {
         lastReadoutAt = ts;
         setReadout((prev) =>
-          prev.stage === next.stage && prev.gracePct === next.gracePct && prev.beats === next.beats
+          prev.stage === next.stage &&
+          prev.gracePct === next.gracePct &&
+          prev.beats === next.beats &&
+          prev.progress === next.progress
             ? prev
             : next,
         );
@@ -308,7 +419,7 @@ export function ProtocolDiagram({ className }: { className?: string }) {
     };
   }, []);
 
-  const { stage, gracePct, beats } = readout;
+  const { stage, gracePct, beats, index, progress } = readout;
   const copy = STAGE_COPY[stage];
 
   return (
@@ -329,7 +440,7 @@ export function ProtocolDiagram({ className }: { className?: string }) {
         {/* Canvas */}
         <canvas
           ref={canvasRef}
-          className="block h-[180px] w-full sm:h-[210px]"
+          className="block h-[190px] w-full sm:h-[248px]"
           role="img"
           aria-label="Animated diagram of the Nostrom protocol lifecycle: an agent's heartbeat keeps a countdown full; when the heartbeat stops the countdown drains and the treasury is evacuated to a recovery address."
         />
@@ -342,27 +453,76 @@ export function ProtocolDiagram({ className }: { className?: string }) {
         </div>
       </div>
 
-      {/* Static legend so the diagram is comprehensible without watching it loop */}
-      <figcaption className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
-        {(Object.keys(STAGE_COPY) as Stage[]).map((s) => (
-          <div
-            key={s}
-            className={clsx(
-              "flex items-baseline gap-2.5 text-[12px] transition-opacity duration-500",
-              s === stage ? "opacity-100" : "opacity-45",
-            )}
-          >
-            <span
-              className={clsx("mt-1.5 size-1.5 shrink-0 rounded-full", {
-                "bg-signal": s === "healthy",
-                "bg-warn": s === "silence",
-                "bg-danger": s === "lapsed" || s === "rescue",
-              })}
-              aria-hidden
-            />
-            <span className="text-text">{STAGE_COPY[s].label}</span>
-          </div>
-        ))}
+      {/* Sequential stage track.
+          These four states are not unordered categories — they are one directed
+          sequence, and the causality (silence is what CAUSES evacuation) is the
+          whole point of the protocol. A 2x2 grid of dots hid that, so the legend
+          is a track: markers connected in order, filling as the cycle advances.
+          It doubles as the key, so the diagram is still comprehensible without
+          watching it loop.
+
+          Inactive steps are dimmed with explicit colour tokens rather than
+          opacity, because opacity composites toward the background and silently
+          drops small text under the 4.5:1 contrast floor. */}
+      <figcaption className="mt-5">
+        <ol className="grid gap-y-3 sm:grid-cols-4 sm:gap-x-2 sm:gap-y-0">
+          {STAGE_ORDER.map((s, i) => {
+            const state: "past" | "active" | "future" =
+              i < index ? "past" : i === index ? "active" : "future";
+            const isLast = i === STAGE_ORDER.length - 1;
+
+            return (
+              <li key={s} className="min-w-0">
+                {/* Marker rail: dot plus the connector to the next stage. */}
+                <div className="flex items-center gap-2" aria-hidden>
+                  <span
+                    className={clsx(
+                      "grid size-3.5 shrink-0 place-items-center rounded-full border transition-colors duration-500",
+                      state === "active" && ACCENT[s].ring,
+                      state === "past" && ACCENT[s].ringPast,
+                      state === "future" && "border-line-strong",
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        "size-1.5 rounded-full transition-colors duration-500",
+                        state === "active" && ACCENT[s].dot,
+                        state === "past" && ACCENT[s].dotPast,
+                        state === "future" && "bg-line-strong",
+                      )}
+                    />
+                  </span>
+
+                  {/* Connector. On the active step it fills with stage progress,
+                      which turns the legend into a live countdown readout. */}
+                  {!isLast && (
+                    <span className="relative hidden h-px min-w-0 flex-1 bg-line-strong sm:block">
+                      <span
+                        className={clsx(
+                          "absolute inset-y-0 left-0 transition-[width] duration-200 ease-linear",
+                          ACCENT[s].fill,
+                        )}
+                        style={{
+                          width:
+                            state === "past" ? "100%" : state === "active" ? `${progress * 100}%` : "0%",
+                        }}
+                      />
+                    </span>
+                  )}
+                </div>
+
+                <p
+                  className={clsx(
+                    "mt-2 text-[12px] leading-snug transition-colors duration-500",
+                    state === "active" ? ACCENT[s].text : "text-text-faint",
+                  )}
+                >
+                  {STAGE_COPY[s].label}
+                </p>
+              </li>
+            );
+          })}
+        </ol>
       </figcaption>
     </figure>
   );

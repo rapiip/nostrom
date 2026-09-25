@@ -83,8 +83,11 @@ export function Hero() {
             </dl>
           </div>
 
-          {/* --- Diagram column --- */}
-          <div className="lg:col-span-6 xl:col-span-7">
+          {/* --- Diagram column ---
+              Self-centered so the height difference against the taller copy
+              column distributes above and below the panel instead of pooling as
+              one large void underneath it. */}
+          <div className="lg:col-span-6 lg:self-center xl:col-span-7">
             <ProtocolDiagram />
           </div>
         </div>

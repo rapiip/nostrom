@@ -69,7 +69,12 @@ function KeeperInner() {
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Keeper scan</h1>
           <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
             Public keeper portal for executing expired vaults. Anyone can trigger eligible fail-safes;
-            all assets route strictly to each vault's predetermined cold recovery destination.
+            all assets route strictly to each vault's predetermined cold recovery destination.{" "}
+            {/* Stated before the list, not only inside the confirm dialog. Someone
+                scanning for work should learn there is no bounty here before they
+                spend attention on it — a permissionless call with no reward is
+                unusual enough that silence would read as an omission. */}
+            You pay the gas and receive nothing; there is no bounty and no caller reward.
           </p>
         </div>
         <Button

@@ -75,8 +75,17 @@ export function ExecutionPanel({
               <Button variant="danger" disabled full>
                 Execute dead-man's switch
               </Button>
-              <p className="text-[12px] text-text-faint">
-                Disabled while the agent heartbeat is active and healthy.
+              {/* Name the on-chain error, not just the disabled state.
+                  `executeDeadManSwitch()` reverts with AgentStillAlive while the
+                  deadline is in the future, so a reader who wonders why the
+                  control is inert — or who is about to call the contract
+                  directly — learns the actual reason rather than a euphemism.
+                  A copy pass once reduced this to "disabled while the heartbeat
+                  is active", which dropped the citation; verify-flows asserts the
+                  error name is present precisely so that cannot recur. */}
+              <p className="text-[12px] leading-relaxed text-text-faint">
+                Disabled because the heartbeat is current. Calling it now would revert with{" "}
+                <span className="tnum text-text-dim">AgentStillAlive</span>.
               </p>
             </>
           )}

@@ -96,7 +96,7 @@ export function HowItWorks() {
                   <h3 className="text-[17px] font-medium tracking-[-0.01em] text-text">
                     {step.title}
                   </h3>
-                  <span className="rounded border border-line bg-ink-800 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-text-faint">
+                  <span className="rounded border border-line bg-ink-800 px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-text-faint">
                     {step.tag}
                   </span>
                 </div>
