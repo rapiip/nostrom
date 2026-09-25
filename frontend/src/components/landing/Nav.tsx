@@ -1,31 +1,37 @@
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { GithubLogo, List, X } from "@phosphor-icons/react";
-import { LINKS } from "@/config/contracts";
+import { Link, useLocation } from "react-router-dom";
+import { List, X } from "@phosphor-icons/react";
 import { Logo } from "./Logo";
 import { BuiltOnBotChain } from "@/components/web3/BuiltOnBotChain";
 
 /**
- * Landing navigation.
+ * Public navigation, shared by the landing page and /reference.
  *
  * Transparent over the hero, then gains a hairline and a solid background once
  * the page scrolls, so the hero reads as full-bleed but the nav never floats
- * illegibly over content. Section links are in-page; "Launch app" is the single
- * primary action and is always visible, including on mobile.
+ * illegibly over content. "Launch app" is the single primary action and is
+ * always visible, including on mobile.
+ *
+ * Section links are in-page on the landing route and cross-route everywhere
+ * else: a bare `href="#how"` on /reference would look for that section on the
+ * reference page and silently do nothing, so off-landing it becomes a router
+ * link to `/#how`, which the Landing route's mount effect then scrolls to.
  */
 
 const SECTIONS = [
-  { href: "#problem", label: "Problem" },
-  { href: "#how", label: "How it works" },
-  { href: "#capabilities", label: "Capabilities" },
-  { href: "#security", label: "Security" },
-  { href: "#protocol", label: "Protocol" },
+  { id: "problem", label: "Problem" },
+  { id: "how", label: "How it works" },
+  { id: "capabilities", label: "Capabilities" },
+  { id: "security", label: "Security" },
+  { id: "protocol", label: "Protocol" },
 ] as const;
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { pathname } = useLocation();
+  const onLanding = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -42,6 +48,23 @@ export function Nav() {
     };
   }, [mobileOpen]);
 
+  /** In-page anchor on the landing route, router link anywhere else. */
+  const sectionLink = (
+    id: string,
+    label: string,
+    className: string,
+    onClick?: () => void,
+  ) =>
+    onLanding ? (
+      <a key={id} href={`#${id}`} onClick={onClick} className={className}>
+        {label}
+      </a>
+    ) : (
+      <Link key={id} to={`/#${id}`} onClick={onClick} className={className}>
+        {label}
+      </Link>
+    );
+
   return (
     <>
       <a
@@ -54,7 +77,7 @@ export function Nav() {
       <header
         className={clsx(
           "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
-          scrolled || mobileOpen
+          scrolled || mobileOpen || !onLanding
             ? "border-b border-line bg-ink-950/92 backdrop-blur-sm"
             : "border-b border-transparent",
         )}
@@ -65,20 +88,28 @@ export function Nav() {
             className="flex h-11 shrink-0 items-center gap-2.5 no-underline"
             aria-label="Nostrom home"
           >
-            <Logo className="h-4 w-auto text-signal" />
+            <Logo className="h-4 w-auto text-white" />
             <span className="text-[15px] font-medium tracking-[-0.01em] text-text">Nostrom</span>
           </Link>
 
           <nav aria-label="Sections" className="hidden items-center gap-5 lg:flex">
-            {SECTIONS.map((s) => (
-              <a
-                key={s.href}
-                href={s.href}
-                className="inline-flex min-h-[44px] cursor-pointer items-center text-[13px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
-              >
-                {s.label}
-              </a>
-            ))}
+            {SECTIONS.map((s) =>
+              sectionLink(
+                s.id,
+                s.label,
+                "inline-flex min-h-[44px] cursor-pointer items-center text-[13px] text-text-dim no-underline transition-colors duration-150 hover:text-text",
+              ),
+            )}
+            <Link
+              to="/reference"
+              aria-current={pathname === "/reference" ? "page" : undefined}
+              className={clsx(
+                "inline-flex min-h-[44px] cursor-pointer items-center text-[13px] no-underline transition-colors duration-150 hover:text-text",
+                pathname === "/reference" ? "text-text" : "text-text-dim",
+              )}
+            >
+              Reference
+            </Link>
           </nav>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
@@ -91,17 +122,6 @@ export function Nav() {
             <div className="hidden md:block">
               <BuiltOnBotChain />
             </div>
-
-            <a
-              href={LINKS.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Source on GitHub"
-              title="Source on GitHub"
-              className="hidden size-9 cursor-pointer items-center justify-center rounded text-text-dim transition-colors duration-150 hover:bg-ink-850 hover:text-text sm:inline-flex"
-            >
-              <GithubLogo size={17} aria-hidden />
-            </a>
 
             <Link
               to="/app"
@@ -127,25 +147,21 @@ export function Nav() {
             aria-label="Sections"
             className="border-t border-line bg-ink-950 px-5 pb-6 pt-2 lg:hidden"
           >
-            {SECTIONS.map((s) => (
-              <a
-                key={s.href}
-                href={s.href}
-                onClick={() => setMobileOpen(false)}
-                className="flex min-h-[48px] cursor-pointer items-center border-b border-line text-[14px] text-text-dim no-underline transition-colors duration-150 last:border-b-0 hover:text-text"
-              >
-                {s.label}
-              </a>
-            ))}
-            <a
-              href={LINKS.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 flex min-h-[48px] cursor-pointer items-center gap-2 text-[14px] text-text-dim no-underline hover:text-text"
+            {SECTIONS.map((s) =>
+              sectionLink(
+                s.id,
+                s.label,
+                "flex min-h-[48px] cursor-pointer items-center border-b border-line text-[14px] text-text-dim no-underline transition-colors duration-150 hover:text-text",
+                () => setMobileOpen(false),
+              ),
+            )}
+            <Link
+              to="/reference"
+              onClick={() => setMobileOpen(false)}
+              className="flex min-h-[48px] cursor-pointer items-center text-[14px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
             >
-              <GithubLogo size={16} aria-hidden />
-              GitHub
-            </a>
+              Reference
+            </Link>
 
             <div className="mt-3">
               <BuiltOnBotChain />

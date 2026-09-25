@@ -205,7 +205,6 @@ Never put a private key here.
 | `VITE_DEFAULT_CHAIN_ID` | `968` | Chain an unconnected visitor reads from |
 | `VITE_ENABLE_LOCALHOST` | `false` | Offer chain 31337 as a selectable network |
 | `VITE_RPC_968` / `VITE_RPC_677` | from `hardhat.config.js` | RPC overrides |
-| `VITE_GITHUB_URL` | — | Repository link in nav and footer |
 
 `VITE_DEFAULT_CHAIN_ID` also determines which chain is first in `supportedChains`, because
 wagmi initialises its current chain to `chains[0]`. If the two disagreed, a visitor with no

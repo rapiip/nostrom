@@ -443,7 +443,7 @@ frontend/                      landing page + vault console (see frontend/README
   src/lib/                     protocol state machine, revert decoding, validation
   src/hooks/                   wallet, vault reads, vault writes, tx lifecycle
   src/components/              ui / web3 / landing / app
-  src/routes/                  Landing, Vaults, CreateVault, VaultDetail, Lookup, Keeper
+  src/routes/                  Landing, Reference, Vaults, CreateVault, VaultDetail, Lookup, Keeper
   scripts/sync-abis.mjs        regenerates abis.ts from artifacts/
 design-system/nostrom/
   MASTER.md                    generated baseline (left untouched)

@@ -1,14 +1,13 @@
 """
-One-shot: turn the supplied brand PNG into the icon assets the app needs.
+One-shot: turn the supplied brand PNG into the raster icon assets the app needs.
 
 - Crops to the white mark, squares it with even padding.
 - Emits raster icons (favicon.ico, apple-touch, PWA 192/512, OG) on the brand
   ink background so they read on any OS chrome.
-- Vectorises the mark to a single monochrome SVG path so the in-app <Logo>
-  component can inherit currentColor (green/amber/red status theming).
+
+The in-app <Logo> SVG is produced separately by scripts/vectorise-logo.py.
 """
-import json
-from PIL import Image, ImageOps
+from PIL import Image
 
 SRC = r"D:\Downloads\ChatGPT Image 22 Sep 2026, 13.29.14.png"
 PUB = r"D:\VScode\botchain\frontend\public"
@@ -54,74 +53,14 @@ mk = white_rgb.resize((int(side * scale), int(side * scale)), Image.LANCZOS)
 og.alpha_composite(mk, ((1200 - mk.width) // 2, (630 - mk.height) // 2))
 og.convert("RGB").save(f"{PUB}/og.png")
 
-# ---- Vectorise to SVG path (marching squares on the mask) ----
-# Downscale the mask for a manageable contour, then trace boundaries.
-V = 200
-vm = sq_mask.resize((V, V), Image.LANCZOS).point(lambda p: 1 if p > 128 else 0)
-px = vm.load()
-
-def get(x, y):
-    if 0 <= x < V and 0 <= y < V:
-        return px[x, y]
-    return 0
-
-# Trace outlines using a simple boundary-following (Moore neighborhood).
-visited = set()
-paths = []
-dirs = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
-
-def is_edge(x, y):
-    if get(x, y) != 1:
-        return False
-    return any(get(x + dx, y + dy) == 0 for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)])
-
-for sy in range(V):
-    for sx in range(V):
-        if is_edge(sx, sy) and (sx, sy) not in visited:
-            contour = []
-            cx, cy = sx, sy
-            b = 0
-            start = (sx, sy)
-            steps = 0
-            while steps < V * V * 4:
-                contour.append((cx, cy))
-                visited.add((cx, cy))
-                found = False
-                for i in range(8):
-                    d = (b + i) % 8
-                    nx, ny = cx + dirs[d][0], cy + dirs[d][1]
-                    if get(nx, ny) == 1:
-                        b = (d + 5) % 8
-                        cx, cy = nx, ny
-                        found = True
-                        break
-                steps += 1
-                if not found or (cx, cy) == start and len(contour) > 2:
-                    break
-            if len(contour) > 8:
-                paths.append(contour)
-
-def simplify(pts, tol=1.2):
-    if len(pts) < 3:
-        return pts
-    out = [pts[0]]
-    for p in pts[1:]:
-        if abs(p[0] - out[-1][0]) + abs(p[1] - out[-1][1]) >= tol:
-            out.append(p)
-    return out
-
-sc = 64.0 / V
-segs = []
-for c in paths:
-    c = simplify(c)
-    if len(c) < 3:
-        continue
-    d = "M" + " L".join(f"{x*sc:.2f} {y*sc:.2f}" for x, y in c) + " Z"
-    segs.append(d)
-
-svg_path = " ".join(segs)
-with open(f"{PUB}/_logo_path.txt", "w") as f:
-    f.write(svg_path)
+# ---- SVG ----
+# The in-app <Logo> path is NOT generated here. Vectorising lives in
+# scripts/vectorise-logo.py, which traces at full resolution and simplifies with
+# Douglas-Peucker; the marching-squares tracer that used to sit in this file
+# sampled at 200px and thinned by dropping nearby points, turning every straight
+# edge of the mark into a 1px staircase.
 
 print("raster: icon-512/192, apple-touch, icon.ico, og.png")
-print("square side px:", side, "contours:", len(segs), "path chars:", len(svg_path))
+print("square side px:", side)
+print("svg: run scripts/vectorise-logo.py")
+

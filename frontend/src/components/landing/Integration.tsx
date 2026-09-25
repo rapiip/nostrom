@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, GithubLogo, Terminal } from "@phosphor-icons/react";
+import { ArrowRight, Terminal } from "@phosphor-icons/react";
 import { LINKS } from "@/config/contracts";
 import { useReveal } from "@/hooks/useReveal";
 import { Logo } from "./Logo";
@@ -36,13 +36,9 @@ export function Integration() {
             </h2>
 
             <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-text-dim">
-              Heartbeat libraries are available for Node.js and Python with built-in automated scheduling
-              and exponential backoff.
-            </p>
-
-            <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-text-dim">
-              The health check hook is what protects your funds: withhold the heartbeat whenever your agent
-              is degraded or unhealthy, allowing the fail-safe to trigger on its own.
+              Heartbeat clients for Node.js and Python, with scheduling and backoff built in. The
+              health check is the part that protects your funds: withhold the ping when your agent is
+              unwell, and let the fail-safe arm.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -161,7 +157,7 @@ export function Footer() {
         <div className="grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2.5">
-              <Logo className="h-4 w-auto text-signal" />
+              <Logo className="h-4 w-auto text-white" />
               <span className="text-[15px] font-medium tracking-[-0.01em] text-text">Nostrom</span>
             </div>
             <p className="mt-4 max-w-[34ch] text-[13px] leading-relaxed text-text-dim">
@@ -187,16 +183,16 @@ export function Footer() {
             title="Protocol"
             links={[
               { label: "How it works", href: "/#how" },
-              { label: "Capabilities", href: "/#capabilities" },
               { label: "Architecture", href: "/#security" },
-              { label: "Parameters", href: "/#protocol" },
+              { label: "Permission matrix", to: "/reference#permissions" },
+              { label: "Safety properties", to: "/reference#safety" },
+              { label: "Parameters & gas", to: "/reference#parameters" },
             ]}
           />
 
           <FooterColumn
             title="Resources"
             links={[
-              { label: "GitHub", href: LINKS.github, external: true },
               { label: "BOT Chain docs", href: LINKS.botchainDocs, external: true },
               { label: "Testnet explorer", href: LINKS.testnetExplorer, external: true },
               { label: "Mainnet explorer", href: LINKS.mainnetExplorer, external: true },
@@ -204,19 +200,8 @@ export function Footer() {
           />
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-7">
-          <p className="text-[12px] text-text-faint">
-            MIT licensed. Open source on BOT Chain.
-          </p>
-          <a
-            href={LINKS.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Source on GitHub"
-            className="inline-flex size-8 cursor-pointer items-center justify-center rounded text-text-faint transition-colors duration-150 hover:bg-ink-850 hover:text-text"
-          >
-            <GithubLogo size={16} aria-hidden />
-          </a>
+        <div className="mt-12 border-t border-line pt-7">
+          <p className="text-[12px] text-text-faint">MIT licensed.</p>
         </div>
       </div>
     </footer>

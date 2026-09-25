@@ -1,63 +1,22 @@
 import { clsx } from "clsx";
-import { GasPump, LockKey, ShieldCheck } from "@phosphor-icons/react";
+import { ArrowRight, GasPump, LockKey, ShieldCheck } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 import { useReveal } from "@/hooks/useReveal";
 import { Section } from "./Section";
 
 /**
  * Security and architecture.
  *
- * Every property listed here is traceable to a specific mechanism in the
- * contracts, and each is stated as what it does rather than as a guarantee. The
- * "not audited" disclaimer is prominent and not buried, because the repository
- * says so plainly and a security section that omits it would be dishonest.
+ * Keeps the two things that are worth a visitor's scroll: the topology diagram,
+ * because the isolation claim is spatial and a drawing carries it better than a
+ * paragraph, and the honest limits, because a security section that hides them
+ * is dishonest. The eight safety properties moved to /reference#safety — they
+ * are lookup material, and as a block of sixteen lines of small text they were
+ * the densest thing on the page.
  */
-
-const PROPERTIES = [
-  {
-    title: "Reentrancy defense: checks before interactions",
-    tag: "Reentrancy guard",
-    body: "The triggered status is locked before any funds move, guaranteeing that an external contract cannot re-enter to drain assets twice.",
-  },
-  {
-    title: "Atomic execution guarantees",
-    tag: "State consistency",
-    body: "If native asset transfer fails, the entire transaction reverts and the switch remains armed and retryable, avoiding partially executed states or stranded balances.",
-  },
-  {
-    title: "Isolated asset sweeping",
-    tag: "Fault isolation",
-    body: "Each tracked token is swept independently. Reverting transfers or non-standard token behaviors are safely skipped, ensuring native asset rescue always succeeds.",
-  },
-  {
-    title: "Resilient ERC-20 handling",
-    tag: "Token compatibility",
-    body: "Handles varied and non-standard token return formats safely without risking execution reverts during emergency evacuation.",
-  },
-  {
-    title: "Agent key has zero spending permissions",
-    tag: "Least privilege",
-    body: "The hot key stored in your agent process can only submit heartbeat pings. It cannot move funds or serve as the rescue recipient.",
-  },
-  {
-    title: "Protected vault initialization",
-    tag: "Deployment safety",
-    body: "Vaults are deployed and initialized atomically in a single transaction, leaving zero window for unauthorized claims or premature triggering.",
-  },
-  {
-    title: "Self-locking shared implementation",
-    tag: "Proxy security",
-    body: "The master implementation contract is permanently sealed upon deployment and can never hold funds or be initialized directly.",
-  },
-  {
-    title: "Enforced timeout boundaries",
-    tag: "Timing guard",
-    body: "A 30-second floor prevents validator timestamp drift from racing heartbeats, while a 365-day ceiling ensures fail-safes remain practical.",
-  },
-];
 
 export function Security() {
   const archRef = useReveal<HTMLDivElement>();
-  const propsRef = useReveal<HTMLDivElement>();
 
   return (
     <Section
@@ -71,36 +30,20 @@ export function Security() {
         <ArchitectureDiagram />
       </div>
 
-      {/* --- Properties --- */}
-      <div ref={propsRef} className="mt-20">
-        <h3 className="reveal text-[15px] font-medium text-text">
-          Architectural safety guarantees
-        </h3>
-        <dl className="reveal mt-6 grid gap-x-14 lg:grid-cols-2">
-          {PROPERTIES.map((p) => (
-            <div key={p.title} className="border-t border-line py-5">
-              <dt className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-[14px] font-medium text-text">{p.title}</span>
-                <span className="text-[11px] font-medium uppercase tracking-wider text-text-faint">{p.tag}</span>
-              </dt>
-              <dd className="mt-2 max-w-[60ch] text-[13px] leading-relaxed text-text-dim">
-                {p.body}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
       {/* --- Honest limits --- */}
-      <div className="mt-16 grid gap-6 lg:grid-cols-2">
+      <div className="mt-14 grid gap-5 lg:grid-cols-3">
         <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
           <div className="flex items-center gap-2.5">
             <ShieldCheck size={16} className="text-signal" aria-hidden />
-            <h4 className="text-[14px] font-medium text-text">Testing & verification</h4>
+            <h4 className="text-[14px] font-medium text-text">Testing</h4>
           </div>
-          <p className="mt-2.5 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-            Validated across 70 automated test suites covering reentrancy protection, exact deadline
-            boundaries, adversarial ERC-20 token sweeps, and multi-tenant isolation.
+          <p className="mt-2.5 text-[13px] leading-relaxed text-text-dim">
+            70 automated tests: reentrancy, exact deadline boundaries, hostile ERC-20 sweeps,
+            multi-tenant isolation.
+          </p>
+          <p className="mt-3 border-t border-warn-dim pt-3 text-[13px] leading-relaxed text-text-dim">
+            <span className="font-medium text-warn">Not audited.</span> Built for a hackathon. Review
+            it before trusting real value to it.
           </p>
         </div>
 
@@ -109,25 +52,37 @@ export function Security() {
             <LockKey size={16} className="text-text-dim" aria-hidden />
             <h4 className="text-[14px] font-medium text-text">Trust boundary</h4>
           </div>
-          <p className="mt-2.5 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-            Each vault owner retains administrative control: they can withdraw at will and change
-            the recovery destination while the vault is active. Nostrom protects against{" "}
-            <span className="text-text">agent process failure</span>, not owner compromise. Assign
-            the owner role to a multisig or DAO for enhanced administrative security.
+          <p className="mt-2.5 text-[13px] leading-relaxed text-text-dim">
+            Nostrom protects against <span className="text-text">agent failure</span>, not a
+            malicious owner: an owner can withdraw and change the recovery address at will. Point the
+            owner at a multisig if that matters.
+          </p>
+        </div>
+
+        <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
+          <div className="flex items-center gap-2.5">
+            <GasPump size={16} className="text-warn" aria-hidden />
+            <h4 className="text-[14px] font-medium text-text">Agent gas</h4>
+          </div>
+          <p className="mt-2.5 text-[13px] leading-relaxed text-text-dim">
+            An agent that runs out of gas cannot ping, and the switch fires on a healthy agent. The
+            clients check at startup; monitor it in production too.
           </p>
         </div>
       </div>
 
-      <div className="mt-6 rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
-        <div className="flex items-center gap-2.5">
-          <GasPump size={16} className="text-warn" aria-hidden />
-          <h4 className="text-[14px] font-medium text-text">Agent gas reserves</h4>
-        </div>
-        <p className="mt-2.5 max-w-[78ch] text-[13px] leading-relaxed text-text-dim">
-          If the agent wallet runs out of gas for transaction fees, it cannot submit heartbeats and the
-          fail-safe will trigger. Bundled clients check balances and address validity at startup to prevent
-          accidental lockouts. Monitor agent wallet balances in production.
-        </p>
+      <div className="mt-8">
+        <Link
+          to="/reference#safety"
+          className="group inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750"
+        >
+          Eight safety properties, mechanism by mechanism
+          <ArrowRight
+            size={13}
+            aria-hidden
+            className="transition-transform duration-200 group-hover:translate-x-0.5"
+          />
+        </Link>
       </div>
     </Section>
   );
@@ -176,8 +131,7 @@ function ArchitectureDiagram() {
         {/* Clones */}
         <div className="bg-ink-900 px-5 py-6">
           <p className="mb-5 max-w-[60ch] text-[13px] leading-relaxed text-text-dim">
-            Each vault is an independent smart contract. Deployments share immutable logic while
-            strictly maintaining isolated storage, keys, and balances.
+            Independent contracts sharing immutable logic. Storage, keys and balances stay isolated.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {vaults.map((v) => (
@@ -196,8 +150,7 @@ function ArchitectureDiagram() {
             ))}
           </div>
           <p className="mt-5 text-[12px] leading-relaxed text-text-faint">
-            Complete multi-tenant isolation: one user cannot withdraw from or trigger another user's vault, and
-            activating one vault leaves every other vault untouched.
+            One user cannot withdraw from, or trigger, another user's vault.
           </p>
         </div>
       </div>

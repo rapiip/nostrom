@@ -88,11 +88,18 @@ always means something about vault state.
 
 | Token | Hex | Meaning — tied to contract state |
 |---|---|---|
-| `--color-signal` | `#7DD3A0` | **Alive.** `isExecutable() == false`, comfortable grace. Doubles as the single brand accent. |
+| `--color-signal` | `#7DD3A0` | **Alive.** `isExecutable() == false`, comfortable grace. Also the accent for primary actions and section indices. |
 | `--color-warn` | `#E3B341` | **Expiring.** UI-only band: grace below 20% of `timeoutPeriod`. |
 | `--color-danger` | `#E5534B` | **Executable** or **Triggered**. The switch is live, or has fired. |
 
 `--color-signal-dim` / `-warn-dim` / `-danger-dim` are border-only companions.
+
+**The brand mark is achromatic.** The Nostrom logo renders in white
+(`currentColor` ← `text-white`), not in `signal`. Since every hue on screen is
+supposed to report vault state, a green logo would announce "alive" permanently —
+including on a triggered vault, where it would contradict the page it sits on.
+The one exception stays the BOT Chain attribution mark, which carries the
+network's own `--color-botchain` green because it identifies *their* brand.
 
 **Accessibility rule:** colour is never the sole channel. Every status badge carries its
 text label (`Alive`, `Expiring`, `Executable`, `Triggered`), and the alive state adds
@@ -178,14 +185,14 @@ Both harnesses run real Chrome against the production build:
 
 ```bash
 # Layout, tap targets, text size, and measured WCAG contrast
-# across 13 routes x 3 viewports (1440 / 768 / 375)
+# across 14 routes x 3 viewports (1440 / 768 / 375)
 node frontend/scripts/verify-ui.cjs
 
 # Six end-to-end wallet + transaction flows against a live chain
 node frontend/scripts/verify-flows.cjs
 ```
 
-Current status: **21 page loads, 0 findings** · **42 flow assertions, 0 failures**.
+Current status: **24 page loads, 0 findings** · **42 flow assertions, 0 failures**.
 
 ### Checks enforced
 
@@ -194,8 +201,9 @@ Current status: **21 page loads, 0 findings** · **42 flow assertions, 0 failure
 - Every standalone interactive target ≥ 24×24px (WCAG 2.2 AA 2.5.8), with inline
   prose links exempted per the standard
 - No visible text below 10.5px
-- Computed contrast ≥ 4.5:1 for normal text, ≥ 3:1 for large text, resolving alpha
-  backgrounds up the ancestor chain
+- Computed contrast ≥ 4.5:1 for normal text, ≥ 3:1 for large text, compositing
+  translucent text colours (`text-signal/70`) over their backdrop and resolving
+  alpha backgrounds up the ancestor chain
 - Zero console errors, page errors, or failed requests
 - Transaction UI never shows success before a mined receipt with
   `status === "success"` — verified against a real 4-second-block mempool

@@ -5,8 +5,9 @@
  *   - horizontal overflow (excluding intentional scroll containers)
  *   - interactive targets below 24x24px (WCAG 2.2 AA 2.5.8, inline links exempt)
  *   - visible text below 10.5px
- *   - COMPUTED WCAG contrast for every text node, resolving alpha backgrounds
- *     up the ancestor chain
+ *   - COMPUTED WCAG contrast for every text node, compositing translucent text
+ *     colours over their backdrop and resolving alpha backgrounds up the
+ *     ancestor chain
  *   - console errors, uncaught page errors, failed requests
  *
  * Run against the production build, not the dev server — Vite's dependency
@@ -35,6 +36,7 @@ const VAULTS = {
 
 const ROUTES = [
   { name: "landing", url: "/", full: true },
+  { name: "reference", url: "/reference", full: true },
   { name: "app-vaults", url: "/app" },
   { name: "app-new", url: "/app/new" },
   { name: "app-lookup", url: "/app/lookup" },
@@ -183,6 +185,18 @@ const VIEWPORTS = [
           }
           return { r: 8, g: 9, b: 10, a: 1 };
         };
+        /** Composite a translucent colour over its backdrop. Without this, text
+         *  written as `text-signal/70` was measured as fully opaque signal green
+         *  and scored better than it actually renders. */
+        const over = (fg, bg) =>
+          fg.a >= 1
+            ? fg
+            : {
+                r: fg.r * fg.a + bg.r * (1 - fg.a),
+                g: fg.g * fg.a + bg.g * (1 - fg.a),
+                b: fg.b * fg.a + bg.b * (1 - fg.a),
+                a: 1,
+              };
 
         const lowContrast = [];
         const seen = new Set();
@@ -198,9 +212,10 @@ const VIEWPORTS = [
           if (!ownText) continue;
 
           const cs = getComputedStyle(el);
-          const fg = parseRgb(cs.color);
-          if (!fg) continue;
+          const rawFg = parseRgb(cs.color);
+          if (!rawFg) continue;
           const bg = bgOf(el);
+          const fg = over(rawFg, bg);
           const l1 = lum(fg);
           const l2 = lum(bg);
           const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);

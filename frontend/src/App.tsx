@@ -18,6 +18,9 @@ import { AppShell } from "@/routes/AppShell";
 const Landing = lazy(() =>
   import("@/routes/Landing").then((m) => ({ default: m.Landing })),
 );
+const Reference = lazy(() =>
+  import("@/routes/Reference").then((m) => ({ default: m.Reference })),
+);
 const Vaults = lazy(() => import("@/routes/Vaults").then((m) => ({ default: m.Vaults })));
 const CreateVault = lazy(() =>
   import("@/routes/CreateVault").then((m) => ({ default: m.CreateVault })),
@@ -49,6 +52,7 @@ export function App() {
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/reference" element={<Reference />} />
 
               <Route path="/app" element={<AppShell />}>
                 <Route index element={<Vaults />} />

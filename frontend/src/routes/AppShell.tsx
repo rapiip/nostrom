@@ -1,7 +1,6 @@
 import { clsx } from "clsx";
 import { NavLink, Outlet, Link } from "react-router-dom";
-import { GithubLogo, Crosshair, Plus, Pulse, Vault } from "@phosphor-icons/react";
-import { LINKS } from "@/config/contracts";
+import { Crosshair, Plus, Pulse, Vault } from "@phosphor-icons/react";
 import { useWallet } from "@/hooks/useWallet";
 import { Logo } from "@/components/landing/Logo";
 import { ConnectButton } from "@/components/web3/ConnectButton";
@@ -47,7 +46,7 @@ export function AppShell() {
               className="flex h-11 shrink-0 items-center gap-2.5 no-underline"
               title="Back to the Nostrom overview"
             >
-              <Logo className="h-4 w-auto text-signal" />
+              <Logo className="h-4 w-auto text-white" />
               <span className="hidden text-[15px] font-medium tracking-[-0.01em] text-text sm:inline">
                 Nostrom
               </span>
@@ -77,15 +76,6 @@ export function AppShell() {
             </nav>
 
             <div className="ml-auto flex shrink-0 items-center gap-2">
-              <a
-                href={LINKS.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Source on GitHub"
-                className="hidden size-9 cursor-pointer items-center justify-center rounded text-text-dim transition-colors duration-150 hover:bg-ink-850 hover:text-text sm:inline-flex"
-              >
-                <GithubLogo size={16} aria-hidden />
-              </a>
               <ConnectButton size="sm" />
             </div>
           </div>
