@@ -67,10 +67,9 @@ function VaultsInner() {
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Your vaults</h1>
           <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-text-dim">
-            Every vault created by{" "}
-            <span className="tnum text-text">{wallet.address?.slice(0, 10)}…</span>. This index is
-            keyed by the creating account and never changes, so a vault you transferred away still
-            appears here; check the owner column.
+            Portfolio overview of all vaults created by{" "}
+            <span className="tnum text-text">{wallet.address?.slice(0, 10)}…</span>. Displays real-time
+            health, balances, and operational status.
           </p>
         </div>
         <div className="flex items-center gap-2">

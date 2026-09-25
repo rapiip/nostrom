@@ -196,8 +196,8 @@ export function OwnerPanel({
             </Field>
           ) : capabilities.isOwner && view.isTriggered ? (
             <Notice tone="danger" title="Withdrawals frozen">
-              The switch has fired, so <code className="font-mono text-[12px]">whenNotTriggered</code>{" "}
-              blocks owner withdrawals. Re-arm the vault to restore normal operation.
+              The switch has fired and funds have been evacuated. Re-arm the vault to restore normal
+              operations.
             </Notice>
           ) : null}
 

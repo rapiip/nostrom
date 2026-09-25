@@ -69,15 +69,14 @@ export function ExecutionPanel({
                 <span className="tnum text-text">
                   {formatDuration(view.liveSecondsRemaining)}
                 </span>{" "}
-                of grace left. Execution requires <code className="font-mono text-[12px]">block.timestamp</code>{" "}
-                to be strictly past the deadline; at exactly the deadline the switch is still closed.
+                of grace left. The dead-man's switch activates automatically once the grace period
+                has fully expired.
               </Notice>
               <Button variant="danger" disabled full>
                 Execute dead-man's switch
               </Button>
               <p className="text-[12px] text-text-faint">
-                Disabled because the heartbeat is current. Calling it now would revert with{" "}
-                <code className="font-mono">AgentStillAlive</code>.
+                Disabled while the agent heartbeat is active and healthy.
               </p>
             </>
           )}
@@ -137,18 +136,16 @@ export function ExecutionPanel({
               </div>
               {view.balance === 0n && (
                 <p className="text-[12px] text-text-faint">
-                  No native balance to sweep. Calling it would revert with{" "}
-                  <code className="font-mono">NothingToSweep</code>.
+                  No native balance to sweep. All treasury funds have been evacuated.
                 </p>
               )}
             </>
           )}
 
           {view.phase === "UNCONFIGURED" && (
-            <Notice tone="warn" title="Vault is not configured">
-              Permissionless entry points are blocked on an uninitialised vault. Without that guard,
-              a fresh clone's deadline would already be in the past and anyone could flip its
-              triggered flag before its owner set it up.
+            <Notice tone="warn" title="Vault initialization required">
+              This vault is awaiting initial configuration. Fail-safe operations are enabled once
+              configuration is complete.
             </Notice>
           )}
         </PanelBody>
@@ -221,13 +218,12 @@ export function RegistryWarning({
 
   if (isRegistered === false) {
     return (
-      <Notice tone="warn" title="Not from the configured factory">
+      <Notice tone="warn" title="Unverified factory source">
         <div className="flex items-start gap-2">
           <Warning size={14} className="mt-0.5 shrink-0 text-warn" aria-hidden />
           <span>
-            This contract exposes the Nostrom vault interface but was not created by the factory this
-            app knows about. It may be a standalone deployment, or a look-alike. Do not deposit
-            until you have read its source on the block explorer.
+            This contract matches the Nostrom interface but was not deployed through the official
+            factory registry. Always verify the contract on the block explorer before depositing.
           </span>
         </div>
       </Notice>

@@ -68,9 +68,8 @@ function KeeperInner() {
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Keeper scan</h1>
           <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
-            Vaults whose heartbeat has lapsed and whose switch can be fired right now. You pay the
-            gas and receive nothing: the funds always go to each vault's own recovery address. That
-            is what makes it safe to leave open.
+            Public keeper portal for executing expired vaults. Anyone can trigger eligible fail-safes;
+            all assets route strictly to each vault's predetermined cold recovery destination.
           </p>
         </div>
         <Button
@@ -161,11 +160,9 @@ function KeeperInner() {
         )}
       </Panel>
 
-      <Notice tone="info" title="Run this unattended">
-        <code className="font-mono text-[12px]">scripts/keeper.js</code> in the repository does the
-        same thing from a terminal, on a poll loop, with <code className="font-mono text-[12px]">--once</code>{" "}
-        and <code className="font-mono text-[12px]">--dry-run</code> modes. A watchtower that never
-        sleeps is more useful than a browser tab.
+      <Notice tone="info" title="Automated keeper infrastructure">
+        Keepers can also run as autonomous background daemons via the Nostrom Keeper service,
+        continuously monitoring the registry and executing evacuations with automated gas management.
       </Notice>
 
       <ConfirmDialog

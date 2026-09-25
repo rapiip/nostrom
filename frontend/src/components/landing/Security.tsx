@@ -40,7 +40,7 @@ const PROPERTIES = [
   {
     title: "Protected vault initialization",
     tag: "Deployment safety",
-    body: "Vaults are cloned and initialized atomically in a single transaction, leaving zero window for unauthorized claims or premature triggering.",
+    body: "Vaults are deployed and initialized atomically in a single transaction, leaving zero window for unauthorized claims or premature triggering.",
   },
   {
     title: "Self-locking shared implementation",
@@ -166,7 +166,7 @@ function ArchitectureDiagram() {
         {/* Clones */}
         <div className="bg-ink-900 px-5 py-6">
           <p className="mb-5 max-w-[60ch] text-[13px] leading-relaxed text-text-dim">
-            Each vault is an independent smart contract. The clones share immutable logic while
+            Each vault is an independent smart contract. Deployments share immutable logic while
             strictly maintaining isolated storage, keys, and balances.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">

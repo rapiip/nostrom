@@ -42,7 +42,7 @@ const STEPS = [
     n: "04",
     title: "Anyone evacuates the treasury",
     tag: "Automated evacuation",
-    body: "Once armed, any keeper, automated watchtower, or bystander can execute the evacuation. The caller cannot redirect funds, as they are permanently locked to your pre-configured recovery address.",
+    body: "Once armed, any keeper or automated watchtower can execute the evacuation. The caller cannot redirect funds, as they are permanently locked to your pre-configured recovery address.",
     detail:
       "Native BOT and all tracked ERC-20 assets are swept directly to your designated cold wallet in a single transaction.",
     tone: "danger" as const,

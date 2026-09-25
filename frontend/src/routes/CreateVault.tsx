@@ -254,10 +254,9 @@ function CreateVaultInner() {
                   <div className="flex items-start gap-2">
                     <Info size={14} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
                     <span>
-                      Your agent should ping at most every{" "}
-                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> (a
-                      third of the timeout, so two missed transactions in a row are survivable). The
-                      bundled heartbeat clients clamp to this automatically.
+                      Recommended heartbeat frequency: every{" "}
+                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> (one-third
+                      of the timeout window). Official agent libraries configure this interval automatically.
                     </span>
                   </div>
                 </Notice>
@@ -268,7 +267,7 @@ function CreateVaultInner() {
           <Panel>
             <PanelHeader
               title="Initial deposit"
-              description="Optional. A vault with a zero balance is armed but has nothing to protect."
+              description="Optional initial funding. You can also fund the vault at any time after creation."
             />
             <PanelBody className="flex flex-col gap-5">
               <Field
@@ -318,7 +317,7 @@ function CreateVaultInner() {
                       <Field
                         label="Salt label"
                         result={saltResult}
-                        hint="A short label, hashed to a bytes32 salt. Or paste a raw 32-byte hex value. Reusing a label you already used will revert."
+                        hint="A short label or 32-byte hex salt for deterministic CREATE2 address deployment. Must be unique for your account."
                       >
                         {(a11y) => (
                           <Input
@@ -428,9 +427,9 @@ function CreateVaultInner() {
             </PanelBody>
           </Panel>
 
-          <Notice tone="warn" title="The recovery address is the whole point">
-            If the switch fires, everything goes there and nowhere else. Verify it before signing;
-            ideally a wallet you do not operate the agent from.
+          <Notice tone="warn" title="Critical recovery destination">
+            If the fail-safe triggers, all treasury assets are permanently evacuated to this address.
+            Ensure you designate a secure, independent cold storage wallet.
           </Notice>
         </aside>
       </form>
