@@ -3,8 +3,38 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath, URL } from "node:url";
 
+/**
+ * Rewrites the Open Graph / Twitter image tags to absolute URLs.
+ *
+ * Social scrapers (X, Facebook, LinkedIn, WhatsApp, Discord) do not resolve
+ * relative image paths — a link preview silently renders without its image. The
+ * canonical origin is only known at build time, so it comes from VITE_SITE_URL
+ * (e.g. https://nostrom.xyz). When unset the relative paths are left as-is, so a
+ * preview deploy is still valid HTML; it just has no social image.
+ */
+function absoluteSocialUrls() {
+  const raw = process.env.VITE_SITE_URL?.trim();
+  const origin = raw?.replace(/\/+$/, "");
+
+  return {
+    name: "absolute-social-urls",
+    transformIndexHtml(html: string) {
+      if (!origin) return html;
+      return html
+        .replace(
+          /(<meta\s+(?:property|name)="(?:og:image|twitter:image)"\s+content=")\/([^"]*)"/g,
+          `$1${origin}/$2"`,
+        )
+        .replace(
+          /<meta property="og:type"/,
+          `<link rel="canonical" href="${origin}/" />\n    <meta property="og:url" content="${origin}/" />\n    <meta property="og:type"`,
+        );
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), absoluteSocialUrls()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
