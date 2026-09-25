@@ -16,7 +16,7 @@ import { ProtocolDiagram } from "./ProtocolDiagram";
  */
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-16 sm:pt-40 sm:pb-24">
+    <section className="relative overflow-hidden pt-32 pb-14 sm:pt-36 sm:pb-20">
       {/* The measuring lattice. Masked to fade downward so it frames the type
           without turning into a decorative background. */}
       <div className="grid-field pointer-events-none absolute inset-0 -z-10" aria-hidden />
@@ -67,13 +67,11 @@ export function Hero() {
             </div>
 
             {/* Concrete protocol facts, not vanity metrics. Everything here is a
-                verifiable property of the contracts. */}
-            <dl className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <HeroFact
-                label="Execution"
-                value="Permissionless"
-                note="No owner required to recover"
-              />
+                verifiable property of the contracts. Notes are kept to one line
+                each so the three cards match; a two-line note on only the first
+                card made the row look misaligned. */}
+            <dl className="mt-11 grid gap-2.5 sm:grid-cols-3">
+              <HeroFact label="Execution" value="Permissionless" note="No owner needed" />
               <HeroFact label="Timeout range" value="30s to 365d" note="Set per vault" />
               <HeroFact
                 label="Network"
@@ -98,9 +96,9 @@ export function Hero() {
 
 function HeroFact({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded border border-line/80 bg-ink-900/60 p-3.5 backdrop-blur-xs transition-colors hover:border-line-strong">
+    <div className="flex items-baseline justify-between gap-3 rounded border border-line/80 bg-ink-900/60 px-3.5 py-3 backdrop-blur-xs transition-colors hover:border-line-strong sm:block">
       <dt className="label">{label}</dt>
-      <dd className="mt-1.5">
+      <dd className="text-right sm:mt-1.5 sm:text-left">
         <span className="block text-[14px] font-medium text-text">{value}</span>
         <span className="mt-0.5 block text-[11px] leading-snug text-text-faint">{note}</span>
       </dd>

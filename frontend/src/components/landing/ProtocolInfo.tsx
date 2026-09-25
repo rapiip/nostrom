@@ -72,6 +72,7 @@ const GAS_GROUPS: {
 
 export function ProtocolInfo() {
   const ref = useReveal<HTMLDivElement>();
+  const gasRef = useReveal<HTMLDivElement>();
   const { implementation, totalVaults, isLoading } = useFactoryInfo();
 
   return (
@@ -198,23 +199,43 @@ export function ProtocolInfo() {
             />
           </dl>
 
-          <h3 className="mt-12 text-[15px] font-medium text-text">Measured gas</h3>
-          <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
+          <a
+            href={LINKS.botchainDocs}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex min-h-[32px] cursor-pointer items-center gap-1.5 text-[13px] text-signal underline decoration-signal/30 underline-offset-2 transition-colors hover:decoration-signal"
+          >
+            BOT Chain developer quick guide
+            <ArrowSquareOut size={12} aria-hidden />
+          </a>
+        </div>
+      </div>
+
+      {/* --- Measured gas ---
+          Full width and two groups abreast. Nested inside the Parameters column
+          it ran ~900px past the bottom of the Networks column beside it, leaving
+          a tall empty left margin; the bars also read better with more measure. */}
+      <div ref={gasRef} className="mt-16 border-t border-line pt-12">
+        <div className="reveal flex flex-wrap items-end justify-between gap-x-12 gap-y-3">
+          <h3 className="text-[15px] font-medium text-text">Measured gas</h3>
+          <p className="max-w-[62ch] text-[13px] leading-relaxed text-text-dim">
             Nostrom charges no protocol fee. Every figure below is network gas, reproduced with{" "}
             <span className="tnum text-text">scripts/measure-gas.js</span>.
           </p>
+        </div>
 
+        <div className="mt-9 grid gap-x-14 gap-y-10 lg:grid-cols-2">
           {GAS_GROUPS.map((group) => {
             const max = Math.max(...group.rows.map((r) => r.gas));
             return (
-              <div key={group.heading} className="mt-7">
+              <div key={group.heading} className="reveal">
                 <div className="flex items-baseline justify-between gap-4">
                   <h4 className="label">{group.heading}</h4>
                   <span className="tnum text-[11px] text-text-faint">
                     bars relative to {formatGas(max)}
                   </span>
                 </div>
-                <p className="mt-1.5 max-w-[52ch] text-[12px] leading-relaxed text-text-faint">
+                <p className="mt-1.5 max-w-[56ch] text-[12px] leading-relaxed text-text-faint">
                   {group.note}
                 </p>
 
@@ -248,16 +269,6 @@ export function ProtocolInfo() {
               </div>
             );
           })}
-
-          <a
-            href={LINKS.botchainDocs}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-8 inline-flex min-h-[32px] cursor-pointer items-center gap-1.5 text-[13px] text-signal underline decoration-signal/30 underline-offset-2 transition-colors hover:decoration-signal"
-          >
-            BOT Chain developer quick guide
-            <ArrowSquareOut size={12} aria-hidden />
-          </a>
         </div>
       </div>
     </Section>

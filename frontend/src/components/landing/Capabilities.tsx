@@ -10,13 +10,19 @@ import { Section } from "./Section";
  * definition list grouped by who can invoke what, which doubles as an
  * access-control summary: more useful than a grid of identical icon cards, and
  * it mirrors how the contract is actually organised.
+ *
+ * Laid out as three horizontal role bands rather than three side-by-side cards.
+ * The roles hold 1, 9 and 3 functions respectively, and equal-height columns
+ * forced the two short roles into tall mostly-empty boxes. A band sizes to its
+ * own content, spans the full measure, and matches the "Built for watchers"
+ * band below it, so the whole section reads as one access-control table.
  */
 
 const GROUPS = [
   {
     role: "The agent",
     constraint: "Dedicated heartbeat role. Zero spending authority.",
-    tone: "text-signal",
+    tone: "signal" as const,
     items: [
       {
         name: "Liveness heartbeat",
@@ -27,7 +33,7 @@ const GROUPS = [
   {
     role: "The owner",
     constraint: "Full administrative control during normal health. Locked once the fail-safe triggers.",
-    tone: "text-text",
+    tone: "neutral" as const,
     items: [
       { name: "Treasury deposits", desc: "Fund the vault with native BOT anytime. Open to external deposits as well." },
       {
@@ -55,7 +61,7 @@ const GROUPS = [
   {
     role: "Permissionless keepers",
     constraint: "Open to anyone. Destination is permanently locked to your stored recovery address.",
-    tone: "text-danger",
+    tone: "danger" as const,
     items: [
       {
         name: "Execute fail-safe",
@@ -72,6 +78,13 @@ const GROUPS = [
     ],
   },
 ] as const;
+
+const ROLE_TONES = {
+  signal: { text: "text-signal", dot: "bg-signal" },
+  neutral: { text: "text-text", dot: "bg-text" },
+  danger: { text: "text-danger", dot: "bg-danger" },
+} as const;
+
 
 const READS = [
   { name: "Real-time vault telemetry", desc: "Comprehensive state inspection covering balance, timeout, deadline, grace remaining, and trigger status." },
@@ -93,43 +106,47 @@ export function Capabilities() {
       title="Role-based permissions and access control."
       lede="Security is rooted in strict separation of privileges. The agent key, active in a running process, can only report liveness. Treasury control remains strictly with the owner and pre-configured cold storage."
     >
-      <div ref={ref} className="grid gap-6 lg:grid-cols-3">
-        {GROUPS.map((group) => (
-          <div
-            key={group.role}
-            className="reveal rounded-md border border-line bg-ink-900/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)] transition-colors hover:border-line-strong"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h3 className={`text-[15px] font-medium ${group.tone}`}>{group.role}</h3>
-              <span
-                className={clsx(
-                  "size-1.5 rounded-full",
-                  group.tone === "text-signal"
-                    ? "bg-signal"
-                    : group.tone === "text-danger"
-                      ? "bg-danger"
-                      : "bg-text",
-                )}
-                aria-hidden
-              />
-            </div>
-            <p className="mt-1.5 text-[12px] leading-relaxed text-text-faint">
-              {group.constraint}
-            </p>
-            <dl className="mt-5 space-y-3">
-              {group.items.map((item) => (
-                <div key={item.name} className="border-t border-line/60 pt-3">
-                  <dt className="text-[13px] font-medium leading-relaxed text-text">{item.name}</dt>
-                  <dd className="mt-1 text-[13px] leading-relaxed text-text-dim">{item.desc}</dd>
+      <div ref={ref} className="border-t border-line">
+        {GROUPS.map((group) => {
+          const tone = ROLE_TONES[group.tone];
+          return (
+            <div
+              key={group.role}
+              className="reveal grid gap-x-14 gap-y-5 border-b border-line py-9 lg:grid-cols-12"
+            >
+              {/* Role, and the ceiling on what it may do. */}
+              <div className="lg:col-span-4">
+                <div className="flex items-center gap-2.5">
+                  <span className={clsx("size-1.5 shrink-0 rounded-full", tone.dot)} aria-hidden />
+                  <h3 className={clsx("text-[15px] font-medium", tone.text)}>{group.role}</h3>
                 </div>
-              ))}
-            </dl>
-          </div>
-        ))}
+                <p className="mt-2 max-w-[38ch] text-[13px] leading-relaxed text-text-faint">
+                  {group.constraint}
+                </p>
+                <p className="label mt-3.5">
+                  {group.items.length} {group.items.length === 1 ? "function" : "functions"}
+                </p>
+              </div>
+
+              {/* The functions themselves. Two columns from sm up so the nine
+                  owner entries stay compact instead of running as one long list. */}
+              <dl className="grid gap-x-10 gap-y-4 sm:grid-cols-2 lg:col-span-8">
+                {group.items.map((item) => (
+                  <div key={item.name} className="min-w-0">
+                    <dt className="text-[13px] font-medium leading-relaxed text-text">
+                      {item.name}
+                    </dt>
+                    <dd className="mt-1 text-[13px] leading-relaxed text-text-dim">{item.desc}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          );
+        })}
       </div>
 
       {/* --- Reads --- */}
-      <div ref={readsRef} className="mt-20 border-t border-line pt-12">
+      <div ref={readsRef} className="mt-16">
         <div className="reveal grid gap-x-14 gap-y-8 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <h3 className="text-[15px] font-medium text-text">Built for watchers</h3>

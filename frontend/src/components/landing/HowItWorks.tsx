@@ -101,18 +101,23 @@ export function HowItWorks() {
                   </span>
                 </div>
 
-                <p className="mt-3 max-w-[68ch] text-[14px] leading-[1.65] text-text-dim">
-                  {step.body}
-                </p>
+                {/* Prose and its contract-level caveat sit side by side from lg
+                    up. Stacked, each step used barely half the measure and the
+                    section ran for two screens of mostly empty right margin. */}
+                <div className="mt-3 grid gap-x-10 gap-y-3 lg:grid-cols-12">
+                  <p className="text-[14px] leading-[1.65] text-text-dim lg:col-span-7">
+                    {step.body}
+                  </p>
 
-                <p
-                  className={clsx(
-                    "mt-3 max-w-[64ch] border-l-2 pl-3.5 text-[13px] leading-relaxed text-text-faint",
-                    tone.border,
-                  )}
-                >
-                  {step.detail}
-                </p>
+                  <p
+                    className={clsx(
+                      "border-l-2 pl-3.5 text-[13px] leading-relaxed text-text-faint lg:col-span-5",
+                      tone.border,
+                    )}
+                  >
+                    {step.detail}
+                  </p>
+                </div>
               </div>
             </li>
           );

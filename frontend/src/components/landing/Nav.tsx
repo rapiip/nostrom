@@ -82,7 +82,15 @@ export function Nav() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            <BuiltOnBotChain className="hidden md:inline-flex" />
+            {/* Wrapped rather than given `hidden md:inline-flex` directly: the
+                chip's own base class sets `inline-flex`, and since both are
+                display utilities the winner is decided by stylesheet order, not
+                class order. Tailwind emits `.inline-flex` after `.hidden`, so
+                the badge stayed visible at 390px and pushed "Launch app" onto
+                two lines. A wrapper owns the breakpoint with nothing to clash. */}
+            <div className="hidden md:block">
+              <BuiltOnBotChain />
+            </div>
 
             <a
               href={LINKS.github}
