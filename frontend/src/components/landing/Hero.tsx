@@ -74,7 +74,7 @@ export function Hero() {
                 value="Permissionless"
                 note="No owner required to recover"
               />
-              <HeroFact label="Timeout range" value="30s – 365d" note="Set per vault" />
+              <HeroFact label="Timeout range" value="30s to 365d" note="Set per vault" />
               <HeroFact
                 label="Network"
                 value={defaultChain.name}

@@ -228,7 +228,7 @@ function CreateVaultInner() {
                 <Field
                   label="Timeout in seconds"
                   result={useCustom ? validation.timeout : undefined}
-                  hint={`Between ${PROTOCOL.MIN_TIMEOUT_SECONDS} and ${PROTOCOL.MAX_TIMEOUT_SECONDS} seconds (30s – 365 days).`}
+                  hint={`Between ${PROTOCOL.MIN_TIMEOUT_SECONDS} and ${PROTOCOL.MAX_TIMEOUT_SECONDS} seconds (30s to 365 days).`}
                 >
                   {(a11y) => (
                     <Input

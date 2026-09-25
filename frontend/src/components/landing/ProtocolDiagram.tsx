@@ -74,7 +74,7 @@ const COLORS = {
   danger: "#e5534b",
   line: "#1d2226",
   lineStrong: "#2b3238",
-  faint: "#646c73",
+  faint: "#7d858c",
 };
 
 export function ProtocolDiagram({ className }: { className?: string }) {

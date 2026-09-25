@@ -36,7 +36,7 @@ const GROUPS = [
       { name: "withdrawTokenByOwner()", desc: "Move an ERC-20 out without firing the switch." },
       {
         name: "updateTimeoutPeriod()",
-        desc: "Re-tune how much silence is tolerated, within 30s–365d.",
+        desc: "Re-tune how much silence is tolerated, within 30s to 365d.",
       },
       { name: "updateRecoveryAddress()", desc: "Point the rescue at a different cold wallet." },
       {
