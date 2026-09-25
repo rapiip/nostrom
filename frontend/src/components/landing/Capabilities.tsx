@@ -14,70 +14,70 @@ import { Section } from "./Section";
 const GROUPS = [
   {
     role: "The agent",
-    constraint: "One function. Cannot move funds.",
+    constraint: "Dedicated heartbeat role. Zero spending authority.",
     tone: "text-signal",
     items: [
       {
-        name: "ping()",
-        desc: "Proof of life. Resets the countdown and increments the lifetime ping count.",
+        name: "Liveness heartbeat",
+        desc: "Periodically resets the countdown timer to verify health. Cannot spend, withdraw, or transfer funds.",
       },
     ],
   },
   {
     role: "The owner",
-    constraint: "Full control while the vault is healthy. Frozen once the switch fires.",
+    constraint: "Full administrative control during normal health. Locked once the fail-safe triggers.",
     tone: "text-text",
     items: [
-      { name: "deposit()", desc: "Fund the vault with native BOT. Open to anyone, in fact." },
+      { name: "Treasury deposits", desc: "Fund the vault with native BOT anytime. Open to external deposits as well." },
       {
-        name: "withdrawByOwner() · withdrawAllByOwner()",
-        desc: "Normal withdrawals, any amount up to the balance.",
+        name: "Flexible withdrawals",
+        desc: "Withdraw partial balances or the entire treasury during regular operations.",
       },
-      { name: "withdrawTokenByOwner()", desc: "Move an ERC-20 out without firing the switch." },
+      { name: "ERC-20 withdrawals", desc: "Safely retrieve specific tokens without interrupting the countdown." },
       {
-        name: "updateTimeoutPeriod()",
-        desc: "Re-tune how much silence is tolerated, within 30s to 365d.",
+        name: "Adjust timeout",
+        desc: "Fine-tune silence tolerance between 30 seconds and 365 days.",
       },
-      { name: "updateRecoveryAddress()", desc: "Point the rescue at a different cold wallet." },
+      { name: "Update recovery address", desc: "Point future recovery transfers to a different cold wallet." },
       {
-        name: "updateAgentAddress()",
-        desc: "Rotate the heartbeat key. Also resets the clock, so a rotation cannot strand you.",
+        name: "Rotate agent key",
+        desc: "Update the heartbeat key safely while resetting the timer to prevent stranding.",
       },
       {
-        name: "addTrackedToken() · removeTrackedToken()",
-        desc: "Manage the ERC-20 sweep watchlist, up to 20 tokens.",
+        name: "Token watchlist",
+        desc: "Configure up to 20 tracked ERC-20 tokens for automated fail-safe sweeping.",
       },
-      { name: "transferOwnership()", desc: "Hand the vault to another address." },
-      { name: "rearm()", desc: "Return a fired vault to service with a fresh agent." },
+      { name: "Transfer ownership", desc: "Hand vault governance over to a new address or multisig." },
+      { name: "Rearm & reactivate", desc: "Return an evacuated vault back into active duty with a fresh agent." },
     ],
   },
   {
-    role: "Anyone",
-    constraint: "No permission, no allowlist, no registration.",
+    role: "Permissionless keepers",
+    constraint: "Open to anyone. Destination is permanently locked to your stored recovery address.",
     tone: "text-danger",
     items: [
       {
-        name: "executeDeadManSwitch()",
-        desc: "Fire the switch once the heartbeat has lapsed. Destination is fixed to the stored recovery address.",
+        name: "Execute fail-safe",
+        desc: "Trigger emergency evacuation once silence exceeds the deadline. Funds route strictly to recovery.",
       },
       {
-        name: "sweepNativeToRecovery()",
-        desc: "Push BOT that arrived after the trigger on to recovery.",
+        name: "Sweep late native BOT",
+        desc: "Forward any native funds that arrive after a trigger directly to cold storage.",
       },
       {
-        name: "sweepTokenToRecovery()",
-        desc: "Push any ERC-20 to recovery post-trigger, including tokens that were never on the watchlist.",
+        name: "Sweep ERC-20 tokens",
+        desc: "Evacuate remaining or untracked ERC-20 tokens to the recovery wallet post-trigger.",
       },
     ],
   },
 ] as const;
 
 const READS = [
-  { name: "status()", desc: "Owner, agent, recovery, balance, timeout, last ping, deadline, grace remaining, triggered, executable, and ping count in one call." },
-  { name: "getVaultsSnapshot(address[])", desc: "Live state for many vaults in a single RPC round-trip. This console uses it to render a dashboard without an N-call fan-out." },
-  { name: "getExecutableVaults(offset, limit)", desc: "Every vault that can be rescued right now. The keeper query, scanned on-chain." },
-  { name: "isVault(address)", desc: "Whether an address is a genuine vault from this factory. This app gates on it so a look-alike contract cannot be mistaken for a real vault." },
-  { name: "predictVaultAddress(creator, salt)", desc: "CREATE2 address, computable before the vault exists so it can be funded in advance." },
+  { name: "Real-time vault telemetry", desc: "Comprehensive state inspection covering balance, timeout, deadline, grace remaining, and trigger status." },
+  { name: "Batch multi-vault queries", desc: "Retrieve live state for multiple vaults in a single round-trip for high-performance dashboards." },
+  { name: "Keeper scanning engine", desc: "Instantly scan and identify all rescue-eligible vaults across the network." },
+  { name: "Factory authentication", desc: "Cryptographically verify authentic vaults and safeguard against spoofed contracts." },
+  { name: "Predictive pre-funding", desc: "Compute future vault addresses deterministically before deployment to enable advance funding." },
 ];
 
 export function Capabilities() {
@@ -89,8 +89,8 @@ export function Capabilities() {
       id="capabilities"
       index="03"
       eyebrow="Capabilities"
-      title="What each key can actually do."
-      lede="The access model is the security model, so it is worth reading literally. The agent key, the one exposed in a running process, can do exactly one thing, and it is not spending."
+      title="Role-based permissions and access control."
+      lede="Security is rooted in strict separation of privileges. The agent key, active in a running process, can only report liveness. Treasury control remains strictly with the owner and pre-configured cold storage."
     >
       <div ref={ref} className="grid gap-x-14 gap-y-12 lg:grid-cols-3">
         {GROUPS.map((group) => (
@@ -102,8 +102,8 @@ export function Capabilities() {
             <dl className="mt-5">
               {group.items.map((item) => (
                 <div key={item.name} className="border-t border-line py-3.5 last:border-b">
-                  <dt className="font-mono text-[12px] leading-relaxed text-text">{item.name}</dt>
-                  <dd className="mt-1.5 text-[13px] leading-relaxed text-text-dim">{item.desc}</dd>
+                  <dt className="text-[13px] font-medium leading-relaxed text-text">{item.name}</dt>
+                  <dd className="mt-1 text-[13px] leading-relaxed text-text-dim">{item.desc}</dd>
                 </div>
               ))}
             </dl>
@@ -117,8 +117,7 @@ export function Capabilities() {
           <div className="lg:col-span-4">
             <h3 className="text-[15px] font-medium text-text">Built for watchers</h3>
             <p className="mt-2.5 max-w-[38ch] text-[13px] leading-relaxed text-text-dim">
-              The read surface is designed for dashboards and keeper bots, not just for humans
-              clicking through one vault at a time.
+              High-efficiency telemetry designed for public watchtowers, automated keeper bots, and live dashboards.
             </p>
           </div>
           <dl className="lg:col-span-8">
@@ -127,7 +126,7 @@ export function Capabilities() {
                 key={r.name}
                 className="grid gap-1.5 border-t border-line py-3.5 last:border-b sm:grid-cols-[minmax(0,17rem)_1fr] sm:gap-6"
               >
-                <dt className="font-mono text-[12px] leading-relaxed text-text">{r.name}</dt>
+                <dt className="text-[13px] font-medium leading-relaxed text-text">{r.name}</dt>
                 <dd className="text-[13px] leading-relaxed text-text-dim">{r.desc}</dd>
               </div>
             ))}

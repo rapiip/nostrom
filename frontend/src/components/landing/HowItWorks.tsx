@@ -14,37 +14,37 @@ const STEPS = [
   {
     n: "01",
     title: "Configure the vault",
-    call: "createVault(agent, recovery, timeout)",
-    body: "You pick three things: the address your agent signs heartbeats from, the cold wallet that receives funds if it goes dark, and how much silence to tolerate. The factory clones a vault you own and registers it.",
+    tag: "Vault setup",
+    body: "You configure three core parameters: the address your agent uses to report liveness, the cold wallet that receives funds if the agent goes dark, and your chosen silence threshold. The factory deploys a dedicated, isolated vault.",
     detail:
-      "The contract refuses a recovery address equal to the agent address: the hot key must never be the rescue destination.",
+      "The vault requires the recovery address to differ from the agent key, ensuring the hot signing key is never the destination for rescued funds.",
     tone: "signal" as const,
   },
   {
     n: "02",
     title: "The agent reports in",
-    call: "ping()",
-    body: "Your agent calls ping() on a schedule. Each call resets the countdown. The bundled Node and Python clients do this for you, and can withhold the ping when your own health check fails: a wedged agent that keeps pinging defeats the point.",
+    tag: "Liveness heartbeat",
+    body: "Your agent sends periodic heartbeat signals on a schedule. Each signal resets the countdown timer. Clients can withhold the signal whenever internal health checks fail, allowing a hung or malfunctioning agent to trigger the fail-safe.",
     detail:
-      "ping() is the only function the agent key can call. It cannot move funds. Compromising it does not compromise the treasury.",
+      "The agent key only has permission to signal liveness. It cannot move, withdraw, or transfer funds under any circumstances.",
     tone: "signal" as const,
   },
   {
     n: "03",
     title: "Silence accumulates",
-    call: "timeUntilTrigger()",
-    body: "If no ping arrives, the grace window drains. Up to the deadline nothing has changed: you can still withdraw, rotate the agent key, or extend the timeout. After it, the vault is armed.",
+    tag: "Timer expiration",
+    body: "If no heartbeat arrives within the configured window, the grace period elapses. Before the deadline, you retain full owner control to withdraw assets or update settings. After the deadline passes, the fail-safe arms.",
     detail:
-      "Execution requires block.timestamp to be strictly past the deadline. At exactly the deadline the switch is not yet live.",
+      "Fail-safe eligibility is strictly determined on-chain: once the deadline has elapsed without a heartbeat, the switch becomes executable.",
     tone: "warn" as const,
   },
   {
     n: "04",
     title: "Anyone evacuates the treasury",
-    call: "executeDeadManSwitch()",
-    body: "No access control. Any keeper, watchtower or bystander can fire it. The caller cannot choose the destination (it is always the recoveryAddress you stored), so there is nothing to extract by calling it, and no reason to trust whoever does.",
+    tag: "Automated evacuation",
+    body: "Once armed, any keeper, automated watchtower, or bystander can execute the evacuation. The caller cannot redirect funds, as they are permanently locked to your pre-configured recovery address.",
     detail:
-      "Native BOT plus every tracked ERC-20 moves to the recovery address in one transaction.",
+      "Native BOT and all tracked ERC-20 assets are swept directly to your designated cold wallet in a single transaction.",
     tone: "danger" as const,
   },
 ];
@@ -93,11 +93,10 @@ export function HowItWorks() {
                 <h3 className="text-[17px] font-medium tracking-[-0.01em] text-text">
                   {step.title}
                 </h3>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-text-faint">
+                  {step.tag}
+                </span>
               </div>
-
-              <code className="mt-2.5 inline-block rounded border border-line bg-ink-850 px-2 py-1 font-mono text-[12px] text-text-dim">
-                {step.call}
-              </code>
 
               <p className="mt-3.5 max-w-[68ch] text-[14px] leading-[1.65] text-text-dim">
                 {step.body}

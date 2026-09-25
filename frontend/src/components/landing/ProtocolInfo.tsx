@@ -23,12 +23,12 @@ import { Section } from "./Section";
  */
 
 const GAS = [
-  { op: "Deploy NostromFactory", gas: "~2,994,000", payer: "you, once" },
-  { op: "createVault", gas: "~343,000", payer: "each user" },
-  { op: "createVaultAndFund", gas: "~338,000", payer: "each user" },
-  { op: "ping()", gas: "~37,600", payer: "the agent, every heartbeat" },
-  { op: "deposit()", gas: "~25,700", payer: "each user" },
-  { op: "executeDeadManSwitch()", gas: "~74,400", payer: "any keeper" },
+  { op: "Factory deployment", gas: "~2,994,000", payer: "one-time setup" },
+  { op: "Create vault", gas: "~343,000", payer: "per vault creation" },
+  { op: "Create vault & deposit", gas: "~338,000", payer: "atomic creation + initial deposit" },
+  { op: "Liveness heartbeat", gas: "~37,600", payer: "the agent, per ping" },
+  { op: "Deposit funds", gas: "~25,700", payer: "per deposit" },
+  { op: "Execute fail-safe", gas: "~74,400", payer: "any keeper during evacuation" },
 ];
 
 export function ProtocolInfo() {
@@ -41,7 +41,7 @@ export function ProtocolInfo() {
       index="05"
       eyebrow="Protocol"
       title="Parameters, addresses and costs."
-      lede="BOT Chain is EVM-compatible with a Geth-compatible JSON-RPC surface, so the standard toolchain applies with no chain-specific SDK. Contracts compile with solc 0.8.24, optimizer on at 200 runs, targeting the cancun EVM (BOT Chain has Shanghai and Cancun active, so PUSH0 is available and the bytecode is smaller)."
+      lede="Nostrom runs natively on BOT Chain with full EVM compatibility and standard JSON-RPC support. Vaults deploy as lightweight, gas-efficient contracts ensuring every user retains an isolated on-chain treasury."
     >
       <div ref={ref} className="grid gap-x-14 gap-y-14 lg:grid-cols-2">
         {/* --- Networks --- */}
@@ -127,10 +127,7 @@ export function ProtocolInfo() {
               </dl>
             ) : (
               <p className="mt-3 max-w-[48ch] text-[12px] leading-relaxed text-text-faint">
-                No factory is configured for the current network, so there is nothing to read yet.
-                Deploy one with{" "}
-                <code className="font-mono text-text-dim">npm run deploy:factory:testnet</code> and
-                set <code className="font-mono text-text-dim">VITE_FACTORY_ADDRESS_968</code>.
+                No factory contract is detected on this network. Connect to a supported network to inspect live registry metrics.
               </p>
             )}
           </div>
@@ -141,31 +138,30 @@ export function ProtocolInfo() {
           <h3 className="text-[15px] font-medium text-text">Parameters</h3>
           <dl className="mt-5">
             <ParamRow
-              label="MIN_TIMEOUT_PERIOD"
+              label="Minimum timeout"
               value={formatDuration(PROTOCOL.MIN_TIMEOUT_SECONDS)}
-              note="Floor, so clock drift cannot race a heartbeat"
+              note="Floor duration, ensuring network timing cannot race a heartbeat"
             />
             <ParamRow
-              label="MAX_TIMEOUT_PERIOD"
+              label="Maximum timeout"
               value="365 days"
-              note="Ceiling, so a switch can always eventually fire"
+              note="Ceiling duration, ensuring fail-safes always remain executable"
             />
             <ParamRow
-              label="MAX_TRACKED_TOKENS"
+              label="Tracked token capacity"
               value={String(PROTOCOL.MAX_TRACKED_TOKENS)}
-              note="Keeps the rescue inside the block gas limit"
+              note="Maximum ERC-20 tokens swept per evacuation"
             />
             <ParamRow
-              label="MAX_PAGE_LIMIT"
+              label="Batch pagination limit"
               value={String(PROTOCOL.MAX_PAGE_LIMIT)}
-              note="Cap on registry pagination, to stay RPC-friendly"
+              note="Maximum vaults scanned per batch request"
             />
           </dl>
 
           <h3 className="mt-12 text-[15px] font-medium text-text">Measured gas</h3>
           <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-            Reproduce with <code className="font-mono text-[12px]">npm run gas</code>. Creating a
-            vault through the factory costs about 80% less than deploying one outright.
+            Factory proxies reduce deployment gas by approximately 80% compared to standalone contracts.
           </p>
           <dl className="mt-5">
             {GAS.map((g) => (
@@ -173,7 +169,7 @@ export function ProtocolInfo() {
                 key={g.op}
                 className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-0.5 border-t border-line py-2.5 last:border-b"
               >
-                <dt className="font-mono text-[12px] text-text">{g.op}</dt>
+                <dt className="text-[13px] font-medium text-text">{g.op}</dt>
                 <dd className="tnum text-[12px] text-text">{g.gas}</dd>
                 <p className="col-span-2 text-[11px] text-text-faint">{g.payer}</p>
               </div>
@@ -216,7 +212,7 @@ function ParamRow({
   return (
     <div className="border-t border-line py-3 last:border-b">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <dt className="font-mono text-[12px] text-text">{label}</dt>
+        <dt className="text-[13px] font-medium text-text">{label}</dt>
         <dd className="tnum text-[13px] text-signal">{value}</dd>
       </div>
       <p className="mt-1 text-[12px] text-text-faint">{note}</p>

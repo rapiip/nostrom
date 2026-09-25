@@ -35,15 +35,13 @@ export function Integration() {
             </h2>
 
             <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-text-dim">
-              Heartbeat clients ship for Node and Python. Both clamp the ping interval to a third of
-              your timeout so two missed transactions in a row are survivable, retry with backoff,
-              and abort immediately on unrecoverable reverts instead of retrying pointlessly.
+              Heartbeat libraries are available for Node.js and Python with built-in automated scheduling
+              and exponential backoff.
             </p>
 
             <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-text-dim">
-              The <code className="font-mono text-[13px] text-text">healthCheck</code> hook is the
-              part that matters: withhold the ping when your agent is unwell and the fail-safe arms
-              on its own. A wedged agent that keeps pinging is just a cron job.
+              The health check hook is what protects your funds: withhold the heartbeat whenever your agent
+              is degraded or unhealthy, allowing the fail-safe to trigger on its own.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">

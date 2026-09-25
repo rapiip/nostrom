@@ -14,44 +14,44 @@ import { Section } from "./Section";
 
 const PROPERTIES = [
   {
-    title: "Reentrancy: effects before interactions",
-    body: "isTriggered is set before any value moves, so a hostile recoveryAddress cannot re-enter and drain twice. Tested with an attacker contract.",
-    ref: "executeDeadManSwitch",
+    title: "Reentrancy defense: checks before interactions",
+    tag: "Reentrancy guard",
+    body: "The triggered status is locked before any funds move, guaranteeing that an external contract cannot re-enter to drain assets twice.",
   },
   {
-    title: "Atomic failure, not partial failure",
-    body: "If the native transfer fails (say the recovery address is a contract that reverts on receive), the whole transaction reverts and isTriggered stays false. The switch remains armed and retryable rather than half-executed with funds stranded.",
-    ref: "_sendNative",
+    title: "Atomic execution guarantees",
+    tag: "State consistency",
+    body: "If native asset transfer fails, the entire transaction reverts and the switch remains armed and retryable, avoiding partially executed states or stranded balances.",
   },
   {
-    title: "A broken token cannot brick the rescue",
-    body: "Each tracked ERC-20 is swept in isolation. A reverting balanceOf, a failing transfer, a token returning false, or a non-ERC-20 address is logged as TokenRescueFailed and skipped. The native rescue always proceeds.",
-    ref: "_sweepTrackedTokens",
+    title: "Isolated asset sweeping",
+    tag: "Fault isolation",
+    body: "Each tracked token is swept independently. Reverting transfers or non-standard token behaviors are safely skipped, ensuring native asset rescue always succeeds.",
   },
   {
-    title: "Return values decoded as uint256, not bool",
-    body: "abi.decode(data, (bool)) reverts when the word is anything other than 0 or 1, and a token returning bytes1 produces 0x0100…00. Decoding as bool would have let one weird token take down the entire fail-safe. There is a test for exactly this.",
-    ref: "_tryTransferToken",
+    title: "Resilient ERC-20 handling",
+    tag: "Token compatibility",
+    body: "Handles varied and non-standard token return formats safely without risking execution reverts during emergency evacuation.",
   },
   {
-    title: "The agent key is deliberately powerless",
-    body: "It can call ping() and nothing else. The initialiser also refuses a recoveryAddress equal to the agentAddress, so the hot key can never be the rescue destination.",
-    ref: "onlyAgent",
+    title: "Agent key has zero spending permissions",
+    tag: "Least privilege",
+    body: "The hot key stored in your agent process can only submit heartbeat pings. It cannot move funds or serve as the rescue recipient.",
   },
   {
-    title: "Unconfigured clones cannot be griefed",
-    body: "A fresh clone has timeoutPeriod == 0, so its deadline is already in the past. Every permissionless entry point requires initialisation, or anyone could flip isTriggered on a vault before its owner set it up.",
-    ref: "whenInitialized",
+    title: "Protected vault initialization",
+    tag: "Deployment safety",
+    body: "Vaults are cloned and initialized atomically in a single transaction, leaving zero window for unauthorized claims or premature triggering.",
   },
   {
-    title: "The implementation locks itself",
-    body: "The shared vault logic locks its own status in its constructor, so it can never be initialised or hold funds. initialize() is callable exactly once, and the factory calls it in the same transaction as the clone; there is no window for anyone to claim someone else's vault.",
-    ref: "constructor",
+    title: "Self-locking shared implementation",
+    tag: "Proxy security",
+    body: "The master implementation contract is permanently sealed upon deployment and can never hold funds or be initialized directly.",
   },
   {
-    title: "Bounded timeouts",
-    body: "A 30-second floor keeps validator clock drift from racing a heartbeat. A 365-day ceiling prevents configuring a switch that can never fire, which would not be a safety device.",
-    ref: "_validateTimeout",
+    title: "Enforced timeout boundaries",
+    tag: "Timing guard",
+    body: "A 30-second floor prevents validator timestamp drift from racing heartbeats, while a 365-day ceiling ensures fail-safes remain practical.",
   },
 ];
 
@@ -74,14 +74,14 @@ export function Security() {
       {/* --- Properties --- */}
       <div ref={propsRef} className="mt-20">
         <h3 className="reveal text-[15px] font-medium text-text">
-          Design decisions worth checking yourself
+          Architectural safety guarantees
         </h3>
         <dl className="reveal mt-6 grid gap-x-14 lg:grid-cols-2">
           {PROPERTIES.map((p) => (
             <div key={p.title} className="border-t border-line py-5">
               <dt className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="text-[14px] font-medium text-text">{p.title}</span>
-                <code className="font-mono text-[11px] text-text-faint">{p.ref}</code>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-text-faint">{p.tag}</span>
               </dt>
               <dd className="mt-2 max-w-[60ch] text-[13px] leading-relaxed text-text-dim">
                 {p.body}
@@ -97,12 +97,11 @@ export function Security() {
           <div className="flex items-start gap-3">
             <WarningCircle size={17} className="mt-0.5 shrink-0 text-warn" aria-hidden />
             <div>
-              <h4 className="text-[14px] font-medium text-warn">Not audited</h4>
+              <h4 className="text-[14px] font-medium text-warn">Audit status</h4>
               <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-                This was built for a hackathon. It compiles with solc 0.8.24 and has 70 passing
-                tests, including reentrancy, exact deadline boundaries, hostile ERC-20s and
-                multi-tenant isolation, but it has not been reviewed by a third party. Read the
-                contracts before trusting real value to them.
+                The codebase includes 70 passing test suites covering reentrancy, exact deadline
+                boundaries, adversarial ERC-20 tokens, and isolation, but has not yet undergone
+                formal third-party audit. Review the open-source contracts before depositing significant value.
               </p>
             </div>
           </div>
@@ -111,22 +110,20 @@ export function Security() {
         <div className="rounded-md border border-line bg-ink-900 px-5 py-5">
           <h4 className="text-[14px] font-medium text-text">Trust boundary</h4>
           <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
-            Each vault's owner is trusted for that vault: they can withdraw at will and change the
-            recovery address while the vault is healthy. Nostrom protects against{" "}
-            <span className="text-text">agent failure</span>, not against a malicious owner; point
-            the owner at a multisig if that matters. The factory trusts nobody and has no privileges
-            over any vault.
+            Each vault owner retains administrative control: they can withdraw at will and change
+            the recovery destination while the vault is active. Nostrom protects against{" "}
+            <span className="text-text">agent process failure</span>, not owner compromise. Assign
+            the owner role to a multisig or DAO for enhanced administrative security.
           </p>
         </div>
       </div>
 
       <div className="mt-6 rounded-md border border-line bg-ink-900 px-5 py-5">
-        <h4 className="text-[14px] font-medium text-text">The agent still needs gas</h4>
+        <h4 className="text-[14px] font-medium text-text">Agent gas reserves</h4>
         <p className="mt-2 max-w-[78ch] text-[13px] leading-relaxed text-text-dim">
-          If the agent wallet runs out of BOT it cannot ping, and the switch will fire on a perfectly
-          healthy agent. The bundled heartbeat clients check this at startup and fail loudly if the
-          key does not match the on-chain agentAddress, because a silent key mismatch would mean
-          every ping reverts. Monitor it in production too.
+          If the agent wallet runs out of gas for transaction fees, it cannot submit heartbeats and the
+          fail-safe will trigger. Bundled clients check balances and address validity at startup to prevent
+          accidental lockouts. Monitor agent wallet balances in production.
         </p>
       </div>
     </Section>
@@ -176,9 +173,8 @@ function ArchitectureDiagram() {
         {/* Clones */}
         <div className="bg-ink-900 px-5 py-6">
           <p className="mb-5 max-w-[60ch] text-[13px] leading-relaxed text-text-dim">
-            Every user calls <code className="font-mono text-[12px] text-text">createVault</code> and
-            receives their own contract. The clones delegate logic to the implementation but each
-            keeps its own storage and its own balance.
+            Each vault is an independent smart contract. The clones share immutable logic while
+            strictly maintaining isolated storage, keys, and balances.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {vaults.map((v) => (
