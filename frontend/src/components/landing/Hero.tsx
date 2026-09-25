@@ -11,7 +11,7 @@ import { ProtocolDiagram } from "./ProtocolDiagram";
  * "revolutionising" anything. A reader who knows nothing about Nostrom should be
  * able to restate the mechanism after one sentence.
  *
- * Layout is an asymmetric 12-column split with generous negative space above —
+ * Layout is an asymmetric 12-column split with generous negative space above,
  * editorial rather than centred-marketing.
  */
 export function Hero() {
@@ -42,7 +42,7 @@ export function Hero() {
               Nostrom is a fail-safe vault for autonomous AI agents. The agent proves it is alive on
               a schedule. If the heartbeat stops for longer than the timeout you set,{" "}
               <span className="text-text">anyone</span> can evacuate the vault to a cold wallet you
-              chose in advance — no key recovery, no admin, no waiting for you to notice.
+              chose in advance: no key recovery, no admin, no waiting for you to notice.
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-3">

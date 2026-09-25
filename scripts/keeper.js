@@ -2,7 +2,7 @@
  * Nostrom keeper / watchtower.
  *
  * Polls a vault and calls the permissionless executeDeadManSwitch() as soon as
- * the agent's heartbeat has lapsed. Anyone can run this — that is the whole
+ * the agent's heartbeat has lapsed. Anyone can run this; that is the whole
  * point of permissionless execution: recovery does not depend on the owner
  * being online.
  *
@@ -60,7 +60,7 @@ async function checkOnce(vault, signer) {
   log(`HEARTBEAT LAPSED. ${ethers.formatEther(balance)} BOT would go to ${recovery}.`);
 
   if (DRY_RUN || !signer) {
-    log(DRY_RUN ? "Dry run — not sending." : "No PRIVATE_KEY configured — cannot send.");
+    log(DRY_RUN ? "Dry run: not sending." : "No PRIVATE_KEY configured: cannot send.");
     return "waiting";
   }
 

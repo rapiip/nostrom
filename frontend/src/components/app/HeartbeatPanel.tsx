@@ -8,14 +8,14 @@ import { GraceCountdown, GraceTrack } from "@/components/ui/GraceTrack";
 import { DataList, DataRow, Label, Notice, Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
 
 /**
- * Heartbeat panel — the vault's vital sign.
+ * Heartbeat panel: the vault's vital sign.
  *
  * This is the screen's focal point, so it gets the largest type on the page and
  * the grace track at full width. Everything else about a vault is secondary to
  * "how long until someone can take the funds".
  *
  * The ping button appears only for the agent key, because ping() carries
- * onlyAgent — offering it to an owner would produce a guaranteed revert.
+ * onlyAgent: offering it to an owner would produce a guaranteed revert.
  */
 export function HeartbeatPanel({
   view,
@@ -93,7 +93,7 @@ export function HeartbeatPanel({
           <Notice tone="danger" title="The switch is live">
             The heartbeat lapsed {formatDuration(BigInt(now) - view.deadline)} ago. Any address can
             now call <code className="font-mono text-[12px]">executeDeadManSwitch()</code> and move
-            the entire balance to the recovery address. If this is unexpected, act now — a heartbeat
+            the entire balance to the recovery address. If this is unexpected, act now: a heartbeat
             still resets the countdown, and the owner can still withdraw.
           </Notice>
         )}
@@ -145,7 +145,7 @@ export function HeartbeatPanel({
         {capabilities.canPing && (
           <p className="text-[12px] leading-relaxed text-text-faint">
             You hold this vault's agent key. In production the heartbeat should come from your agent
-            process, not from this page — see <code className="font-mono">agent/</code> in the
+            process, not from this page; see <code className="font-mono">agent/</code> in the
             repository for the Node and Python clients.
           </p>
         )}

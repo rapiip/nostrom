@@ -32,8 +32,8 @@ import { useState } from "react";
  * owner can act, so the console gives that person a first-class screen rather than
  * assuming every visitor is an owner.
  *
- * `getExecutableVaults(offset, limit)` does the scan on-chain — one call instead
- * of iterating every vault — and wraps each check in try/catch so a pathological
+ * `getExecutableVaults(offset, limit)` does the scan on-chain (one call instead
+ * of iterating every vault) and wraps each check in try/catch so a pathological
  * vault cannot break the page.
  */
 export function Keeper() {
@@ -69,7 +69,7 @@ function KeeperInner() {
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Keeper scan</h1>
           <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
             Vaults whose heartbeat has lapsed and whose switch can be fired right now. You pay the
-            gas and receive nothing — the funds always go to each vault's own recovery address. That
+            gas and receive nothing: the funds always go to each vault's own recovery address. That
             is what makes it safe to leave open.
           </p>
         </div>
@@ -128,7 +128,7 @@ function KeeperInner() {
           <EmptyState
             icon={<Crosshair size={28} aria-hidden />}
             title="Every agent is alive"
-            description="No vault in the registry has a lapsed heartbeat. This is the healthy state — nothing to do. The scan refreshes automatically."
+            description="No vault in the registry has a lapsed heartbeat. This is the healthy state; nothing to do. The scan refreshes automatically."
           />
         ) : (
           <>
@@ -221,7 +221,7 @@ function KeeperInner() {
 
       {/*
         Firing a switch moves someone else's treasury and cannot be undone, so it
-        gets the same full receipt treatment as every other write in the app —
+        gets the same full receipt treatment as every other write in the app:
         block number, gas used, hash and explorer link. The inline row status
         above stays as the at-a-glance indicator for the list.
       */}

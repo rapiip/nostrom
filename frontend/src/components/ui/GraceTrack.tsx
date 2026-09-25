@@ -3,7 +3,7 @@ import { formatDuration, formatTimestamp } from "@/lib/format";
 import { PHASE_META, type VaultView } from "@/lib/vaultState";
 
 /**
- * The grace-period track — the protocol's central visual object.
+ * The grace-period track: the protocol's central visual object.
  *
  * It answers the only question that matters about a vault: how much silence is
  * left before anyone can take the funds. A full track means the agent just
@@ -91,7 +91,7 @@ export function GraceCountdown({
       case "EXECUTABLE":
         return "Lapsed";
       case "UNCONFIGURED":
-        return "—";
+        return "-";
       default:
         return formatDuration(view.liveSecondsRemaining);
     }

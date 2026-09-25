@@ -10,7 +10,7 @@ import { Notice } from "@/components/ui/Panel";
 /**
  * Application shell.
  *
- * Shares the landing page's palette, type and spacing exactly — the app is the
+ * Shares the landing page's palette, type and spacing exactly; the app is the
  * same document continued, not a separate product. Navigation is a horizontal
  * rail rather than a sidebar because the console has four destinations, and a
  * sidebar for four links wastes the width that vault tables need.
@@ -106,7 +106,7 @@ export function AppShell() {
             {wallet.isFactoryMissing && (
               <Notice tone="warn" title="No factory configured for this network">
                 Vault discovery and creation are unavailable. Monitoring and execution still work
-                from a vault address — use <span className="text-text">Look up</span>.
+                from a vault address (use <span className="text-text">Look up</span>).
               </Notice>
             )}
           </div>

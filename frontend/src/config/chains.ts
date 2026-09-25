@@ -4,7 +4,7 @@ import { defineChain } from "viem";
  * BOT Chain network definitions.
  *
  * Values mirror `hardhat.config.js` in the repository root, which in turn cites
- * https://dev-docs.botchain.ai/docs/Developers/quick-guide/ — that file is the
+ * https://dev-docs.botchain.ai/docs/Developers/quick-guide/; that file is the
  * source of truth. If a chain ID or RPC changes there, change it here too.
  *
  *   Testnet -> chainId 968, rpc.bohr.life,     scan.bohr.life
@@ -62,7 +62,7 @@ const includeLocalhost = env.VITE_ENABLE_LOCALHOST === "true";
 
 /**
  * Chain the app treats as its default. This is the chain an UNCONNECTED visitor
- * reads from, so it must also be first in `supportedChains` — wagmi initialises
+ * reads from, so it must also be first in `supportedChains`; wagmi initialises
  * its current chain to `chains[0]`, and if the two disagreed, a visitor with no
  * wallet would silently read a different network than the app claims to default
  * to.

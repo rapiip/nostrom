@@ -22,7 +22,7 @@ import {
 import { WalletGate } from "@/components/web3/WalletGate";
 
 /**
- * Vault list — the console's home.
+ * Vault list: the console's home.
  *
  * Reads the caller's vaults from the registry, then all of their live state in a
  * single batched `getVaultsSnapshot` call. Rows are a real table on wide screens
@@ -70,7 +70,7 @@ function VaultsInner() {
             Every vault created by{" "}
             <span className="tnum text-text">{wallet.address?.slice(0, 10)}…</span>. This index is
             keyed by the creating account and never changes, so a vault you transferred away still
-            appears here — check the owner column.
+            appears here; check the owner column.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ function VaultsInner() {
           }
         >
           {totals.executable > 0
-            ? "The heartbeat has lapsed. Anyone can evacuate the treasury to the recovery address — send a heartbeat or withdraw immediately if this is unexpected."
+            ? "The heartbeat has lapsed. Anyone can evacuate the treasury to the recovery address: send a heartbeat or withdraw immediately if this is unexpected."
             : "A heartbeat is overdue. One ping resets the countdown."}
         </Notice>
       )}

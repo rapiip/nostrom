@@ -6,7 +6,7 @@ import { formatUnits } from "viem";
 
 /**
  * Compact duration, e.g. "2d 04h 13m". Used for countdowns, so it must never
- * change width unpredictably — hence zero-padded components after the first.
+ * change width unpredictably; hence zero-padded components after the first.
  */
 export function formatDuration(totalSeconds: bigint | number, opts?: { short?: boolean }): string {
   let s = typeof totalSeconds === "bigint" ? Number(totalSeconds) : totalSeconds;
@@ -47,7 +47,7 @@ export function describeTimeout(seconds: bigint): string {
 /** Absolute timestamp for the user's locale. Unix seconds in. */
 export function formatTimestamp(unixSeconds: bigint | number): string {
   const ms = Number(unixSeconds) * 1000;
-  if (!Number.isFinite(ms) || ms <= 0) return "—";
+  if (!Number.isFinite(ms) || ms <= 0) return "-";
   return new Date(ms).toLocaleString(undefined, {
     year: "numeric",
     month: "short",
@@ -61,14 +61,14 @@ export function formatTimestamp(unixSeconds: bigint | number): string {
 /** ISO-8601, for the title attribute alongside a relative time. */
 export function formatIso(unixSeconds: bigint | number): string {
   const ms = Number(unixSeconds) * 1000;
-  if (!Number.isFinite(ms) || ms <= 0) return "—";
+  if (!Number.isFinite(ms) || ms <= 0) return "-";
   return new Date(ms).toISOString();
 }
 
 /** "3m ago" / "in 2h 14m" relative to now. */
 export function formatRelative(unixSeconds: bigint | number, nowSeconds: number): string {
   const target = Number(unixSeconds);
-  if (!Number.isFinite(target) || target <= 0) return "—";
+  if (!Number.isFinite(target) || target <= 0) return "-";
   const delta = target - nowSeconds;
   if (Math.abs(delta) < 2) return "just now";
   return delta < 0
@@ -82,14 +82,14 @@ export function formatRelative(unixSeconds: bigint | number, nowSeconds: number)
 
 /** 0x1234…cdef */
 export function truncateAddress(address: string | undefined, chars = 4): string {
-  if (!address) return "—";
+  if (!address) return "-";
   if (address.length <= chars * 2 + 4) return address;
   return `${address.slice(0, chars + 2)}…${address.slice(-chars)}`;
 }
 
-/** 0xabc…123 for tx hashes — slightly longer head, hashes are less familiar. */
+/** 0xabc…123 for tx hashes: slightly longer head, hashes are less familiar. */
 export function truncateHash(hash: string | undefined): string {
-  if (!hash) return "—";
+  if (!hash) return "-";
   return `${hash.slice(0, 10)}…${hash.slice(-8)}`;
 }
 
@@ -109,7 +109,7 @@ export function formatAmount(
   wei: bigint | undefined,
   opts?: { decimals?: number; maxFractionDigits?: number },
 ): string {
-  if (wei === undefined) return "—";
+  if (wei === undefined) return "-";
   const decimals = opts?.decimals ?? 18;
   const maxFraction = opts?.maxFractionDigits ?? 4;
 
@@ -121,7 +121,7 @@ export function formatAmount(
 
   const trimmed = fraction.slice(0, maxFraction).replace(/0+$/, "");
   if (!trimmed) {
-    // Non-zero but rounds to nothing at this precision — say so rather than lie.
+    // Non-zero but rounds to nothing at this precision; say so rather than lie.
     return wei > 0n ? `<0.${"0".repeat(maxFraction - 1)}1` : groupedWhole;
   }
   return `${groupedWhole}.${trimmed}`;
@@ -129,7 +129,7 @@ export function formatAmount(
 
 /** Full-precision string for title attributes and copy actions. */
 export function formatAmountExact(wei: bigint | undefined, decimals = 18): string {
-  if (wei === undefined) return "—";
+  if (wei === undefined) return "-";
   return formatUnits(wei, decimals);
 }
 
@@ -138,7 +138,7 @@ export function formatAmountExact(wei: bigint | undefined, decimals = 18): strin
    =========================================================================== */
 
 export function formatCount(n: bigint | number | undefined): string {
-  if (n === undefined) return "—";
+  if (n === undefined) return "-";
   return Number(n).toLocaleString();
 }
 

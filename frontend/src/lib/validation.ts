@@ -5,7 +5,7 @@ import { sameAddress } from "./format";
 /**
  * Client-side mirrors of the contract's own validation.
  *
- * Purpose is strictly to save the user a wasted signature and a revert — the
+ * Purpose is strictly to save the user a wasted signature and a revert; the
  * contract remains the authority. Every rule here corresponds to a specific
  * revert in contracts/NostromFactory.sol, cited inline.
  */
@@ -37,7 +37,7 @@ export function validateAddressField(value: string, label: string): FieldResult 
     }
     return { ok: false, error: `${label} contains non-hex characters.` };
   }
-  // ZeroAddress(string) — initialize() rejects all three participants as zero.
+  // ZeroAddress(string): initialize() rejects all three participants as zero.
   if (/^0x0{40}$/i.test(v)) {
     return { ok: false, error: `${label} cannot be the zero address.` };
   }
@@ -59,7 +59,7 @@ export interface VaultConfigInput {
   agent: string;
   recovery: string;
   timeoutSeconds: bigint;
-  /** Connected account — becomes the vault owner via createVault's msg.sender. */
+  /** Connected account: becomes the vault owner via createVault's msg.sender. */
   owner: Address | undefined;
 }
 
@@ -76,13 +76,13 @@ export function validateVaultConfig(input: VaultConfigInput): VaultConfigValidat
   const timeout = validateTimeout(input.timeoutSeconds);
 
   if (recovery.ok && agent.ok) {
-    // InvalidAddress("recoveryAddress") — the hot key must never be the rescue
+    // InvalidAddress("recoveryAddress"): the hot key must never be the rescue
     // destination, or compromising the agent compromises recovery.
     if (sameAddress(input.recovery, input.agent)) {
       recovery = {
         ok: false,
         error:
-          "Recovery address cannot equal the agent address. The agent key is the hot, expendable key — making it the rescue destination would defeat the design.",
+          "Recovery address cannot equal the agent address. The agent key is the hot, expendable key, so making it the rescue destination would defeat the design.",
       };
     } else if (sameAddress(input.recovery, input.owner)) {
       // Not a contract rule, but worth flagging: an owner EOA that is also the
@@ -90,7 +90,7 @@ export function validateVaultConfig(input: VaultConfigInput): VaultConfigValidat
       recovery = {
         ok: true,
         warning:
-          "Recovery is the same account as the vault owner. That works, but it gives you no cold-storage separation — consider a wallet you do not operate the agent from.",
+          "Recovery is the same account as the vault owner. That works, but it gives you no cold-storage separation. Consider a wallet you do not operate the agent from.",
       };
     }
   }
@@ -100,7 +100,7 @@ export function validateVaultConfig(input: VaultConfigInput): VaultConfigValidat
     agentChecked = {
       ok: true,
       warning:
-        "The agent key is the same account as the owner. The contract allows it, but the agent key is designed to be powerless and expendable — keep them separate in production.",
+        "The agent key is the same account as the owner. The contract allows it, but the agent key is designed to be powerless and expendable; keep them separate in production.",
     };
   }
 
@@ -112,7 +112,7 @@ export function validateVaultConfig(input: VaultConfigInput): VaultConfigValidat
   };
 }
 
-/** InvalidTimeoutPeriod(provided, min, max) — see _validateTimeout. */
+/** InvalidTimeoutPeriod(provided, min, max): see _validateTimeout. */
 export function validateTimeout(seconds: bigint): FieldResult {
   if (seconds <= 0n) return { ok: false, error: "Timeout is required." };
   if (seconds < PROTOCOL.MIN_TIMEOUT_SECONDS) {
@@ -166,7 +166,7 @@ export function validateAmount(
     return { ok: false, error: `${label} has too many decimal places (max 18).` };
   }
 
-  // ZeroAmount() — withdrawByOwner and deposit both reject zero.
+  // ZeroAmount(): withdrawByOwner and deposit both reject zero.
   if (wei === 0n && opts?.required) {
     return { ok: false, error: `${label} must be greater than zero.` };
   }

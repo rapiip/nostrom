@@ -1,7 +1,7 @@
 # Deploy Nostrom via Remix + MetaMask
 
 Panduan deploy **`contracts/NostromFactory.sol`** ke BOT Chain Testnet lewat Remix.
-Semua langkah manual, Anda yang pegang kendali — tidak ada yang dipublikasikan otomatis.
+Semua langkah manual, Anda yang pegang kendali, tidak ada yang dipublikasikan otomatis.
 
 ---
 
@@ -23,11 +23,11 @@ Ini kunci arsitektur multi-tenant. Ada dua level:
 
 Setiap user dapat **kontrak vault sendiri di alamat sendiri**, dengan agent dan
 cold wallet milik mereka sendiri. Dana tiap user benar-benar terpisah di kontrak
-masing-masing — bukan cuma dicatat terpisah, tapi fisik terpisah. Factory hanya
+masing-masing (bukan cuma dicatat terpisah, tapi fisik terpisah). Factory hanya
 menyimpan daftar supaya frontend bisa menemukan dan menampilkannya.
 
 **Yang Anda deploy cuma Factory, satu kali.** Setelah itu Anda tidak perlu
-deploy apa pun lagi — user yang bikin vault mereka sendiri.
+deploy apa pun lagi: user yang bikin vault mereka sendiri.
 
 Factory-nya **tidak punya owner, tidak punya admin, tidak ada fee, tidak bisa
 di-upgrade**. Jadi tidak ada yang bisa Anda (atau siapa pun) salahgunakan dari
@@ -37,7 +37,7 @@ dana user. Ini penting supaya orang lain mau memakai platform Anda.
 
 ## Biaya: tidak ada fee protokol, hanya gas jaringan
 
-Nostrom **tidak memungut biaya apa pun** — tidak ada fee pembuatan vault, tidak
+Nostrom **tidak memungut biaya apa pun**: tidak ada fee pembuatan vault, tidak
 ada potongan saat dana diselamatkan, tidak ada yang bisa ditarik deployer. Semua
 angka di bawah adalah gas yang dibayar ke validator BOT Chain, bukan ke kontrak.
 
@@ -70,14 +70,14 @@ termurah yang aman untuk BOT Chain (lihat langkah 6).
 
 ---
 
-## Phase 1 — Wallet
+## Phase 1: Wallet
 
 Install MetaMask dari metamask.io, buat wallet baru, **catat 12 Secret Recovery
 Phrase di kertas**. Jangan simpan digital, jangan share ke siapa pun.
 
 ---
 
-## Phase 2 — Tambah BOT Chain Testnet
+## Phase 2: Tambah BOT Chain Testnet
 
 MetaMask → dropdown network (kiri atas) → **Add a network** →
 **Add a network manually**:
@@ -94,7 +94,7 @@ MetaMask → dropdown network (kiri atas) → **Add a network** →
 
 ---
 
-## Phase 3 — Ambil BOT testnet dari faucet
+## Phase 3: Ambil BOT testnet dari faucet
 
 1. Copy alamat wallet dari MetaMask.
 2. Buka faucet testnet resmi (link ada di dev docs Botchain).
@@ -104,11 +104,11 @@ Deploy factory butuh sekitar **3.000.000 gas**, jadi pastikan saldo cukup.
 Kalau faucet memberi sedikit, minta beberapa kali atau tunggu cooldown.
 
 > Kalau Anda hanya butuh satu vault untuk agent sendiri, `Nostrom.sol` cuma
-> ~1.688.000 gas — 44% lebih murah. Lihat bagian **Biaya** di atas.
+> ~1.688.000 gas (44% lebih murah). Lihat bagian **Biaya** di atas.
 
 ---
 
-## Phase 4 — Compile di Remix
+## Phase 4: Compile di Remix
 
 1. Buka **remix.ethereum.org**.
 2. File Explorer → klik **"+"** → nama file: `NostromFactory.sol`.
@@ -131,12 +131,12 @@ Kalau faucet memberi sedikit, minta beberapa kali atau tunggu cooldown.
    > `paris` hanya kalau Anda men-deploy ke chain lain yang belum Shanghai.
 7. Klik **Compile NostromFactory.sol** → tunggu centang hijau.
 
-> Kalau muncul warning (bukan error) soal ukuran kontrak, itu normal — factory
+> Kalau muncul warning (bukan error) soal ukuran kontrak, itu normal: factory
 > menyertakan bytecode vault di dalamnya.
 
 ---
 
-## Phase 5 — Deploy Factory
+## Phase 5: Deploy Factory
 
 1. Klik ikon **Deploy & Run Transactions**.
 2. **Environment** → **Injected Provider - MetaMask** → Connect.
@@ -145,19 +145,19 @@ Kalau faucet memberi sedikit, minta beberapa kali atau tunggu cooldown.
 
    Di dropdown akan ada beberapa pilihan (`Clones`, `IERC20`, `NostromVault`,
    `NostromFactory`). **Pilih `NostromFactory`.** Jangan pilih yang lain:
-   - `Clones` / `IERC20` — library & interface, tidak bisa dipakai sendiri
-   - `NostromVault` — logika vault; factory sudah otomatis men-deploy ini
+   - `Clones` / `IERC20`: library & interface, tidak bisa dipakai sendiri
+   - `NostromVault`: logika vault; factory sudah otomatis men-deploy ini
      sendiri di dalam constructor-nya, Anda tidak perlu deploy manual
 
-5. **Tidak ada field input** — constructor `NostromFactory` tanpa parameter.
+5. **Tidak ada field input**: constructor `NostromFactory` tanpa parameter.
    Ini berbeda dari versi single-tenant sebelumnya.
 6. Klik **Deploy** oranye → MetaMask popup → **Confirm**.
-7. Alamat factory muncul di **Deployed Contracts**. **Simpan alamat ini** —
+7. Alamat factory muncul di **Deployed Contracts**. **Simpan alamat ini**:
    nanti dipakai frontend Anda.
 
 ---
 
-## Phase 6 — Verifikasi di Explorer
+## Phase 6: Verifikasi di Explorer
 
 1. Copy alamat factory dari Remix.
 2. Buka **scan.bohr.life** → paste di search bar.
@@ -165,7 +165,7 @@ Kalau faucet memberi sedikit, minta beberapa kali atau tunggu cooldown.
 
 ---
 
-## Phase 7 — Tes bikin vault lewat Remix
+## Phase 7: Tes bikin vault lewat Remix
 
 Sebelum bikin frontend, pastikan factory bekerja. Di panel Deployed Contracts,
 expand `NOSTROMFACTORY`:
@@ -204,7 +204,7 @@ dipakai frontend untuk menampilkan dashboard.
 ### 5. Kirim dana ke vault
 
 Kirim BOT dari MetaMask langsung ke alamat vault (bukan ke factory). Lalu cek
-`getVaultSnapshot` lagi — `balance` harus bertambah.
+`getVaultSnapshot` lagi: `balance` harus bertambah.
 
 ### 6. Tes dead-man's switch
 
@@ -266,7 +266,7 @@ Sebagai perbandingan, kalau tiap user harus deploy vault penuh sendiri biayanya
 
 Angka deploy di atas sudah termasuk dua optimasi compiler: target `cancun`
 (memakai opcode `PUSH0`, yang sudah aktif di BOT Chain) dan membuang trailer
-metadata CBOR — total ~77.000 gas lebih murah dari setelan sebelumnya. Keduanya
+metadata CBOR (total ~77.000 gas lebih murah dari setelan sebelumnya). Keduanya
 tidak mengubah perilaku kontrak sama sekali.
 
 Reproduksi sendiri dengan `npx hardhat run scripts/measure-gas.js`, atau
@@ -279,7 +279,7 @@ bandingkan setelan compiler dengan `node scripts/tune-gas.js`.
 - Kontrak ini **belum diaudit**. Uji di testnet sampai yakin.
 - **`ping()` butuh gas.** Wallet agent harus punya saldo BOT, kalau habis maka
   heartbeat gagal dan switch akan aktif walaupun agennya sehat. Monitor saldo ini.
-- `agentAddress` sengaja **tidak punya akses ke dana** — cuma bisa `ping()`.
+- `agentAddress` sengaja **tidak punya akses ke dana**: cuma bisa `ping()`.
   Kalau key agent bocor, penyerang cuma bisa menjaga vault tetap "hidup".
 - Vault owner dipercaya penuh atas vault-nya sendiri: bisa withdraw kapan saja
   dan ubah recovery address. Nostrom melindungi dari **agen yang mati**, bukan
@@ -287,7 +287,7 @@ bandingkan setelan compiler dengan `node scripts/tune-gas.js`.
 - Simpan private key recovery/cold wallet **terpisah dan lebih aman** dari key
   agent maupun owner.
 - Vault adalah EIP-1167 proxy. Kontrak lain yang mengirim BOT pakai
-  `transfer()`/`send()` (stipend 2300 gas) akan **gagal** — pakai `deposit()`
+  `transfer()`/`send()` (stipend 2300 gas) akan **gagal**: pakai `deposit()`
   atau `call` dengan gas cukup. Kirim dari wallet biasa tidak masalah.
 
 ---

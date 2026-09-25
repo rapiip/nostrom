@@ -9,7 +9,7 @@
  *     up the ancestor chain
  *   - console errors, uncaught page errors, failed requests
  *
- * Run against the production build, not the dev server — Vite's dependency
+ * Run against the production build, not the dev server; Vite's dependency
  * re-optimisation and HMR produce aborted requests that look like real failures.
  *
  *   npx vite build && npx vite preview --port 4173

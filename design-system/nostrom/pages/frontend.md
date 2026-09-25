@@ -1,7 +1,7 @@
-# Nostrom — Protocol Design System
+# Nostrom: Protocol Design System
 
 > **Scope:** This file overrides `design-system/nostrom/MASTER.md` for **all** Nostrom
-> surfaces — the landing page and the vault console alike. Per the Master file's own
+> surfaces: the landing page and the vault console alike. Per the Master file's own
 > rule ("if that file exists, its rules **override** this Master file"), the values
 > below are authoritative. `MASTER.md` is left unmodified.
 
@@ -14,7 +14,7 @@
 ## Why this overrides MASTER.md
 
 `MASTER.md` was generated with `Category: General` and describes its palette as
-*"AI purple + generation pink"* — `#7C3AED` primary, `#EC4899` accent, on a light
+*"AI purple + generation pink"*: `#7C3AED` primary, `#EC4899` accent, on a light
 `#FAF5FF` background, with Outfit/Work Sans typography.
 
 That is a generic SaaS/AI identity. It was not derived from Nostrom, and it conflicts
@@ -38,7 +38,7 @@ Nostrom is a countdown that a proof-of-life signal keeps resetting. Read
 | Contract fact | Design consequence |
 |---|---|
 | `ping()` resets `lastPingTime` | Heartbeat/ECG trace as the primary motif; a pulsing dot for the live state |
-| `timeUntilTrigger()` drains toward a deadline | A **depleting** gauge, not a filling progress bar — it counts toward failure, not completion |
+| `timeUntilTrigger()` drains toward a deadline | A **depleting** gauge, not a filling progress bar: it counts toward failure, not completion |
 | Three mutually exclusive states + one terminal state | Colour is reserved entirely for status semantics |
 | Every meaningful value is an address / amount / timestamp | Monospace with tabular figures for all on-chain data |
 | `executeDeadManSwitch()` is permissionless | Execution surfaces are shown to everyone, styled as consequential (danger), never hidden |
@@ -50,7 +50,7 @@ node graphs, glassmorphism, neon glow, gradient meshes.
 
 ## Colour
 
-Near-black instrument base. **Colour is semantic, never decorative** — a hue on screen
+Near-black instrument base. **Colour is semantic, never decorative**: a hue on screen
 always means something about vault state.
 
 ### Surfaces
@@ -81,12 +81,12 @@ always means something about vault state.
 > `text-faint` was originally `#646C73`, which measured **3.74:1** and failed WCAG AA
 > for 11px text. It was raised to `#7D858C` after measurement. It also clears AA on
 > the lightest surface it lands on (`ink-800`, 4.7:1). **Do not darken it without
-> re-measuring** — `frontend/scripts/verify-ui.cjs` computes real ratios for every
+> re-measuring**: `frontend/scripts/verify-ui.cjs` computes real ratios for every
 > text node on every route.
 
 ### Status (the only chromatic tokens)
 
-| Token | Hex | Meaning — tied to contract state |
+| Token | Hex | Meaning (tied to contract state) |
 |---|---|---|
 | `--color-signal` | `#7DD3A0` | **Alive.** `isExecutable() == false`, comfortable grace. Doubles as the single brand accent. |
 | `--color-warn` | `#E3B341` | **Expiring.** UI-only band: grace below 20% of `timeoutPeriod`. |
@@ -128,7 +128,7 @@ Two families. Both on Google Fonts.
 
 ## Shape, spacing, motion
 
-**Radii are tight** — infrastructure, not consumer app: `3px / 4px / 6px / 8px`.
+**Radii are tight**: infrastructure, not consumer app (`3px / 4px / 6px / 8px`).
 Nothing is pill-shaped except status dots and the grace track.
 
 **Spacing** follows Tailwind's 4px base (density 6/10, matching MASTER.md's standard).
@@ -138,7 +138,7 @@ to *group* related facts; individual readings are label/value rows inside one pa
 never a card each.
 
 **No shadows** except on overlays (dialog, dropdown), where they establish the top layer.
-MASTER.md's four-level shadow scale is unused — on a near-black surface, shadows read as
+MASTER.md's four-level shadow scale is unused; on a near-black surface, shadows read as
 smudges. Elevation is expressed by surface lightness instead.
 
 ### Motion
@@ -147,7 +147,7 @@ Purposeful only. Three sanctioned animations:
 
 | Animation | Purpose |
 |---|---|
-| `.pulse-dot` ring | The live heartbeat. The one justified *repeating* animation — it is the protocol's core signal. |
+| `.pulse-dot` ring | The live heartbeat. The one justified *repeating* animation: it is the protocol's core signal. |
 | `.indeterminate` bar | Transaction in the mempool. Indeterminate on purpose: confirmation time is unknown and must not be implied. |
 | `.reveal` | One-shot scroll reveal, unobserved after firing. A reveal that replays is a distraction. |
 
@@ -168,7 +168,7 @@ static healthy frame and stops its loop entirely.
 | `border-radius: 8px` buttons | `4px` | Tighter register |
 | `.card` with `translateY(-2px)` hover | No lift | MASTER.md's own anti-pattern list forbids layout-shifting hovers; panels are not clickable |
 | `.card` `cursor: pointer` | Only on genuinely clickable elements | A pointer cursor on a static panel is a false affordance |
-| Disabled = reduced opacity | Explicit disabled surface per variant | Fading a filled button while keeping dark text measured **1.03:1** — effectively invisible. Each variant now defines a legible disabled state. |
+| Disabled = reduced opacity | Explicit disabled surface per variant | Fading a filled button while keeping dark text measured **1.03:1** (effectively invisible). Each variant now defines a legible disabled state. |
 
 ---
 
@@ -198,4 +198,4 @@ Current status: **21 page loads, 0 findings** · **42 flow assertions, 0 failure
   backgrounds up the ancestor chain
 - Zero console errors, page errors, or failed requests
 - Transaction UI never shows success before a mined receipt with
-  `status === "success"` — verified against a real 4-second-block mempool
+  `status === "success"`, verified against a real 4-second-block mempool

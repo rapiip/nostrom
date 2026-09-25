@@ -14,10 +14,10 @@ import { formatAmount, formatDuration, truncateAddress } from "./format";
  * useless to a vault owner; "You are not the owner of this vault" is not.
  *
  * `kind` drives presentation:
- *   rejected  — user declined in the wallet. Not a failure; show quietly.
- *   revert    — the contract refused. Explain why; the tx cost nothing.
- *   wallet    — funds/gas/network problem before the chain saw anything.
- *   unknown   — fall back to the raw short message.
+ *   rejected:  user declined in the wallet. Not a failure; show quietly.
+ *   revert:    the contract refused. Explain why; the tx cost nothing.
+ *   wallet:    funds/gas/network problem before the chain saw anything.
+ *   unknown:   fall back to the raw short message.
  */
 
 export type TxErrorKind = "rejected" | "revert" | "wallet" | "unknown";
@@ -31,7 +31,7 @@ export interface DecodedTxError {
 }
 
 function addr(value: unknown): string {
-  return typeof value === "string" ? truncateAddress(value as Address, 6) : "—";
+  return typeof value === "string" ? truncateAddress(value as Address, 6) : "-";
 }
 
 function num(value: unknown): bigint {
@@ -78,7 +78,7 @@ function explainCustomError(name: string, args: readonly unknown[]): DecodedTxEr
         kind: "revert",
         errorName: name,
         title: "Agent is still alive",
-        detail: `The heartbeat has not lapsed yet — ${formatDuration(num(args[0]))} of grace remain. Execution needs the deadline to be strictly in the past.`,
+        detail: `The heartbeat has not lapsed yet; ${formatDuration(num(args[0]))} of grace remain. Execution needs the deadline to be strictly in the past.`,
       };
     case "NotInitialized":
       return {
@@ -118,7 +118,7 @@ function explainCustomError(name: string, args: readonly unknown[]): DecodedTxEr
         title: "Invalid address",
         detail:
           String(args[0]) === "recoveryAddress"
-            ? "The recovery address cannot be the vault itself, and cannot equal the agent address — the hot key must never be the rescue destination."
+            ? "The recovery address cannot be the vault itself and cannot equal the agent address: the hot key must never be the rescue destination."
             : `The "${String(args[0])}" field was rejected by the contract.`,
       };
     case "ZeroAmount":
@@ -171,7 +171,7 @@ function explainCustomError(name: string, args: readonly unknown[]): DecodedTxEr
         kind: "revert",
         errorName: name,
         title: "BOT transfer failed",
-        detail: `Sending ${formatAmount(num(args[1]))} BOT to ${addr(args[0])} reverted. If that address is a contract that rejects payments, the whole transaction is rolled back — the switch stays armed and can be fired again.`,
+        detail: `Sending ${formatAmount(num(args[1]))} BOT to ${addr(args[0])} reverted. If that address is a contract that rejects payments, the whole transaction is rolled back, so the switch stays armed and can be fired again.`,
       };
     case "TokenTransferFailed":
       return {
@@ -271,7 +271,7 @@ export function decodeTxError(error: unknown): DecodedTxError {
   }
 
   if (error instanceof BaseError) {
-    // User declined in the wallet — the most common "error" by far.
+    // User declined in the wallet: the most common "error" by far.
     const rejected = error.walk((e) => e instanceof UserRejectedRequestError);
     if (rejected) {
       return {
@@ -328,5 +328,5 @@ export function decodeTxError(error: unknown): DecodedTxError {
 /** Compact one-liner for inline placement (table rows, field hints). */
 export function shortErrorText(error: unknown): string {
   const decoded = decodeTxError(error);
-  return decoded.detail ? `${decoded.title} — ${decoded.detail}` : decoded.title;
+  return decoded.detail ? `${decoded.title}: ${decoded.detail}` : decoded.title;
 }

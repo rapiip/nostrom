@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 /**
  * Scroll reveal via IntersectionObserver.
  *
- * Adds `.in-view` once, then unobserves — a reveal that replays on every scroll
+ * Adds `.in-view` once, then unobserves; a reveal that replays on every scroll
  * pass is a distraction rather than a cue. The CSS in styles/index.css already
  * renders the final state under prefers-reduced-motion, so no branch is needed
  * here beyond the early exit.

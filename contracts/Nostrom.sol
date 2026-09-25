@@ -299,7 +299,7 @@ contract Nostrom {
     /**
      * @notice Fire the dead-man's switch and evacuate the treasury.
      *
-     * @dev PERMISSIONLESS — any address (keeper bot, watchtower, the owner, a
+     * @dev PERMISSIONLESS: any address (keeper bot, watchtower, the owner, a
      *      bystander) may call this. That is the point: recovery must not depend
      *      on any single party being online. The caller cannot choose the
      *      destination, so there is no value to extract by calling it.
@@ -478,7 +478,7 @@ contract Nostrom {
     }
 
     // -------------------------------------------------------------------------
-    // Views — everything a keeper bot or dashboard needs
+    // Views: everything a keeper bot or dashboard needs
     // -------------------------------------------------------------------------
 
     /// @notice Native BOT held by the vault.

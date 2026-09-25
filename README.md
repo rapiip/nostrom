@@ -27,7 +27,7 @@ the heartbeat stops, **anyone** can evacuate the treasury to a pre-set cold wall
 
 Two options, depending on whether you are building a platform or a single vault.
 
-### `NostromFactory.sol` — multi-tenant (use this for a platform)
+### `NostromFactory.sol`: multi-tenant (use this for a platform)
 
 Deploy the factory **once**. After that any user can create their own vault:
 
@@ -44,7 +44,7 @@ so no user's funds are ever commingled. Vaults are EIP-1167 minimal-proxy clones
 which makes creating one 80% cheaper than deploying a vault outright. The factory
 also acts as a registry so a frontend can discover and display vaults.
 
-The factory has **no owner, no admin functions, no fees and no upgrade path** —
+The factory has **no owner, no admin functions, no fees and no upgrade path**:
 once deployed it is immutable, so there is nothing for its deployer to abuse.
 That is what makes it safe for strangers to build on.
 
@@ -53,7 +53,7 @@ This file contains everything (the `Clones` library, `NostromVault`, and
 
 → Step-by-step Remix walkthrough: **[`DEPLOY_REMIX.md`](DEPLOY_REMIX.md)**
 
-### `Nostrom.sol` — standalone single vault
+### `Nostrom.sol`: standalone single vault
 
 The original single-tenant version: one deployment equals one vault, configured
 via constructor arguments. Fine if you only need a vault for **your own** agent
@@ -109,7 +109,7 @@ npm run app:dev             # http://localhost:5173
 ```
 
 It reuses this repository's compiled ABIs (`npm run app:abis` regenerates them from
-`artifacts/`) and takes contract addresses from environment variables — nothing is
+`artifacts/`) and takes contract addresses from environment variables; nothing is
 hardcoded. Point it at a factory with `VITE_FACTORY_ADDRESS_968` in `frontend/.env`
 after deploying one. Without a factory it degrades to direct-address vault lookup,
 which is enough for monitoring, heartbeats and execution.
@@ -147,7 +147,7 @@ npm run deploy:mainnet
 The script validates every argument before spending gas, asserts the deployed state
 matches what you asked for, and writes a record to `deployments/`.
 
-Then start the heartbeat — this works against a standalone vault *or* a
+Then start the heartbeat (this works against a standalone vault *or* a
 factory-created vault, just point it at the right address:
 
 ```ini
@@ -171,7 +171,7 @@ npm run heartbeat
 | `createVault(agent, recovery, timeout)` | Caller gets a vault they own. |
 | `createVaultAndFund(agent, recovery, timeout)` payable | Create + fund in one signature. |
 | `createVaultDeterministic(agent, recovery, timeout, salt)` payable | CREATE2, so the address is known in advance. Salt is namespaced per caller, so nobody can squat another user's address. |
-| `predictVaultAddress(creator, salt)` | Compute the address before creating — lets a UI show it, or a user pre-fund it. |
+| `predictVaultAddress(creator, salt)` | Compute the address before creating: lets a UI show it, or a user pre-fund it. |
 
 ### Registry and reads
 
@@ -183,12 +183,12 @@ npm run heartbeat
 | `vaultsOf(creator)` / `vaultCountOf` / `getVaultsOf(creator, offset, limit)` | Per-creator index. |
 | `getVaultRecord(vault)` | Creation metadata: creator, timestamp, index. |
 | `getVaultSnapshot(vault)` | Live state of one vault. |
-| **`getVaultsSnapshot(address[])`** | Live state of many vaults in **one RPC call** — turns an N-call dashboard render into one. |
+| **`getVaultsSnapshot(address[])`** | Live state of many vaults in **one RPC call**: turns an N-call dashboard render into one. |
 | **`getExecutableVaults(offset, limit)`** | Vaults whose switch can be fired right now. The primary query for a keeper bot. |
 
 Event: `VaultCreated(vault, creator, agentAddress, recoveryAddress, timeoutPeriod, vaultIndex, initialDeposit)`.
 
-### Registry semantics — read this before building a frontend
+### Registry semantics: read this before building a frontend
 
 `vaultsOf(creator)` is indexed by **who called `createVault`**, and that link never
 changes. It is *not* the same as "current owner": a vault owner can hand the vault
@@ -196,7 +196,7 @@ over with `transferOwnership`, and agent/recovery addresses can be rotated.
 
 The factory deliberately does not mirror that mutable state. Doing so would cost
 every user gas forever and couple the vault to the factory at runtime. For live
-state, read from the vault — `getVaultsSnapshot` batches it — or index the vault's
+state, read from the vault (`getVaultsSnapshot` batches it) or index the vault's
 `OwnershipTransferred` / `AgentAddressUpdated` / `RecoveryAddressUpdated` events
 with something like The Graph.
 
@@ -255,7 +255,7 @@ with something like The Graph.
 
 **Execution is permissionless by design.** `executeDeadManSwitch()` has no access
 control. If recovery required the owner to act, the vault would fail in exactly the
-scenario it exists for — nobody watching. The caller cannot choose the destination
+scenario it exists for: nobody watching. The caller cannot choose the destination
 (it is always the stored `recoveryAddress`), so there is nothing to extract by
 calling it. Any keeper, watchtower, or bystander can fire it.
 
@@ -289,7 +289,7 @@ switch that can never fire.
 - The implementation locks itself in its constructor, so it can never be
   initialised or hold funds.
 - `initialize()` is callable exactly once, and the factory calls it in the *same
-  transaction* as the clone — there is no window for anyone to initialise someone
+  transaction* as the clone; there is no window for anyone to initialise someone
   else's vault first.
 - A fresh clone has `timeoutPeriod == 0`, so its deadline is already in the past.
   Without a guard, anyone could call `executeDeadManSwitch()` on an unconfigured
@@ -297,20 +297,20 @@ switch that can never fire.
   entry point therefore requires initialisation. There is a test for exactly this.
 
 **Clones and the 2300-gas stipend.** A vault created by the factory is an EIP-1167
-proxy, so a plain transfer is forwarded by `delegatecall` — which costs well over
+proxy, so a plain transfer is forwarded by `delegatecall`, which costs well over
 the 2300 gas that Solidity's `transfer()`/`send()` forward. Sending from a wallet
 is fine (normal gas limit), but *another contract* must use `deposit()` or `call`
 with an adequate budget. This is inherent to the clone pattern, shared by Gnosis
 Safe proxies, and there is a test documenting the behaviour.
 
-**`ping()` is storage-packed.** It is the most frequent call in the protocol —
+**`ping()` is storage-packed.** It is the most frequent call in the protocol,
 every agent, forever. `lastPingTime` and `pingCount` share one storage slot as
 `uint128`s so a heartbeat costs one SSTORE instead of two. The public getters
 still return `uint256`, so the ABI is unchanged. Measured cost: ~37,600 gas.
 
 **Agent key is deliberately powerless.** The agent can call `ping()` and nothing
 else. It cannot move funds. Compromising the agent key does not compromise the
-treasury — the worst an attacker can do is keep the vault healthy. The initialiser
+treasury; the worst an attacker can do is keep the vault healthy. The initialiser
 also refuses a `recoveryAddress` equal to `agentAddress`, so the hot key can never
 be the rescue destination.
 
@@ -339,7 +339,7 @@ const heartbeat = new NostromHeartbeat({
   intervalSeconds: 3600,
 
   // Only report liveness if the agent is genuinely well. This is what makes it
-  // a real dead-man's switch rather than a cron job — a wedged agent that keeps
+  // a real dead-man's switch rather than a cron job; a wedged agent that keeps
   // pinging defeats the entire purpose.
   healthCheck: async () => myAgent.isHealthy(),
 });
@@ -385,7 +385,7 @@ Both clients provide the same safeguards:
 - **`preflight()`** fails loudly if the key does not match the on-chain
   `agentAddress`, if the vault is already triggered, or if the agent cannot pay
   gas. A silent key mismatch would mean every ping reverts and the switch fires on
-  a perfectly healthy agent — so this is checked up front, not discovered later.
+  a perfectly healthy agent, so this is checked up front, not discovered later.
 - **Interval auto-tuning** clamps the ping cadence to `timeoutPeriod / 3`, so two
   missed transactions in a row are survivable.
 - **Retries with backoff**, and immediate abort on unrecoverable reverts
@@ -439,7 +439,7 @@ test/
   NostromFactory.test.js       32 tests (factory, clones, isolation)
 frontend/                      landing page + vault console (see frontend/README.md)
   src/config/                  chains, addresses, protocol constants, wagmi
-  src/contracts/abis.ts        GENERATED from artifacts/ — never hand-edited
+  src/contracts/abis.ts        GENERATED from artifacts/: never hand-edited
   src/lib/                     protocol state machine, revert decoding, validation
   src/hooks/                   wallet, vault reads, vault writes, tx lifecycle
   src/components/              ui / web3 / landing / app
@@ -457,7 +457,7 @@ identical in both implementations.
 
 The frontend never duplicates contract logic. It reads the compiled ABIs, mirrors each
 `require`/`revert` for client-side validation with a citation back to the contract, and
-derives what a user may do from the contract's own modifiers — so it never offers an
+derives what a user may do from the contract's own modifiers, so it never offers an
 action that is certain to revert.
 
 ---
@@ -475,14 +475,14 @@ Run `npx hardhat run scripts/measure-gas.js` to reproduce.
 | `ping()` | ~37,600 | the agent, every heartbeat |
 | `deposit()` | ~25,700 | each user |
 | `executeDeadManSwitch()` (native only) | ~74,400 | any keeper |
-| *(comparison)* standalone `Nostrom.sol` deploy | ~1,688,000 | — |
+| *(comparison)* standalone `Nostrom.sol` deploy | ~1,688,000 | - |
 
 Creating a vault through the factory costs **80% less** than deploying a vault
 outright.
 
 ### Choosing the cheaper deployment
 
-There are **no protocol fees anywhere in Nostrom** — no creation fee, no cut of a
+There are **no protocol fees anywhere in Nostrom**: no creation fee, no cut of a
 rescue, nothing for the deployer to collect. Every cost below is network gas paid
 to BOT Chain validators.
 
@@ -495,7 +495,7 @@ Which contract you deploy is by far the largest lever on that cost:
 
 If you only ever want a vault for yourself, the standalone contract is **44%
 cheaper** than deploying the factory. The factory becomes the cheaper option from
-the **third vault onward** — each vault after the factory exists costs ~343,000
+the **third vault onward**: each vault after the factory exists costs ~343,000
 instead of ~1,688,000:
 
 | Vaults | Via factory | Standalone each | Cheaper |
@@ -504,7 +504,7 @@ instead of ~1,688,000:
 | 2 | 3,680,977 | 3,375,050 | standalone |
 | 3 | 4,024,328 | 5,062,575 | **factory** |
 
-Gas is also priced by the network, not by this code — the same deployment costs
+Gas is also priced by the network, not by this code: the same deployment costs
 less when the chain is quiet. Check the current gas price before deploying rather
 than paying whatever a wallet defaults to.
 
@@ -521,7 +521,7 @@ than paying whatever a wallet defaults to.
   - `NostromFactory.test.js` (32): clone mechanics, locked implementation,
     double-initialisation, uninitialised-clone griefing, CREATE2 prediction and
     salt namespacing, registry pagination, batch snapshots, keeper scanning, and
-    **multi-tenant isolation** — that one user cannot withdraw from, or trigger,
+    **multi-tenant isolation**: that one user cannot withdraw from, or trigger,
     another user's vault, and that triggering one vault leaves every other vault
     untouched.
 - `deploy.js`, `status.js`, `keeper.js`, `demo.js`, `measure-gas.js` and both
@@ -533,8 +533,8 @@ value to it.
 ### A note on `evmVersion`
 
 The config targets `cancun`. BOT Chain has both Shanghai and Cancun active on
-mainnet and testnet — confirmed by reading `withdrawalsRoot` and `blobGasUsed`
-from the latest block on `rpc.botchain.ai` (677) and `rpc.bohr.life` (968) — so
+mainnet and testnet (confirmed by reading `withdrawalsRoot` and `blobGasUsed`
+from the latest block on `rpc.botchain.ai` (677) and `rpc.bohr.life` (968)), so
 the `PUSH0` opcode is available. Using it produces smaller bytecode, which makes
 deployment ~77,000 gas cheaper for the factory and ~36,000 cheaper for a
 standalone vault, with no behavioural change.
@@ -545,7 +545,7 @@ has not activated Shanghai; that bytecode must not contain `PUSH0`.
 The build also sets `metadata.bytecodeHash: "none"`, dropping the CBOR metadata
 trailer Solidity normally appends. The EVM never reads it, and every byte of
 deployed code costs 200 gas, so removing it saves ~18,000 gas. Source
-verification still works — the explorer recompiles and compares — it just forgoes
+verification still works (the explorer recompiles and compares); it just forgoes
 a metadata-hash "full match". Set `GAS_METADATA=keep` if your verifier needs it.
 
 ### Why `optimizer.runs` is 200 and not lower
@@ -562,7 +562,7 @@ Measured with `node scripts/tune-gas.js`:
 | 200 | 2,994,275 | 37,583 |
 
 `runs: 1` saves ~45,000 gas once, then costs an extra ~166 gas on every
-heartbeat. That is a net loss after roughly 270 pings — about 11 days of hourly
+heartbeat. That is a net loss after roughly 270 pings (about 11 days of hourly
 heartbeats. Optimising a one-time cost at the expense of a perpetual one is a
 false economy, so the recurring call wins.
 

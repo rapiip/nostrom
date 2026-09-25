@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
  *
  * Deliberately few. The rule followed throughout: a Panel exists to GROUP
  * related facts, not to decorate a single one. Individual readings are laid out
- * as label/value rows inside a panel, never as one card each — hierarchy comes
+ * as label/value rows inside a panel, never as one card each; hierarchy comes
  * from type weight and space, not from nested borders.
  */
 
@@ -75,7 +75,7 @@ export function PanelBody({
 }: {
   children: ReactNode;
   className?: string;
-  /** No padding — for tables and full-bleed rows. */
+  /** No padding: for tables and full-bleed rows. */
   flush?: boolean;
 }) {
   return <div className={clsx(!flush && "px-4 py-4 sm:px-5", className)}>{children}</div>;
@@ -158,7 +158,7 @@ export function DataList({ children, className }: { children: ReactNode; classNa
 }
 
 /**
- * A headline figure. Used sparingly — at most a handful per screen, or they
+ * A headline figure. Used sparingly, at most a handful per screen, or they
  * stop being headlines.
  */
 export function Stat({

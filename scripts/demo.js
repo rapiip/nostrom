@@ -9,7 +9,7 @@
  *   npx hardhat run scripts/demo.js --network localhost   # against a local node
  *
  * Uses a 60-second timeout and fast-forwards the chain clock, so the whole
- * demo runs in seconds. On a real BOT Chain deployment you cannot skip time —
+ * demo runs in seconds. On a real BOT Chain deployment you cannot skip time;
  * use a short TIMEOUT_PERIOD there instead.
  */
 
@@ -47,7 +47,7 @@ async function main() {
   const [owner, agent, recovery, keeper] = await ethers.getSigners();
 
   console.log("\n╔════════════════════════════════════════════════════════════════╗");
-  console.log("║  NOSTROM — Dead-Man's Switch demo for AI agent treasuries       ║");
+  console.log("║  NOSTROM: Dead-Man's Switch demo for AI agent treasuries        ║");
   console.log("╚════════════════════════════════════════════════════════════════╝");
   console.log(`\nNetwork  : ${network.name} (chainId ${chainId})`);
   console.log(`Owner    : ${owner.address}`);
@@ -73,7 +73,7 @@ async function main() {
   console.log(`Vault balance    : ${ethers.formatEther(await nostrom.vaultBalance())} BOT`);
 
   // ---------------------------------------------------------------------
-  step(3, "Agent is healthy — heartbeats keep the switch disarmed");
+  step(3, "Agent is healthy: heartbeats keep the switch disarmed");
 
   for (let i = 1; i <= 3; i += 1) {
     await fastForward(20n);
@@ -108,7 +108,7 @@ async function main() {
   const rescuable = await nostrom.vaultBalance();
 
   console.log(`Keeper ${keeper.address}`);
-  console.log("calls executeDeadManSwitch() — it is not the owner and not the agent.\n");
+  console.log("calls executeDeadManSwitch(): it is not the owner and not the agent.\n");
 
   const tx = await nostrom.connect(keeper).executeDeadManSwitch();
   const receipt = await tx.wait();

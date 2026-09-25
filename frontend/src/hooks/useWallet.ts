@@ -25,7 +25,7 @@ import { decodeTxError, type DecodedTxError } from "@/lib/errors";
  * Account and chain changes are handled by wagmi's connection listeners; the
  * `useConnectionEffect` hook below exists so the app can react to a user
  * switching accounts in their wallet (React Query caches are keyed by address,
- * so reads refresh on their own — this is for the one-off side effects).
+ * so reads refresh on their own; this is for the one-off side effects).
  */
 
 export type WalletStatus =

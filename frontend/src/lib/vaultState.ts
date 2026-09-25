@@ -10,7 +10,7 @@ import { gracePercent, sameAddress } from "./format";
  *
  *   ALIVE      heartbeat recent, comfortable grace remaining
  *   EXPIRING   still alive, but the grace window is nearly gone
- *   EXECUTABLE heartbeat lapsed — ANYONE may now fire the switch
+ *   EXECUTABLE heartbeat lapsed: ANYONE may now fire the switch
  *   TRIGGERED  switch fired, treasury already evacuated to recovery
  *   UNCONFIGURED  clone exists but initialize() was never called
  *
@@ -128,7 +128,7 @@ export function isEmptySnapshot(s: VaultSnapshotStruct): boolean {
  *
  * `nowSeconds` lets the countdown tick between RPC polls. The derived deadline
  * comparison is authoritative here rather than the contract's `isExecutable`
- * boolean, because that boolean is only as fresh as the last read — a vault can
+ * boolean, because that boolean is only as fresh as the last read; a vault can
  * cross its deadline while the page sits idle. Both are consulted: if the chain
  * says executable we trust it immediately; otherwise we also check the clock.
  *

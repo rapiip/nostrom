@@ -25,7 +25,7 @@ module.exports = {
         // 200 is deliberate, not a default left untouched.
         //
         // Lowering it shrinks the bytecode and makes DEPLOY cheaper, but makes
-        // `ping()` more expensive — and ping() is the one call that recurs for
+        // `ping()` more expensive, and ping() is the one call that recurs for
         // the life of every vault. Measured: runs=1 saves ~45k gas once on the
         // factory deploy but adds ~166 gas to every heartbeat, so it turns into
         // a net loss after roughly 270 pings (about 11 days of hourly pings).
@@ -33,7 +33,7 @@ module.exports = {
         // false economy. Re-measure with `node scripts/tune-gas.js`.
         runs: Number(process.env.GAS_RUNS || 200),
       },
-      // BOT Chain has Shanghai AND Cancun active on both networks — verified by
+      // BOT Chain has Shanghai AND Cancun active on both networks: verified by
       // reading `withdrawalsRoot` and `blobGasUsed` from the latest block on
       // rpc.botchain.ai (677) and rpc.bohr.life (968). PUSH0 is therefore safe,
       // and targeting cancun instead of paris produces smaller bytecode:
@@ -47,7 +47,7 @@ module.exports = {
       // metadata trailer (an IPFS hash of the source) that the EVM never reads,
       // so dropping it saves ~18k gas on deploy with no behavioural change.
       //
-      // Source verification still works — the explorer recompiles from source
+      // Source verification still works: the explorer recompiles from source
       // and compares. It only forgoes a metadata-hash "full match". Set
       // GAS_METADATA=keep if your verifier requires that.
       ...(process.env.GAS_METADATA === "keep"

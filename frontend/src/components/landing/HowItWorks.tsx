@@ -7,7 +7,7 @@ import { Section } from "./Section";
  *
  * Four steps, each annotated with the actual function that performs it, so a
  * developer can map the prose onto the ABI without guessing. The connecting rail
- * on the left is a literal timeline — the protocol's own axis.
+ * on the left is a literal timeline, the protocol's own axis.
  */
 
 const STEPS = [
@@ -17,14 +17,14 @@ const STEPS = [
     call: "createVault(agent, recovery, timeout)",
     body: "You pick three things: the address your agent signs heartbeats from, the cold wallet that receives funds if it goes dark, and how much silence to tolerate. The factory clones a vault you own and registers it.",
     detail:
-      "The contract refuses a recovery address equal to the agent address — the hot key must never be the rescue destination.",
+      "The contract refuses a recovery address equal to the agent address: the hot key must never be the rescue destination.",
     tone: "signal" as const,
   },
   {
     n: "02",
     title: "The agent reports in",
     call: "ping()",
-    body: "Your agent calls ping() on a schedule. Each call resets the countdown. The bundled Node and Python clients do this for you, and can withhold the ping when your own health check fails — a wedged agent that keeps pinging defeats the point.",
+    body: "Your agent calls ping() on a schedule. Each call resets the countdown. The bundled Node and Python clients do this for you, and can withhold the ping when your own health check fails: a wedged agent that keeps pinging defeats the point.",
     detail:
       "ping() is the only function the agent key can call. It cannot move funds. Compromising it does not compromise the treasury.",
     tone: "signal" as const,
@@ -33,7 +33,7 @@ const STEPS = [
     n: "03",
     title: "Silence accumulates",
     call: "timeUntilTrigger()",
-    body: "If no ping arrives, the grace window drains. Up to the deadline nothing has changed — you can still withdraw, rotate the agent key, or extend the timeout. After it, the vault is armed.",
+    body: "If no ping arrives, the grace window drains. Up to the deadline nothing has changed: you can still withdraw, rotate the agent key, or extend the timeout. After it, the vault is armed.",
     detail:
       "Execution requires block.timestamp to be strictly past the deadline. At exactly the deadline the switch is not yet live.",
     tone: "warn" as const,
@@ -42,7 +42,7 @@ const STEPS = [
     n: "04",
     title: "Anyone evacuates the treasury",
     call: "executeDeadManSwitch()",
-    body: "No access control. Any keeper, watchtower or bystander can fire it. The caller cannot choose the destination — it is always the recoveryAddress you stored — so there is nothing to extract by calling it, and no reason to trust whoever does.",
+    body: "No access control. Any keeper, watchtower or bystander can fire it. The caller cannot choose the destination (it is always the recoveryAddress you stored), so there is nothing to extract by calling it, and no reason to trust whoever does.",
     detail:
       "Native BOT plus every tracked ERC-20 moves to the recovery address in one transaction.",
     tone: "danger" as const,
@@ -64,7 +64,7 @@ export function HowItWorks() {
       index="02"
       eyebrow="How it works"
       title="Four steps, and only one of them needs you."
-      lede="Steps 1 and 3 are configuration. Step 2 is your agent. Step 4 is whoever happens to be watching — which is the only reason the whole thing works when you are not."
+      lede="Steps 1 and 3 are configuration. Step 2 is your agent. Step 4 is whoever happens to be watching, which is the only reason the whole thing works when you are not."
     >
       <ol ref={ref} className="relative">
         {/* The timeline rail. */}

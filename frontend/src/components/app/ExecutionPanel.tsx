@@ -10,7 +10,7 @@ import { AddressDisplay } from "@/components/ui/Address";
 import { Notice, Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
 
 /**
- * Execution panel — the permissionless surface.
+ * Execution panel: the permissionless surface.
  *
  * Shown to every visitor, not just the owner, because that is precisely the
  * protocol's design: recovery must not depend on the owner being online. The
@@ -45,7 +45,7 @@ export function ExecutionPanel({
         />
 
         <PanelBody className="flex flex-col gap-5">
-          {/* Destination is fixed — the single most important fact here. */}
+          {/* Destination is fixed: the single most important fact here. */}
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 rounded border border-line bg-ink-800 px-3.5 py-3">
             <div>
               <span className="label">Fixed destination</span>
@@ -70,7 +70,7 @@ export function ExecutionPanel({
                   {formatDuration(view.liveSecondsRemaining)}
                 </span>{" "}
                 of grace left. Execution requires <code className="font-mono text-[12px]">block.timestamp</code>{" "}
-                to be strictly past the deadline — at exactly the deadline the switch is still closed.
+                to be strictly past the deadline; at exactly the deadline the switch is still closed.
               </Notice>
               <Button variant="danger" disabled full>
                 Execute dead-man's switch
@@ -109,7 +109,7 @@ export function ExecutionPanel({
               </Button>
 
               <p className="text-[12px] leading-relaxed text-text-faint">
-                You pay the gas — around 74,400 for a native-only rescue. You receive nothing; the
+                You pay the gas (around 74,400 for a native-only rescue). You receive nothing; the
                 funds go to the vault's recovery address. Anyone can run this, which is the point.
               </p>
             </>
@@ -120,7 +120,7 @@ export function ExecutionPanel({
             <>
               <Notice tone="danger" title="Already executed">
                 This vault's switch has fired and the treasury was evacuated. The sweeps below exist
-                for anything that arrives afterwards — forced transfers, late refunds, or tokens that
+                for anything that arrives afterwards: forced transfers, late refunds, or tokens that
                 were never on the watchlist.
               </Notice>
 
@@ -174,7 +174,7 @@ export function ExecutionPanel({
               "Any tracked ERC-20 balances"
             )}{" "}
             will be transferred to the recovery address below, and the vault will be marked
-            triggered — freezing owner withdrawals until it is re-armed. You pay the gas and receive
+            triggered, freezing owner withdrawals until it is re-armed. You pay the gas and receive
             nothing.
           </>
         }
@@ -226,7 +226,7 @@ export function RegistryWarning({
           <Warning size={14} className="mt-0.5 shrink-0 text-warn" aria-hidden />
           <span>
             This contract exposes the Nostrom vault interface but was not created by the factory this
-            app knows about. It may be a standalone deployment — or a look-alike. Do not deposit
+            app knows about. It may be a standalone deployment, or a look-alike. Do not deposit
             until you have read its source on the block explorer.
           </span>
         </div>

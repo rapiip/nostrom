@@ -90,7 +90,7 @@ describe("Nostrom", function () {
     it("rejects pings from anyone but the agent", async function () {
       const { nostrom, owner, outsider } = await loadFixture(deployFixture);
 
-      // Even the owner cannot fake a heartbeat — liveness must come from the agent.
+      // Even the owner cannot fake a heartbeat: liveness must come from the agent.
       await expect(nostrom.connect(owner).ping())
         .to.be.revertedWithCustomError(nostrom, "NotAgent")
         .withArgs(owner.address);
@@ -310,7 +310,7 @@ describe("Nostrom", function () {
 
       await nostrom.executeDeadManSwitch();
 
-      // Exactly the deposited amount moved — no double drain.
+      // Exactly the deposited amount moved: no double drain.
       expect(await ethers.provider.getBalance(await attacker.getAddress())).to.equal(ONE_BOT * 5n);
       expect(await nostrom.vaultBalance()).to.equal(0n);
       expect(await attacker.attempts()).to.equal(1n);

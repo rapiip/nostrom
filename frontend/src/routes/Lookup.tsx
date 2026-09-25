@@ -44,7 +44,7 @@ export function Lookup() {
             <Field
               label="Address"
               result={value ? result : undefined}
-              hint="Works for a factory clone or a standalone Nostrom.sol deployment — both expose the same status() and ping() interface."
+              hint="Works for a factory clone or a standalone Nostrom.sol deployment (both expose the same status() and ping() interface)."
             >
               {(a11y) => (
                 <Input
@@ -77,7 +77,7 @@ export function Lookup() {
       <Notice tone="info" title="Verify before you deposit">
         Any contract can implement the same interface. When a factory is configured, Nostrom checks{" "}
         <code className="font-mono text-[12px]">isVault()</code> and flags an address it cannot
-        verify — but read the source on the explorer before sending funds to a vault you did not
+        verify, but read the source on the explorer before sending funds to a vault you did not
         create.
       </Notice>
     </div>

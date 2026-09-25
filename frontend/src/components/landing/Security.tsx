@@ -20,7 +20,7 @@ const PROPERTIES = [
   },
   {
     title: "Atomic failure, not partial failure",
-    body: "If the native transfer fails — say the recovery address is a contract that reverts on receive — the whole transaction reverts and isTriggered stays false. The switch remains armed and retryable rather than half-executed with funds stranded.",
+    body: "If the native transfer fails (say the recovery address is a contract that reverts on receive), the whole transaction reverts and isTriggered stays false. The switch remains armed and retryable rather than half-executed with funds stranded.",
     ref: "_sendNative",
   },
   {
@@ -45,7 +45,7 @@ const PROPERTIES = [
   },
   {
     title: "The implementation locks itself",
-    body: "The shared vault logic locks its own status in its constructor, so it can never be initialised or hold funds. initialize() is callable exactly once, and the factory calls it in the same transaction as the clone — there is no window for anyone to claim someone else's vault.",
+    body: "The shared vault logic locks its own status in its constructor, so it can never be initialised or hold funds. initialize() is callable exactly once, and the factory calls it in the same transaction as the clone; there is no window for anyone to claim someone else's vault.",
     ref: "constructor",
   },
   {
@@ -65,7 +65,7 @@ export function Security() {
       index="04"
       eyebrow="Architecture & security"
       title="One factory, many isolated vaults, no privileged party."
-      lede="The factory is immutable and has no owner, no admin functions, no fees and no upgrade path — there is nothing for its deployer to abuse. Each vault is a separate contract at its own address holding its own balance, so no user's funds are ever commingled."
+      lede="The factory is immutable and has no owner, no admin functions, no fees and no upgrade path; there is nothing for its deployer to abuse. Each vault is a separate contract at its own address holding its own balance, so no user's funds are ever commingled."
     >
       <div ref={archRef} className="reveal">
         <ArchitectureDiagram />
@@ -101,7 +101,7 @@ export function Security() {
               <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
                 This was built for a hackathon. It compiles with solc 0.8.24 and has 70 passing
                 tests, including reentrancy, exact deadline boundaries, hostile ERC-20s and
-                multi-tenant isolation — but it has not been reviewed by a third party. Read the
+                multi-tenant isolation, but it has not been reviewed by a third party. Read the
                 contracts before trusting real value to them.
               </p>
             </div>
@@ -113,7 +113,7 @@ export function Security() {
           <p className="mt-2 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">
             Each vault's owner is trusted for that vault: they can withdraw at will and change the
             recovery address while the vault is healthy. Nostrom protects against{" "}
-            <span className="text-text">agent failure</span>, not against a malicious owner — point
+            <span className="text-text">agent failure</span>, not against a malicious owner; point
             the owner at a multisig if that matters. The factory trusts nobody and has no privileges
             over any vault.
           </p>
@@ -124,7 +124,7 @@ export function Security() {
         <h4 className="text-[14px] font-medium text-text">The agent still needs gas</h4>
         <p className="mt-2 max-w-[78ch] text-[13px] leading-relaxed text-text-dim">
           If the agent wallet runs out of BOT it cannot ping, and the switch will fire on a perfectly
-          healthy agent. The bundled heartbeat clients check this at startup — and fail loudly if the
+          healthy agent. The bundled heartbeat clients check this at startup and fail loudly if the
           key does not match the on-chain agentAddress, because a silent key mismatch would mean
           every ping reverts. Monitor it in production too.
         </p>

@@ -81,7 +81,7 @@ for (const c of CANDIDATES) {
     rows.push({ ...c, ...JSON.parse(line.slice(7)) });
     console.log("ok");
   } catch (e) {
-    console.log("FAILED — " + String(e.message).split("\n")[0].slice(0, 60));
+    console.log("FAILED: " + String(e.message).split("\n")[0].slice(0, 60));
     rows.push({ ...c, failed: true });
   }
 }

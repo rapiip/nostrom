@@ -3,7 +3,7 @@
  *
  * Injects an EIP-1193 provider that forwards every RPC to a local Hardhat node.
  * Hardhat's dev accounts are unlocked, so eth_sendTransaction is forwarded
- * verbatim and real transactions mine — this exercises the genuine
+ * verbatim and real transactions mine; this exercises the genuine
  * signing -> pending -> receipt path rather than a stub.
  *
  * The node is switched to 4-second interval mining for the duration, because
@@ -17,7 +17,7 @@
  *
  * Flows covered:
  *   1. connect wallet, list vaults from the batched registry read
- *   2. agent sends ping() — asserts pending precedes confirmation
+ *   2. agent sends ping(): asserts pending precedes confirmation
  *   3. a guaranteed-revert action is refused up front, with the error named
  *   4. keeper fires executeDeadManSwitch() and the scan re-reads
  *   5. unsupported network is detected and a switch is offered
@@ -140,7 +140,7 @@ async function closePage(page) {
 const results = [];
 function check(name, pass, detail = "") {
   results.push({ name, pass, detail });
-  console.log(`${pass ? "  PASS" : "  FAIL"}  ${name}${detail ? ` — ${detail}` : ""}`);
+  console.log(`${pass ? "  PASS" : "  FAIL"}  ${name}${detail ? `: ${detail}` : ""}`);
 }
 
 /** Direct JSON-RPC call to the node, for test setup. */
@@ -157,7 +157,7 @@ async function rpc(method, params = []) {
 
 /**
  * Hardhat auto-mines, so a transaction is confirmed before the UI can render a
- * pending state — which would make "never show success before confirmation"
+ * pending state, which would make "never show success before confirmation"
  * untestable. Interval mining gives a real mempool window to observe.
  */
 async function setSlowMining(intervalMs) {
@@ -201,7 +201,7 @@ async function waitForText(page, text, timeout = 25000) {
   );
 }
 
-/** Case-insensitive body-text probe — `.label` renders uppercase via CSS. */
+/** Case-insensitive body-text probe: `.label` renders uppercase via CSS. */
 async function bodyText(page) {
   return page.evaluate(() => document.body.innerText);
 }
@@ -212,7 +212,7 @@ function has(text, needle) {
 /**
  * Connect only if a Connect button is present. wagmi's shimDisconnect persists
  * the authorisation in localStorage, which the browser shares across pages on
- * the same origin — so a later page legitimately auto-reconnects.
+ * the same origin, so a later page legitimately auto-reconnects.
  */
 async function ensureConnected(page) {
   await new Promise((r) => setTimeout(r, 1200));
@@ -304,7 +304,7 @@ async function ensureConnected(page) {
     const pingsBefore = (text.match(/Lifetime pings\s+(\d+)/i) || [])[1];
 
     await clickByText(page, "button", "Send heartbeat");
-    // The dialog must show pending BEFORE success — never the other way round.
+    // The dialog must show pending BEFORE success, never the other way round.
     try {
       await waitForText(page, "Transaction submitted", 20000);
     } catch {

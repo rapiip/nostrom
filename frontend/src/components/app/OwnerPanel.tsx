@@ -91,7 +91,7 @@ export function OwnerPanel({
             </span>
           </div>
 
-          {/* Deposit — permissionless, so shown to everyone. */}
+          {/* Deposit: permissionless, so shown to everyone. */}
           {capabilities.canDeposit && (
             <Field
               label="Deposit BOT"
@@ -131,7 +131,7 @@ export function OwnerPanel({
             </Field>
           )}
 
-          {/* Withdraw — owner, not triggered. */}
+          {/* Withdraw: owner, not triggered. */}
           {capabilities.canWithdraw ? (
             <Field
               label="Withdraw to owner"
@@ -213,7 +213,7 @@ export function OwnerPanel({
                   consequence: (
                     <>
                       All <span className="tnum text-text">{formatAmount(view.balance)} BOT</span>{" "}
-                      will be sent to you. The vault will be empty but still armed — tracked ERC-20s
+                      will be sent to you. The vault will be empty but still armed; tracked ERC-20s
                       are not affected and must be withdrawn separately.
                     </>
                   ),
@@ -291,7 +291,7 @@ export function OwnerPanel({
                               {timeoutSeconds < view.timeoutPeriod && (
                                 <>
                                   {" "}
-                                  — this is <span className="text-warn">shorter</span> than the
+                                  , which is <span className="text-warn">shorter</span> than the
                                   current setting, so the switch may become executable sooner than
                                   you expect
                                 </>
@@ -352,7 +352,7 @@ export function OwnerPanel({
                                 <>
                                   If the switch fires, the entire treasury goes to{" "}
                                   <span className="tnum break-all text-text">{newRecovery}</span>{" "}
-                                  instead of the current address. Verify it character by character —
+                                  instead of the current address. Verify it character by character:
                                   a mistake here is unrecoverable.
                                 </>
                               ),
@@ -402,7 +402,7 @@ export function OwnerPanel({
                                   Only{" "}
                                   <span className="tnum break-all text-text">{newAgent}</span> will
                                   be able to send heartbeats. The current agent key stops working
-                                  immediately — make sure the new key is deployed and running, or the
+                                  immediately; make sure the new key is deployed and running, or the
                                   countdown will run out.
                                 </>
                               ),

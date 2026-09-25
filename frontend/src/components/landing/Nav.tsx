@@ -9,7 +9,7 @@ import { Logo } from "./Logo";
  * Landing navigation.
  *
  * Transparent over the hero, then gains a hairline and a solid background once
- * the page scrolls — so the hero reads as full-bleed but the nav never floats
+ * the page scrolls, so the hero reads as full-bleed but the nav never floats
  * illegibly over content. Section links are in-page; "Launch app" is the single
  * primary action and is always visible, including on mobile.
  */

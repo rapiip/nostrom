@@ -15,7 +15,7 @@ import { decodeTxError, type DecodedTxError } from "@/lib/errors";
  *
  * The distinction that matters: `success` requires a mined receipt whose status
  * is "success". Having a transaction hash means a node accepted the transaction,
- * not that it worked — and a mined transaction can still have reverted. Both are
+ * not that it worked, and a mined transaction can still have reverted. Both are
  * surfaced separately so the UI can never congratulate the user on a transaction
  * that failed.
  *

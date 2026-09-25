@@ -31,7 +31,7 @@ import { TokenWatchlist } from "@/components/app/TokenWatchlist";
  *
  * Deliberately readable without a wallet: monitoring a vault is a public act, and
  * a keeper or a counterparty should be able to inspect one before connecting
- * anything. Write surfaces appear as the connected account's capabilities allow —
+ * anything. Write surfaces appear as the connected account's capabilities allow,
  * derived from the contract's own modifiers, so nothing on screen is an action
  * that is certain to revert.
  *
@@ -188,12 +188,12 @@ export function VaultDetail() {
           }
         >
           Your wallet is on chain {wallet.chainId}, which Nostrom does not support. The state below
-          was read from {wallet.chainName ?? "the app's default network"} — switch networks before
+          was read from {wallet.chainName ?? "the app's default network"}; switch networks before
           acting on it.
         </Notice>
       ) : wallet.status !== "connected" ? (
         <Notice tone="info" title="Read-only">
-          You are viewing this vault without a connected wallet. Monitoring is public — connect to
+          You are viewing this vault without a connected wallet. Monitoring is public; connect to
           send a heartbeat, manage the vault, or execute the switch.
         </Notice>
       ) : null}
@@ -230,7 +230,7 @@ export function VaultDetail() {
                 <DataRow
                   label="Agent"
                   hint={
-                    capabilities.isAgent ? "This is you — can only call ping()" : "Can only call ping()"
+                    capabilities.isAgent ? "This is you: can only call ping()" : "Can only call ping()"
                   }
                 >
                   <AddressDisplay
@@ -260,7 +260,7 @@ export function VaultDetail() {
                 {record.creator && (
                   <DataRow
                     label="Created by"
-                    hint="Registry index, immutable — not the same as current owner"
+                    hint="Registry index, immutable (not the same as current owner)"
                   >
                     <AddressDisplay
                       address={record.creator}

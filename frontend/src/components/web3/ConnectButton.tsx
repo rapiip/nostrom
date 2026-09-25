@@ -82,7 +82,7 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
         loading={wallet.isSwitching}
         onClick={wallet.switchToDefault}
       >
-        Wrong network — switch
+        Switch network
       </Button>
     );
   }

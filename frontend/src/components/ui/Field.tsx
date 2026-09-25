@@ -9,7 +9,7 @@ import type { FieldResult } from "@/lib/validation";
  * Every input is labelled, and errors are wired to the control with
  * aria-describedby + aria-invalid so a screen reader announces the reason a
  * field was rejected rather than just that something is wrong. The error slot
- * reserves no fixed height — but it is rendered below all other content so
+ * reserves no fixed height, but it is rendered below all other content so
  * appearing does not push the input itself.
  */
 

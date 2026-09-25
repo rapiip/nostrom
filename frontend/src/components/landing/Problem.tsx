@@ -5,7 +5,7 @@ import { Section } from "./Section";
  * Problem.
  *
  * States the actual failure mode the contracts address, then the reason the
- * obvious remedies do not work. No invented statistics — the argument is
+ * obvious remedies do not work. No invented statistics; the argument is
  * structural, so it does not need any.
  *
  * Visually: a comparison of three failure paths against one recovery path,
@@ -51,7 +51,7 @@ export function Problem() {
       index="01"
       eyebrow="The problem"
       title="Autonomous agents hold funds. Autonomous agents fail silently."
-      lede="An AI agent with an operating budget needs a hot key to spend it. That key is, by construction, the least protected thing in the system — it lives in a running process, on a server, signing unattended. When that process stops, the funds do not go anywhere. They just stop being reachable."
+      lede="An AI agent with an operating budget needs a hot key to spend it. That key is, by construction, the least protected thing in the system: it lives in a running process, on a server, signing unattended. When that process stops, the funds do not go anywhere. They just stop being reachable."
     >
       <div ref={ref} className="grid gap-x-16 gap-y-12 lg:grid-cols-2">
         {/* --- Failure modes --- */}

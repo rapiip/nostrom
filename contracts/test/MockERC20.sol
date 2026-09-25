@@ -76,7 +76,7 @@ contract RevertingBalanceToken {
 
 /**
  * @dev Token whose `transfer` returns a `bytes1` instead of a `bool`. Solidity
- *      pads that to a 32-byte word like `0x0100…00`, which is neither 0 nor 1 —
+ *      pads that to a 32-byte word like `0x0100…00`, which is neither 0 nor 1:
  *      `abi.decode(data, (bool))` would revert on it. Proves the sweep decodes
  *      defensively instead of letting one weird token abort the whole rescue.
  */
@@ -93,7 +93,7 @@ contract MalformedReturnToken {
 }
 
 /**
- * @dev Token whose `transfer` returns a single raw byte — too short to decode as
+ * @dev Token whose `transfer` returns a single raw byte (too short to decode as
  *      anything. Proves the `data.length < 32` guard treats it as a failure
  *      rather than reverting.
  */

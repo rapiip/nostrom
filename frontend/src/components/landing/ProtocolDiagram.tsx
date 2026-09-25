@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
  *   rescue   -> treasury flows to the recovery address
  *
  * Everything here is a direct depiction of contract behaviour. There are no
- * floating coins, no nodes, no chain links — the metaphor is a patient monitor,
+ * floating coins, no nodes, no chain links: the metaphor is a patient monitor,
  * because that is what the contract is.
  *
  * The animation is driven by a single rAF loop writing to a canvas rather than by
@@ -106,7 +106,7 @@ export function ProtocolDiagram({ className }: { className?: string }) {
     /**
      * Assigning canvas.width/height resets the drawing surface AND the transform,
      * so anything already painted is wiped. The animated path repaints every
-     * frame and never notices, but the reduced-motion path paints exactly once —
+     * frame and never notices, but the reduced-motion path paints exactly once,
      * and ResizeObserver fires asynchronously after that single paint, which left
      * the canvas permanently blank for anyone with reduced motion enabled.
      * Every resize therefore repaints immediately.
@@ -209,7 +209,7 @@ export function ProtocolDiagram({ className }: { className?: string }) {
       }
       ctx.stroke();
 
-      // Leading cursor dot — the "live" read head.
+      // Leading cursor dot: the "live" read head.
       const lastY = traceMid - (trace[trace.length - 1] ?? 0) * (traceH * 0.34);
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -334,7 +334,7 @@ export function ProtocolDiagram({ className }: { className?: string }) {
           aria-label="Animated diagram of the Nostrom protocol lifecycle: an agent's heartbeat keeps a countdown full; when the heartbeat stops the countdown drains and the treasury is evacuated to a recovery address."
         />
 
-        {/* Caption strip — narrates the stage in protocol terms */}
+        {/* Caption strip: narrates the stage in protocol terms */}
         <div className="flex min-h-[44px] items-center border-t border-line px-4 py-2.5">
           <p className="tnum text-[11px] leading-relaxed text-text-dim" aria-live="off">
             {copy.detail}

@@ -10,7 +10,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
  *   ghost     tertiary / navigational
  *   danger    irreversible or fund-moving (withdrawals, firing the switch)
  *
- * Press feedback never changes layout bounds — colour and border only — so
+ * Press feedback never changes layout bounds (colour and border only) so
  * surrounding content cannot shift under the cursor.
  */
 
@@ -60,7 +60,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   loading?: boolean;
-  /** Decorative — callers must keep a visible text label or aria-label. */
+  /** Decorative: callers must keep a visible text label or aria-label. */
   icon?: ReactNode;
   iconRight?: ReactNode;
   full?: boolean;

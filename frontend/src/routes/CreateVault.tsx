@@ -138,7 +138,7 @@ function CreateVaultInner() {
         <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Create a vault</h1>
         <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
           You become the owner. The vault is a separate contract at its own address holding its own
-          balance — nothing is commingled with other users.
+          balance; nothing is commingled with other users.
         </p>
       </div>
 
@@ -155,7 +155,7 @@ function CreateVaultInner() {
                 label="Agent address"
                 required
                 result={validation.agent}
-                hint="The wallet your agent signs heartbeats from. It can call ping() and nothing else — it cannot move funds."
+                hint="The wallet your agent signs heartbeats from. It can call ping() and nothing else: it cannot move funds."
                 aside={
                   wallet.address && (
                     <button
@@ -186,7 +186,7 @@ function CreateVaultInner() {
                 label="Recovery address"
                 required
                 result={validation.recovery}
-                hint="The cold wallet that receives everything if the heartbeat lapses. Cannot equal the agent address. Choose carefully — while the vault is healthy you can change it, but after the switch fires the funds are already gone."
+                hint="The cold wallet that receives everything if the heartbeat lapses. Cannot equal the agent address. Choose carefully: while the vault is healthy you can change it, but after the switch fires the funds are already gone."
               >
                 {(a11y) => (
                   <Input
@@ -255,8 +255,8 @@ function CreateVaultInner() {
                     <Info size={14} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
                     <span>
                       Your agent should ping at most every{" "}
-                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> — a
-                      third of the timeout, so two missed transactions in a row are survivable. The
+                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> (a
+                      third of the timeout, so two missed transactions in a row are survivable). The
                       bundled heartbeat clients clamp to this automatically.
                     </span>
                   </div>
@@ -298,7 +298,7 @@ function CreateVaultInner() {
                 <div className="flex flex-col gap-4">
                   <p className="text-[13px] leading-relaxed text-text-dim">
                     Deterministic creation lets you compute the vault address before the transaction
-                    is mined — useful for pre-funding it, or recording it in an agent's config ahead
+                    is mined, useful for pre-funding it, or recording it in an agent's config ahead
                     of deployment. Your salt is namespaced by your own address, so nobody can squat
                     the result.
                   </p>
@@ -429,7 +429,7 @@ function CreateVaultInner() {
           </Panel>
 
           <Notice tone="warn" title="The recovery address is the whole point">
-            If the switch fires, everything goes there and nowhere else. Verify it before signing —
+            If the switch fires, everything goes there and nowhere else. Verify it before signing;
             ideally a wallet you do not operate the agent from.
           </Notice>
         </aside>

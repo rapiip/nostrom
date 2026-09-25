@@ -165,7 +165,7 @@ export function FactoryMissingNotice({
               Open a vault by address instead
             </Link>
             <p className="max-w-sm text-[12px] leading-relaxed text-text-faint">
-              Monitoring, heartbeats and execution all work from a bare vault address — the registry
+              Monitoring, heartbeats and execution all work from a bare vault address; the registry
               is only needed for discovery.
             </p>
           </div>

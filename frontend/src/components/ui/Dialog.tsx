@@ -126,7 +126,7 @@ export function Dialog({
  *
  * Shown before anything is sent to the wallet, and it states the consequence in
  * plain language. Used for withdrawals, ownership transfer, and firing the
- * switch — actions that move funds or hand over control.
+ * switch: actions that move funds or hand over control.
  */
 export function ConfirmDialog({
   open,

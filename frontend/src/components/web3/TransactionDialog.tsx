@@ -177,7 +177,7 @@ export function TransactionDialog({
                     )}
                     {isActive && step.key === "pending" && (
                       <p className="mt-0.5 text-[12px] text-text-faint">
-                        Submitted to the network. Confirmation time depends on block production —
+                        Submitted to the network. Confirmation time depends on block production;
                         this is not a guarantee of success.
                       </p>
                     )}

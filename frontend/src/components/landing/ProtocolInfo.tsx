@@ -14,7 +14,7 @@ import { Section } from "./Section";
  * Deployment status is reported truthfully per network: a chain with no
  * configured factory says so rather than showing a placeholder address. When a
  * factory IS configured for the chain the app is pointed at, the registry size
- * and implementation address are read live from it — this is the one section
+ * and implementation address are read live from it; this is the one section
  * where the landing page talks to the chain, and it is worth the round-trip
  * because "is this actually deployed" is the first question a reader has.
  *
@@ -41,7 +41,7 @@ export function ProtocolInfo() {
       index="05"
       eyebrow="Protocol"
       title="Parameters, addresses and costs."
-      lede="BOT Chain is EVM-compatible with a Geth-compatible JSON-RPC surface, so the standard toolchain applies with no chain-specific SDK. Contracts compile with solc 0.8.24, optimizer on at 200 runs, targeting the cancun EVM — BOT Chain has Shanghai and Cancun active, so PUSH0 is available and the bytecode is smaller."
+      lede="BOT Chain is EVM-compatible with a Geth-compatible JSON-RPC surface, so the standard toolchain applies with no chain-specific SDK. Contracts compile with solc 0.8.24, optimizer on at 200 runs, targeting the cancun EVM (BOT Chain has Shanghai and Cancun active, so PUSH0 is available and the bytecode is smaller)."
     >
       <div ref={ref} className="grid gap-x-14 gap-y-14 lg:grid-cols-2">
         {/* --- Networks --- */}

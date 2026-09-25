@@ -8,7 +8,7 @@
  * implementation itself, and has no owner or admin functions afterwards.
  *
  * Deploy this ONCE per network. Users then create their own vaults by calling
- * `createVault(agent, recovery, timeout)` — you do not deploy anything per user.
+ * `createVault(agent, recovery, timeout)`; you do not deploy anything per user.
  */
 
 const fs = require("fs");
@@ -82,7 +82,7 @@ async function main() {
   if (await impl.isInitialized()) {
     throw new Error("Post-deploy check failed: implementation is initialised.");
   }
-  console.log("\nChecks         : implementation locked, registry empty — OK");
+  console.log("\nChecks         : implementation locked, registry empty: OK");
 
   // --- Persist record ------------------------------------------------------
   const record = {

@@ -7,7 +7,7 @@ import { Section } from "./Section";
  * Every entry here is a function that exists in contracts/NostromFactory.sol.
  * Nothing is aspirational, and nothing is on a roadmap. The layout is a
  * definition list grouped by who can invoke what, which doubles as an
- * access-control summary — more useful than a grid of identical icon cards, and
+ * access-control summary: more useful than a grid of identical icon cards, and
  * it mirrors how the contract is actually organised.
  */
 
@@ -66,18 +66,18 @@ const GROUPS = [
       },
       {
         name: "sweepTokenToRecovery()",
-        desc: "Push any ERC-20 to recovery post-trigger — including tokens that were never on the watchlist.",
+        desc: "Push any ERC-20 to recovery post-trigger, including tokens that were never on the watchlist.",
       },
     ],
   },
 ] as const;
 
 const READS = [
-  { name: "status()", desc: "Owner, agent, recovery, balance, timeout, last ping, deadline, grace remaining, triggered, executable, ping count — in one call." },
+  { name: "status()", desc: "Owner, agent, recovery, balance, timeout, last ping, deadline, grace remaining, triggered, executable, and ping count in one call." },
   { name: "getVaultsSnapshot(address[])", desc: "Live state for many vaults in a single RPC round-trip. This console uses it to render a dashboard without an N-call fan-out." },
   { name: "getExecutableVaults(offset, limit)", desc: "Every vault that can be rescued right now. The keeper query, scanned on-chain." },
   { name: "isVault(address)", desc: "Whether an address is a genuine vault from this factory. This app gates on it so a look-alike contract cannot be mistaken for a real vault." },
-  { name: "predictVaultAddress(creator, salt)", desc: "CREATE2 address, computable before the vault exists — so it can be funded in advance." },
+  { name: "predictVaultAddress(creator, salt)", desc: "CREATE2 address, computable before the vault exists so it can be funded in advance." },
 ];
 
 export function Capabilities() {
@@ -90,7 +90,7 @@ export function Capabilities() {
       index="03"
       eyebrow="Capabilities"
       title="What each key can actually do."
-      lede="The access model is the security model, so it is worth reading literally. The agent key — the one exposed in a running process — can do exactly one thing, and it is not spending."
+      lede="The access model is the security model, so it is worth reading literally. The agent key, the one exposed in a running process, can do exactly one thing, and it is not spending."
     >
       <div ref={ref} className="grid gap-x-14 gap-y-12 lg:grid-cols-3">
         {GROUPS.map((group) => (

@@ -17,7 +17,7 @@ import { EmptyState, Label, Notice, Panel, PanelBody, PanelHeader } from "@/comp
  *
  * The EVM gives no way to enumerate a contract's token holdings, so tokens must
  * be registered explicitly to be rescued. That constraint is the reason this
- * panel exists, and it is stated up front — otherwise "why do I have to add my
+ * panel exists, and it is stated up front; otherwise "why do I have to add my
  * tokens?" is a reasonable and unanswered question.
  *
  * Token metadata is read in one batch. A token whose balanceOf reverts is shown
@@ -57,7 +57,7 @@ export function TokenWatchlist({
         <EmptyState
           icon={<Coins size={24} aria-hidden />}
           title="No tokens tracked"
-          description="The EVM cannot enumerate a contract's token holdings, so any ERC-20 you want rescued has to be registered here. Native BOT is unaffected — it is always swept."
+          description="The EVM cannot enumerate a contract's token holdings, so any ERC-20 you want rescued has to be registered here. Native BOT is unaffected: it is always swept."
         />
       ) : (
         <div>
@@ -101,7 +101,7 @@ export function TokenWatchlist({
                   <p className="tnum mt-1 text-[13px] text-text sm:mt-0">
                     {token.readable
                       ? formatAmount(token.balance, { decimals: token.decimals })
-                      : "—"}
+                      : "-"}
                   </p>
                 </div>
 
@@ -197,7 +197,7 @@ export function TokenWatchlist({
               ))}
             {details.every((t) => (t.balance ?? 0n) === 0n) && (
               <p className="text-[12px] text-text-faint">
-                All tracked token balances are zero — nothing left to sweep.
+                All tracked token balances are zero; nothing left to sweep.
               </p>
             )}
           </div>

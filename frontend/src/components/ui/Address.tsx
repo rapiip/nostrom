@@ -66,7 +66,7 @@ export function CopyButton({
 /**
  * On-chain address: truncated monospace value, copy action, explorer link.
  *
- * The explorer link is omitted rather than broken when the chain is unknown —
+ * The explorer link is omitted rather than broken when the chain is unknown:
  * a dead link on a fund-moving screen is worse than no link.
  */
 export function AddressDisplay({
@@ -92,7 +92,7 @@ export function AddressDisplay({
   tone?: "default" | "dim";
 }) {
   if (!address) {
-    return <span className={clsx("tnum text-text-faint", className)}>—</span>;
+    return <span className={clsx("tnum text-text-faint", className)}>-</span>;
   }
 
   const href = showExplorer ? explorerAddressUrl(chainId, address) : null;

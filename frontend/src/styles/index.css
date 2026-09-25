@@ -41,7 +41,7 @@
   --color-text-faint: #7d858c;
 
   /* --- Semantic status --- */
-  --color-signal: #7dd3a0; /* ALIVE — also the single brand accent */
+  --color-signal: #7dd3a0; /* ALIVE: also the single brand accent */
   --color-signal-dim: #2f6b4d;
   --color-warn: #e3b341; /* grace low */
   --color-warn-dim: #6b5321;
@@ -96,7 +96,7 @@
     text-wrap: balance;
   }
 
-  /* Small uppercase label — the workhorse of the data-dense sections.
+  /* Small uppercase label: the workhorse of the data-dense sections.
      11px rather than 10px: it carries real information (field names, units,
      column headers), so legibility beats compactness. */
   .label {
@@ -161,7 +161,7 @@
     mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
   }
 
-  /* Hairline separator that fades at both ends — used between sections so the
+  /* Hairline separator that fades at both ends, used between sections so the
      page reads as a continuous instrument rather than stacked boxes. */
   .rule-fade {
     height: 1px;
@@ -273,7 +273,7 @@
 }
 
 /* ===========================================================================
-   Reduced motion — render the final state, drop the animation.
+   Reduced motion: render the final state, drop the animation.
    =========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
