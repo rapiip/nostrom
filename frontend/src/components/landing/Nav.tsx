@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { GithubLogo, List, X } from "@phosphor-icons/react";
 import { LINKS } from "@/config/contracts";
 import { Logo } from "./Logo";
+import { BuiltOnBotChain } from "@/components/web3/BuiltOnBotChain";
 
 /**
  * Landing navigation.
@@ -81,6 +82,8 @@ export function Nav() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <BuiltOnBotChain className="hidden md:inline-flex" />
+
             <a
               href={LINKS.github}
               target="_blank"
@@ -135,6 +138,10 @@ export function Nav() {
               <GithubLogo size={16} aria-hidden />
               GitHub
             </a>
+
+            <div className="mt-3">
+              <BuiltOnBotChain />
+            </div>
           </nav>
         )}
       </header>

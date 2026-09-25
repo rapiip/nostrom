@@ -152,7 +152,7 @@ function ArchitectureDiagram() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2.5">
         <span className="label">Deployment topology</span>
         <span className="tnum text-[11px] text-text-faint">
-          EIP-1167 minimal proxies · ~80% cheaper than deploying a vault outright
+          Lightweight isolated proxies · High gas efficiency
         </span>
       </div>
 
@@ -160,16 +160,16 @@ function ArchitectureDiagram() {
         {/* Factory + implementation */}
         <div className="bg-ink-900 px-5 py-6">
           <Node
-            title="NostromFactory"
+            title="Factory Registry"
             tone="signal"
             lines={["deployed once", "no owner", "no upgrade path", "registry + creation"]}
           />
           <div className="my-4 ml-3 h-6 w-px bg-line-strong" aria-hidden />
           <Node
-            title="NostromVault"
-            subtitle="implementation"
+            title="Vault Logic"
+            subtitle="implementation template"
             tone="dim"
-            lines={["shared logic", "locked in constructor", "holds no funds"]}
+            lines={["shared logic", "locked initialization", "holds no funds"]}
           />
         </div>
 
@@ -196,8 +196,8 @@ function ArchitectureDiagram() {
             ))}
           </div>
           <p className="mt-5 text-[12px] leading-relaxed text-text-faint">
-            Tested explicitly: one user cannot withdraw from or trigger another user's vault, and
-            triggering one vault leaves every other vault untouched.
+            Complete multi-tenant isolation: one user cannot withdraw from or trigger another user's vault, and
+            activating one vault leaves every other vault untouched.
           </p>
         </div>
       </div>

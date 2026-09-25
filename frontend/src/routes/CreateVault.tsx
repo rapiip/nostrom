@@ -155,7 +155,7 @@ function CreateVaultInner() {
                 label="Agent address"
                 required
                 result={validation.agent}
-                hint="The wallet your agent signs heartbeats from. It can call ping() and nothing else: it cannot move funds."
+                hint="The wallet your agent signs heartbeats from. It can only report liveness and cannot move funds."
                 aside={
                   wallet.address && (
                     <button
@@ -254,12 +254,9 @@ function CreateVaultInner() {
                   <div className="flex items-start gap-2">
                     <Info size={14} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
                     <span>
-                      Ping at most every{" "}
-                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> — a
-                      third of the timeout, so two missed transactions in a row are still
-                      survivable. The heartbeat clients in{" "}
-                      <code className="font-mono text-[12px]">agent/</code> clamp to this
-                      automatically.
+                      Recommended heartbeat interval: every{" "}
+                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> (one-third
+                      of the timeout window) to allow for network delays without triggering false alarms.
                     </span>
                   </div>
                 </Notice>
@@ -278,7 +275,7 @@ function CreateVaultInner() {
                 result={depositResult}
                 hint={
                   wallet.balance !== undefined
-                    ? `Wallet balance: ${formatAmount(wallet.balance)} BOT. Creating and funding in one signature uses createVaultAndFund.`
+                    ? `Wallet balance: ${formatAmount(wallet.balance)} BOT. Depositing now funds the vault in the same creation transaction.`
                     : undefined
                 }
               >
@@ -320,7 +317,7 @@ function CreateVaultInner() {
                       <Field
                         label="Salt label"
                         result={saltResult}
-                        hint="A short label, hashed to a bytes32 salt. Or paste a raw 32-byte hex value. Reusing a label you already used will revert — the salt is namespaced per caller, so only your own reuse collides."
+                        hint="A unique text label or 32-byte hex salt for deterministic address deployment. Each address salt is isolated to your wallet."
                       >
                         {(a11y) => (
                           <Input
@@ -399,14 +396,10 @@ function CreateVaultInner() {
                     <span className="text-text-faint">BOT</span>
                   </span>
                 </DataRow>
-                <DataRow label="Method">
-                  <code className="font-mono text-[11px] text-text-dim">
-                    {useSalt
-                      ? "createVaultDeterministic"
-                      : (depositResult.wei ?? 0n) > 0n
-                        ? "createVaultAndFund"
-                        : "createVault"}
-                  </code>
+                <DataRow label="Deployment">
+                  <span className="text-[13px] text-text-dim">
+                    {useSalt ? "Deterministic (CREATE2)" : "Standard Factory"}
+                  </span>
                 </DataRow>
               </DataList>
 

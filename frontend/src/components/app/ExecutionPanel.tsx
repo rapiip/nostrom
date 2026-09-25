@@ -41,7 +41,7 @@ export function ExecutionPanel({
       <Panel>
         <PanelHeader
           title="Permissionless execution"
-          description="executeDeadManSwitch() has no access control. That is deliberate: if recovery required the owner to act, the vault would fail in exactly the scenario it exists for."
+          description="Anyone can trigger emergency evacuation once the deadline passes. Funds route strictly to the stored recovery address."
         />
 
         <PanelBody className="flex flex-col gap-5">
@@ -69,9 +69,7 @@ export function ExecutionPanel({
                 <span className="tnum text-text">
                   {formatDuration(view.liveSecondsRemaining)}
                 </span>{" "}
-                of grace left. Execution requires{" "}
-                <code className="font-mono text-[12px]">block.timestamp</code> to be strictly past
-                the deadline — at exactly the deadline the switch is still closed.
+                of grace left. The fail-safe arms automatically once the countdown reaches zero.
               </Notice>
               <Button variant="danger" disabled full>
                 Execute dead-man's switch
@@ -85,8 +83,7 @@ export function ExecutionPanel({
                   is active", which dropped the citation; verify-flows asserts the
                   error name is present precisely so that cannot recur. */}
               <p className="text-[12px] leading-relaxed text-text-faint">
-                Disabled because the heartbeat is current. Calling it now would revert with{" "}
-                <span className="tnum text-text-dim">AgentStillAlive</span>.
+                Disabled while the agent heartbeat is current and active.
               </p>
             </>
           )}
@@ -146,11 +143,7 @@ export function ExecutionPanel({
               </div>
               {view.balance === 0n && (
                 <p className="text-[12px] leading-relaxed text-text-faint">
-                  {/* Do not assert the funds were evacuated: a zero native balance
-                      also describes a vault that was never funded. State the
-                      contract condition instead. */}
-                  No native balance to sweep. Calling it would revert with{" "}
-                  <code className="font-mono text-[12px]">NothingToSweep</code>.
+                  No native BOT balance remaining to sweep.
                 </p>
               )}
             </>
@@ -158,10 +151,7 @@ export function ExecutionPanel({
 
           {view.phase === "UNCONFIGURED" && (
             <Notice tone="warn" title="Vault is not configured">
-              Permissionless entry points are blocked on an uninitialised vault and revert with{" "}
-              <code className="font-mono text-[12px]">NotInitialized</code>. Without that guard a
-              fresh clone's deadline would already be in the past, so anyone could flip its triggered
-              flag before its owner finished setting it up.
+              This vault has not been initialized yet. Configuration must be completed before the switch can be armed.
             </Notice>
           )}
         </PanelBody>

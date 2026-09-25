@@ -48,6 +48,13 @@
   --color-danger: #e5534b; /* lapsed / triggered */
   --color-danger-dim: #6b2a26;
 
+  /* --- Partner brand ---
+     BOT Chain's brand green, used only for the "Built on BOT Chain" attribution
+     mark so it reads as the network's own colour rather than a Nostrom status.
+     Kept distinct from --color-signal on purpose: signal means ALIVE, this means
+     "this is BOT Chain's mark". Source: botchain.ai brand (logo.png). */
+  --color-botchain: #10a37f;
+
   /* --- Typography --- */
   --font-sans:
     "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;

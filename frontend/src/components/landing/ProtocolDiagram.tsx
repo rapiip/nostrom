@@ -27,23 +27,23 @@ type Stage = "healthy" | "silence" | "lapsed" | "rescue";
 
 const STAGE_COPY: Record<Stage, { label: string; detail: string; tone: string }> = {
   healthy: {
-    label: "Agent alive",
-    detail: "ping() every interval · countdown resets · funds stay in the vault",
+    label: "Agent active",
+    detail: "Regular heartbeat signals · countdown resets · funds securely held",
     tone: "text-signal",
   },
   silence: {
     label: "Heartbeat missed",
-    detail: "no ping · grace window draining · owner can still withdraw",
+    detail: "Signal interrupted · grace period counting down · owner override open",
     tone: "text-warn",
   },
   lapsed: {
     label: "Timeout exceeded",
-    detail: "isExecutable() == true · executeDeadManSwitch() callable by anyone",
+    detail: "Grace period expired · fail-safe switch armed for execution",
     tone: "text-danger",
   },
   rescue: {
     label: "Treasury evacuated",
-    detail: "all BOT + tracked ERC-20s transferred to recoveryAddress",
+    detail: "All BOT and tracked tokens automatically routed to safe recovery wallet",
     tone: "text-danger",
   },
 };

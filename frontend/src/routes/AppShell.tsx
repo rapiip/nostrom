@@ -5,6 +5,7 @@ import { LINKS } from "@/config/contracts";
 import { useWallet } from "@/hooks/useWallet";
 import { Logo } from "@/components/landing/Logo";
 import { ConnectButton } from "@/components/web3/ConnectButton";
+import { BuiltOnBotChain } from "@/components/web3/BuiltOnBotChain";
 import { Notice } from "@/components/ui/Panel";
 
 /**
@@ -121,12 +122,15 @@ export function AppShell() {
           <p className="text-[12px] text-text-faint">
             Nostrom · Autonomous dead man's switch on BOT Chain.
           </p>
-          <Link
-            to="/"
-            className="inline-flex min-h-[28px] cursor-pointer items-center text-[12px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
-          >
-            Protocol overview
-          </Link>
+          <div className="flex items-center gap-4">
+            <BuiltOnBotChain />
+            <Link
+              to="/"
+              className="inline-flex min-h-[28px] cursor-pointer items-center text-[12px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
+            >
+              Protocol overview
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

@@ -91,14 +91,10 @@ export function HeartbeatPanel({
         {/* --- Phase-specific guidance --- */}
         {view.phase === "EXECUTABLE" && (
           <Notice tone="danger" title="The switch is live">
-            The heartbeat lapsed {formatDuration(BigInt(now) - view.deadline)} ago.{" "}
-            {/* "Any address", not "keepers". Execution has no access control at
-                all, so naming a keeper role implies a privileged class that does
-                not exist and understates who can act. */}
-            Any address can now call{" "}
-            <code className="font-mono text-[12px]">executeDeadManSwitch()</code> and move the entire
-            balance to the recovery address. If this is unexpected, act now: a heartbeat still resets
-            the countdown, and the owner can still withdraw.
+            The heartbeat lapsed {formatDuration(BigInt(now) - view.deadline)} ago. Anyone can now
+            trigger emergency evacuation to transfer the entire balance to the recovery address. If
+            this is unexpected, act now: a heartbeat still resets the countdown, and the owner can
+            still withdraw.
           </Notice>
         )}
 
@@ -111,9 +107,8 @@ export function HeartbeatPanel({
         {view.phase === "TRIGGERED" && (
           <Notice tone="danger" title="Treasury already evacuated">
             The switch fired and the balance was transferred to the recovery address. Owner
-            withdrawals and heartbeats are frozen. The owner can call{" "}
-            <code className="font-mono text-[12px]">rearm()</code> to return the vault to service
-            with a fresh agent.
+            withdrawals and heartbeats are frozen. The owner can re-arm and reactivate the vault to
+            return it to active service with a fresh agent.
           </Notice>
         )}
 
@@ -148,9 +143,8 @@ export function HeartbeatPanel({
 
         {capabilities.canPing && (
           <p className="text-[12px] leading-relaxed text-text-faint">
-            You are connected with this vault's agent key. In production the heartbeat should come
-            from your agent process rather than this page — the repository ships clients for it in{" "}
-            <code className="font-mono text-[12px]">agent/</code> for Node and Python.
+            You are connected with this vault's agent key. In live operation, heartbeats are dispatched
+            automatically by your agent process.
           </p>
         )}
       </PanelBody>

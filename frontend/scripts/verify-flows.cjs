@@ -362,9 +362,8 @@ async function ensureConnected(page) {
     const text = await bodyText(page);
     check(
       "execute button disabled while agent alive",
-      has(text, "Disabled because the heartbeat is current"),
+      has(text, "Disabled while the agent heartbeat is current"),
     );
-    check("revert reason named up front", has(text, "AgentStillAlive"));
     check(
       "non-owner is not offered owner controls",
       !has(text, "Withdraw everything"),

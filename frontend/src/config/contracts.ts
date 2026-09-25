@@ -90,6 +90,7 @@ export const TIMEOUT_PRESETS = [
 
 export const LINKS = {
   github: import.meta.env.VITE_GITHUB_URL || "https://github.com/rapiip/nostrom",
+  botchain: "https://botchain.ai",
   botchainDocs: "https://dev-docs.botchain.ai/docs/Developers/quick-guide/",
   testnetExplorer: "https://scan.bohr.life",
   mainnetExplorer: "https://scan.botchain.ai",

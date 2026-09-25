@@ -3,6 +3,7 @@ import { ArrowRight, GithubLogo, Terminal } from "@phosphor-icons/react";
 import { LINKS } from "@/config/contracts";
 import { useReveal } from "@/hooks/useReveal";
 import { Logo } from "./Logo";
+import { BuiltOnBotChain } from "@/components/web3/BuiltOnBotChain";
 
 /**
  * Integration + final CTA.
@@ -166,6 +167,10 @@ export function Footer() {
             <p className="mt-4 max-w-[34ch] text-[13px] leading-relaxed text-text-dim">
               Fail-safe vaults for autonomous agent treasuries. Silence is the trigger.
             </p>
+
+            <div className="mt-6">
+              <BuiltOnBotChain variant="lockup" />
+            </div>
           </div>
 
           <FooterColumn

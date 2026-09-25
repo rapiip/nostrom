@@ -93,7 +93,7 @@ function explainCustomError(name: string, args: readonly unknown[]): DecodedTxEr
         kind: "revert",
         errorName: name,
         title: "Vault already configured",
-        detail: "initialize() can only be called once, and the factory already called it.",
+        detail: "This vault has already been initialized and its configuration is locked.",
       };
 
     /* --- Input validation ------------------------------------------------- */
