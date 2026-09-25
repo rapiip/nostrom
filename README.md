@@ -448,7 +448,7 @@ frontend/                      landing page + vault console (see frontend/README
 design-system/nostrom/
   MASTER.md                    generated baseline (left untouched)
   pages/frontend.md            protocol-derived system that overrides it
-DEPLOY_REMIX.md                Remix + MetaMask walkthrough (Indonesian)
+DEPLOY_REMIX.md                Remix + MetaMask walkthrough
 ```
 
 The heartbeat clients work unchanged against a factory-created vault: point
@@ -527,8 +527,9 @@ than paying whatever a wallet defaults to.
 - `deploy.js`, `status.js`, `keeper.js`, `demo.js`, `measure-gas.js` and both
   heartbeat clients were each executed end-to-end against a local test node.
 
-**Not audited.** This was built for a hackathon. Review it before trusting real
-value to it.
+**Independent audit pending.** The contracts are covered by 70 automated tests
+(see below), but have not yet undergone a third-party security audit. Review them
+before trusting significant value to them.
 
 ### A note on `evmVersion`
 

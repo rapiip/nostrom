@@ -2,8 +2,8 @@
  * Nostrom end-to-end lifecycle demo.
  *
  * Walks the full story in one command: fund -> healthy heartbeat -> agent dies
- * -> permissionless rescue. Designed for a hackathon demo and as a smoke test
- * of the whole system.
+ * -> permissionless rescue. Serves as a one-command lifecycle walkthrough and a
+ * smoke test of the whole system.
  *
  *   npx hardhat run scripts/demo.js                      # in-process network
  *   npx hardhat run scripts/demo.js --network localhost   # against a local node

@@ -42,8 +42,8 @@ export function Security() {
             multi-tenant isolation.
           </p>
           <p className="mt-3 border-t border-warn-dim pt-3 text-[13px] leading-relaxed text-text-dim">
-            <span className="font-medium text-warn">Not audited.</span> Built for a hackathon. Review
-            it before trusting real value to it.
+            <span className="font-medium text-warn">Independent audit pending.</span> Review the
+            contracts before trusting significant value to them.
           </p>
         </div>
 
