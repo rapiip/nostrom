@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
  * The chain's own `secondsRemaining` is still read on each poll and is what the
  * contract will act on; this is the interpolation in between. Validator clock
  * drift against the browser is a few seconds, which is irrelevant against
- * timeouts measured in hours, which is the same assumption the contracts make, kept true
+ * timeouts measured in hours — the same assumption the contracts make, kept true
  * by MIN_TIMEOUT_PERIOD.
  */
 
@@ -44,7 +44,7 @@ export function useClock(): number {
 
     // Browsers throttle intervals in background tabs, so the last tick can be
     // badly stale when a tab is restored. Re-sync on visibility rather than in
-    // the effect body, since useState(nowSeconds) already gives a fresh value on mount.
+    // the effect body — useState(nowSeconds) already gives a fresh value on mount.
     const onVisible = () => {
       if (document.visibilityState === "visible") setT(nowSeconds());
     };

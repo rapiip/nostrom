@@ -13,7 +13,7 @@ import type { SupportedChainId } from "./chains";
  *   VITE_FACTORY_ADDRESS_31337=0x...  # local hardhat node
  *
  * `scripts/deploy-factory.js` prints the address and writes it to
- * deployments/factory-<network>-<chainId>.json; copy it from there.
+ * deployments/factory-<network>-<chainId>.json — copy it from there.
  *
  * When no address is configured for the connected chain the console degrades to
  * a clearly-labelled "factory not deployed" state instead of pretending.
@@ -49,7 +49,7 @@ export function chainsWithFactory(ids: readonly SupportedChainId[]): SupportedCh
    ---------------------------------------------------------------------------
    Mirrored from the contracts so the UI can validate input before it costs the
    user gas. These are also read back on-chain (see useProtocolLimits) and the
-   on-chain values always win. These are the optimistic defaults used for
+   on-chain values always win — these are the optimistic defaults used for
    instant client-side validation.
 
    Source: contracts/NostromFactory.sol

@@ -35,9 +35,9 @@ export interface CreateVaultParams {
   agent: Address;
   recovery: Address;
   timeoutSeconds: bigint;
-  /** Optional initial deposit: routed through createVaultAndFund. */
+  /** Optional initial deposit — routed through createVaultAndFund. */
   depositWei?: bigint;
-  /** Optional salt: routed through createVaultDeterministic (CREATE2). */
+  /** Optional salt — routed through createVaultDeterministic (CREATE2). */
   salt?: string;
 }
 
@@ -107,7 +107,7 @@ export function useCreateVault(
 export interface VaultActions {
   tx: UseTransactionResult;
 
-  /** onlyAgent: proof of life. Resets the countdown. */
+  /** onlyAgent — proof of life. Resets the countdown. */
   ping: () => void;
 
   /**
@@ -118,15 +118,15 @@ export interface VaultActions {
    */
   deposit: (wei: bigint) => void;
 
-  /** onlyOwner: normal withdrawals. */
+  /** onlyOwner — normal withdrawals. */
   withdraw: (wei: bigint) => void;
   withdrawAll: () => void;
   withdrawToken: (token: Address, to: Address, amount: bigint, symbol?: string) => void;
 
-  /** Permissionless: the whole point of the protocol. */
+  /** Permissionless — the whole point of the protocol. */
   executeDeadManSwitch: () => void;
 
-  /** Permissionless, post-trigger: push late arrivals to recovery. */
+  /** Permissionless, post-trigger — push late arrivals to recovery. */
   sweepNative: () => void;
   sweepToken: (token: Address, symbol?: string) => void;
 
@@ -136,10 +136,10 @@ export interface VaultActions {
   updateAgent: (address: Address) => void;
   transferOwnership: (address: Address) => void;
 
-  /** onlyOwner, post-trigger: return a fired vault to service. */
+  /** onlyOwner, post-trigger — return a fired vault to service. */
   rearm: () => void;
 
-  /** onlyOwner: ERC-20 sweep watchlist. */
+  /** onlyOwner — ERC-20 sweep watchlist. */
   addTrackedToken: (token: Address) => void;
   removeTrackedToken: (token: Address) => void;
 }

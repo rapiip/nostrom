@@ -53,11 +53,11 @@ async function main() {
   console.log("");
 
   if (s.triggered) {
-    console.log("STATE           : TRIGGERED: funds were evacuated to the recovery address.");
+    console.log("STATE           : TRIGGERED — funds were evacuated to the recovery address.");
   } else if (s.executable) {
-    console.log("STATE           : EXPIRED: anyone can call executeDeadManSwitch() right now.");
+    console.log("STATE           : EXPIRED — anyone can call executeDeadManSwitch() right now.");
   } else {
-    console.log(`STATE           : HEALTHY: ${formatDuration(s.secondsRemaining)} of grace left.`);
+    console.log(`STATE           : HEALTHY — ${formatDuration(s.secondsRemaining)} of grace left.`);
   }
 
   if (tokens.length > 0) {

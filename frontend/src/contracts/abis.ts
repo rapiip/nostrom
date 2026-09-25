@@ -1,5 +1,5 @@
 /**
- * AUTO-GENERATED: DO NOT EDIT.
+ * AUTO-GENERATED — DO NOT EDIT.
  *
  * Source: Hardhat artifacts under ../../artifacts/contracts
  * Regenerate: npm run sync:abis

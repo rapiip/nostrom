@@ -5,7 +5,7 @@
  *
  * The compiled artifacts in ../artifacts are the single source of truth for the
  * contract interface. They are gitignored, so the generated TypeScript file IS
- * committed, but it must never be hand-edited. Re-run this script after any
+ * committed — but it must never be hand-edited. Re-run this script after any
  * change to contracts/.
  *
  * Only the ABI fragments the frontend actually calls are emitted, which keeps
@@ -61,7 +61,7 @@ function loadAbi({ artifact, keep }) {
 }
 
 const banner = `/**
- * AUTO-GENERATED: DO NOT EDIT.
+ * AUTO-GENERATED — DO NOT EDIT.
  *
  * Source: Hardhat artifacts under ../../artifacts/contracts
  * Regenerate: npm run sync:abis

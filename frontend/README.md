@@ -3,7 +3,7 @@
 Landing page and vault console for the Nostrom dead-man's switch protocol.
 
 The contracts in `../contracts/` are the source of truth. This app exposes what they
-actually do: no invented features, no hardcoded addresses, no contract logic
+actually do — no invented features, no hardcoded addresses, no contract logic
 reimplemented in TypeScript.
 
 ```
@@ -39,7 +39,7 @@ VITE_FACTORY_ADDRESS_968=0x…        # BOT Chain testnet
 ```
 
 Without it the console says so plainly rather than failing oddly. **Monitoring,
-heartbeats and execution still work from a bare vault address** (use *Look up*). The
+heartbeats and execution still work from a bare vault address** — use *Look up*. The
 registry is only needed for discovery.
 
 ---
@@ -48,8 +48,8 @@ registry is only needed for discovery.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Build | Vite 8 | No SSR needed; the app is entirely client-side and wallet-driven |
-| UI | React 19 + TypeScript (strict) | - |
+| Build | Vite 8 | No SSR needed — the app is entirely client-side and wallet-driven |
+| UI | React 19 + TypeScript (strict) | — |
 | Styling | Tailwind 4 (CSS-first `@theme`) | Tokens live in `src/styles/index.css`, one place |
 | Chain | wagmi 3 + viem | Account/chain-change handling and reorg-safe receipts |
 | Data | TanStack Query (via wagmi) | Read caching and polling |
@@ -69,7 +69,7 @@ dependency.
 ```
 src/
   config/       chains, contract addresses, protocol constants, wagmi setup
-  contracts/    abis.ts (GENERATED, do not edit)
+  contracts/    abis.ts — GENERATED, do not edit
   lib/          format · vaultState · errors · validation   (no React)
   hooks/        useWallet · useVault · useVaultActions · useTransaction · useClock
   components/
@@ -102,7 +102,7 @@ for the full specification and the rationale for overriding `MASTER.md`.
 
 In short: the protocol is a countdown that a proof-of-life signal keeps resetting, so the
 interface is a monitoring instrument. Near-black base, hairline rules, monospace for every
-on-chain value, and **colour reserved entirely for status**: green alive, amber expiring,
+on-chain value, and **colour reserved entirely for status** — green alive, amber expiring,
 red lapsed. No gradients, no glow, no floating coins.
 
 ---
@@ -119,7 +119,7 @@ idle -> signing -> pending -> success | reverted | error
 ```
 
 `success` requires a mined receipt with `status === "success"`. A transaction hash means
-a node accepted it, not that it worked, and a mined transaction can still revert. Both
+a node accepted it, not that it worked — and a mined transaction can still revert. Both
 outcomes are surfaced distinctly, with block number, gas used, hash and an explorer link.
 
 Verified against a real mempool with 4-second blocks, not with auto-mining.
@@ -137,7 +137,7 @@ Verified against a real mempool with 4-second blocks, not with auto-mining.
 
 Input validation in `lib/validation.ts` mirrors each contract check with a citation, so a
 user never pays gas to learn that `recoveryAddress` cannot equal `agentAddress`. When an
-action genuinely cannot be taken, the button is disabled *and* the reason is named,
+action genuinely cannot be taken, the button is disabled *and* the reason is named —
 including the custom error it would revert with.
 
 All 18 custom errors in `NostromFactory.sol` are decoded into plain language by
@@ -160,20 +160,20 @@ node scripts/verify-flows.cjs        # 6 wallet/transaction flows, live chain
 
 `verify-ui.cjs` checks horizontal overflow, tap-target size (WCAG 2.2 AA 2.5.8, with the
 inline-link exemption), minimum text size, and **computed** WCAG contrast for every text
-node by resolving alpha backgrounds up the ancestor chain. It caught three real contrast
+node — resolving alpha backgrounds up the ancestor chain. It caught three real contrast
 failures that eyeballing did not.
 
 `verify-flows.cjs` injects an EIP-1193 provider backed by a local Hardhat node. Hardhat's
 dev accounts are unlocked, so `eth_sendTransaction` is forwarded verbatim and real
-transactions mine, exercising the genuine signing → pending → receipt path.
+transactions mine — it exercises the genuine signing → pending → receipt path.
 
 ### Local end-to-end setup
 
 ```bash
-# terminal 1 (from the repo root)
+# terminal 1 — from the repo root
 npx hardhat node
 
-# terminal 2 (from the repo root)
+# terminal 2 — from the repo root
 npx hardhat run scripts/deploy-factory.js --network localhost
 npx hardhat run frontend/scripts/seed-local.cjs --network localhost   # 5 vaults, every state
 ```
@@ -186,8 +186,8 @@ VITE_ENABLE_LOCALHOST=true
 VITE_DEFAULT_CHAIN_ID=31337
 ```
 
-`seed-local.cjs` creates a vault in each protocol state (alive, expiring, executable,
-triggered, empty) plus a tracked ERC-20, so every UI branch can be exercised against
+`seed-local.cjs` creates a vault in each protocol state — alive, expiring, executable,
+triggered, empty — plus a tracked ERC-20, so every UI branch can be exercised against
 real chain data. `inspect-local.cjs` dumps live state if a flow behaves unexpectedly.
 
 ---
@@ -199,13 +199,13 @@ Never put a private key here.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `VITE_FACTORY_ADDRESS_968` | - | Factory on BOT Chain testnet |
-| `VITE_FACTORY_ADDRESS_677` | - | Factory on BOT Chain mainnet |
-| `VITE_FACTORY_ADDRESS_31337` | - | Factory on a local Hardhat node |
+| `VITE_FACTORY_ADDRESS_968` | — | Factory on BOT Chain testnet |
+| `VITE_FACTORY_ADDRESS_677` | — | Factory on BOT Chain mainnet |
+| `VITE_FACTORY_ADDRESS_31337` | — | Factory on a local Hardhat node |
 | `VITE_DEFAULT_CHAIN_ID` | `968` | Chain an unconnected visitor reads from |
 | `VITE_ENABLE_LOCALHOST` | `false` | Offer chain 31337 as a selectable network |
 | `VITE_RPC_968` / `VITE_RPC_677` | from `hardhat.config.js` | RPC overrides |
-| `VITE_GITHUB_URL` | - | Repository link in nav and footer |
+| `VITE_GITHUB_URL` | — | Repository link in nav and footer |
 
 `VITE_DEFAULT_CHAIN_ID` also determines which chain is first in `supportedChains`, because
 wagmi initialises its current chain to `chains[0]`. If the two disagreed, a visitor with no

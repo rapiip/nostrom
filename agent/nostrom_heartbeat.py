@@ -53,7 +53,7 @@ LOGGER = logging.getLogger("nostrom")
 # BOT Chain testnet (chainId 968). Mainnet: https://rpc.botchain.ai (chainId 677).
 DEFAULT_RPC_URL = "https://rpc.bohr.life"
 
-# Minimal ABI: only what the agent needs.
+# Minimal ABI — only what the agent needs.
 NOSTROM_ABI = json.loads(
     """
 [
@@ -260,7 +260,7 @@ class NostromHeartbeat:
         status = self.get_status()
         if status.is_triggered:
             raise VaultTriggeredError(
-                "Vault already triggered: the switch has fired and pings are frozen."
+                "Vault already triggered — the switch has fired and pings are frozen."
             )
 
         gas_balance = self.w3.eth.get_balance(self.address)
@@ -310,8 +310,8 @@ class NostromHeartbeat:
 
             if not healthy:
                 # Deliberately do NOT ping. An unhealthy agent should let the
-                # switch arm: that is the entire purpose of the vault.
-                LOGGER.warning("health_check failed: withholding heartbeat so the fail-safe can arm.")
+                # switch arm — that is the entire purpose of the vault.
+                LOGGER.warning("health_check failed — withholding heartbeat so the fail-safe can arm.")
                 return {"skipped": True, "reason": "unhealthy"}
 
         last_error: Optional[Exception] = None
@@ -365,7 +365,7 @@ class NostromHeartbeat:
 
             except ContractLogicError as exc:
                 message = str(exc)
-                # Unrecoverable: retrying cannot help.
+                # Unrecoverable — retrying cannot help.
                 if "SwitchAlreadyTriggered" in message:
                     self._running = False
                     raise VaultTriggeredError(

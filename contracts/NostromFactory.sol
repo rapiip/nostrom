@@ -3,15 +3,15 @@ pragma solidity 0.8.24;
 
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- *  NOSTROM PROTOCOL: multi-tenant Dead-Man's Switch vaults for BOT Chain
+ *  NOSTROM PROTOCOL — multi-tenant Dead-Man's Switch vaults for BOT Chain
  * ═══════════════════════════════════════════════════════════════════════════
  *
  *  This single file contains the whole protocol so it can be pasted straight
  *  into Remix:
  *
- *    1. Clones        : EIP-1167 minimal proxy helper (from OpenZeppelin v5)
- *    2. NostromVault  : the vault logic, one instance per user
- *    3. NostromFactory: deploy THIS one. It creates vaults for everybody.
+ *    1. Clones        — EIP-1167 minimal proxy helper (from OpenZeppelin v5)
+ *    2. NostromVault  — the vault logic, one instance per user
+ *    3. NostromFactory— deploy THIS one. It creates vaults for everybody.
  *
  *  ── How multi-tenancy works ────────────────────────────────────────────────
  *  You deploy `NostromFactory` exactly once. Its constructor also deploys a
@@ -26,7 +26,7 @@ pragma solidity 0.8.24;
  *  registry so a frontend can find and display them.
  *
  *  Because vaults are EIP-1167 clones, creating one costs a small fraction of
- *  a full deployment; the clone is ~45 bytes of bytecode that delegates every
+ *  a full deployment — the clone is ~45 bytes of bytecode that delegates every
  *  call to the shared implementation.
  *
  *  ── Trust model ────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ pragma solidity 0.8.24;
  */
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  1. Clones: EIP-1167 minimal proxy
+//  1. Clones — EIP-1167 minimal proxy
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
@@ -118,7 +118,7 @@ interface IERC20 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  2. NostromVault: one instance per user
+//  2. NostromVault — one instance per user
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
@@ -129,7 +129,7 @@ interface IERC20 {
  *      cannot run a constructor, so configuration happens in {initialize},
  *      which the factory calls atomically in the same transaction as the clone.
  *
- *      Do NOT deploy this contract directly and expect to use it: deploy
+ *      Do NOT deploy this contract directly and expect to use it — deploy
  *      {NostromFactory} and call `createVault` instead. The copy the factory
  *      deploys as its implementation is permanently locked by its constructor
  *      and can never hold funds.
@@ -265,8 +265,8 @@ contract NostromVault {
     uint256 public timeoutPeriod;
 
     /**
-     * @dev `_lastPingTime` and `_pingCount` share one storage slot so {ping} (
-     *      by far the most frequent call in the protocol) costs a single
+     * @dev `_lastPingTime` and `_pingCount` share one storage slot so {ping} —
+     *      by far the most frequent call in the protocol — costs a single
      *      SSTORE instead of two. Public getters below still expose uint256 so
      *      the ABI is unchanged. uint128 is far beyond any plausible timestamp
      *      or ping total.
@@ -480,7 +480,7 @@ contract NostromVault {
     /**
      * @notice Fire the dead-man's switch and evacuate the treasury.
      *
-     * @dev PERMISSIONLESS: any address (keeper bot, watchtower, the owner, a
+     * @dev PERMISSIONLESS — any address (keeper bot, watchtower, the owner, a
      *      bystander) may call this. That is the point: recovery must not depend
      *      on any single party being online. The caller cannot choose the
      *      destination, so there is no value to extract by calling it.
@@ -826,7 +826,7 @@ contract NostromVault {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  3. NostromFactory: deploy this one
+//  3. NostromFactory — deploy this one
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
@@ -841,12 +841,12 @@ contract NostromVault {
  *      no pause, no upgrade. There is nothing here for the deployer to abuse,
  *      which is what makes it safe for strangers to build on.
  *
- * ## Registry semantics: read this before building a frontend
+ * ## Registry semantics — read this before building a frontend
  * `vaultsOf(creator)` is indexed by the address that CALLED `createVault`, and
  * that link never changes. It is not the same thing as "current owner": a vault
  * owner can hand the vault over with `transferOwnership`, and agent/recovery
  * addresses can be rotated too. The factory does not track those changes, on
- * purpose; mirroring mutable vault state into factory storage would cost every
+ * purpose — mirroring mutable vault state into factory storage would cost every
  * user gas forever and couple the vault to the factory at runtime.
  *
  * For live state, read it from the vault itself. {getVaultsSnapshot} batches
@@ -972,7 +972,7 @@ contract NostromFactory {
 
     /**
      * @notice Create a vault and fund it in the same transaction.
-     * @dev    One signature instead of two: the path a frontend should use.
+     * @dev    One signature instead of two — the path a frontend should use.
      */
     function createVaultAndFund(
         address _agentAddress,
@@ -1020,7 +1020,7 @@ contract NostromFactory {
     }
 
     // -------------------------------------------------------------------------
-    // Registry views: global
+    // Registry views — global
     // -------------------------------------------------------------------------
 
     /// @notice Total vaults created by this factory.
@@ -1049,7 +1049,7 @@ contract NostromFactory {
     }
 
     // -------------------------------------------------------------------------
-    // Registry views: per creator
+    // Registry views — per creator
     // -------------------------------------------------------------------------
 
     /// @notice How many vaults an address has created.
@@ -1075,7 +1075,7 @@ contract NostromFactory {
     }
 
     // -------------------------------------------------------------------------
-    // Live batch reads: what a dashboard and a keeper actually need
+    // Live batch reads — what a dashboard and a keeper actually need
     // -------------------------------------------------------------------------
 
     /**

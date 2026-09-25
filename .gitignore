@@ -21,7 +21,7 @@ frontend/.vite/
 # Logs from local nodes / dev servers
 *.log
 
-# Agent tooling / skill definitions: editor configuration, not project code.
+# Agent tooling / skill definitions — editor configuration, not project code.
 # Remove this line if you want your steering docs versioned with the protocol.
 .kiro/
 

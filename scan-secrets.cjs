@@ -33,7 +33,7 @@ const PATTERNS = [
 /**
  * BIP-39 mnemonics need their own check rather than a regex.
  *
- * "any 12+ consecutive lowercase words" matches ordinary English prose; the
+ * "any 12+ consecutive lowercase words" matches ordinary English prose — the
  * first version of this scanner flagged eight passages of documentation. A real
  * seed phrase sits on ONE line, has exactly 12/15/18/21/24 words, every word is
  * 3-8 lowercase letters, and it contains none of the function words that make

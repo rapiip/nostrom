@@ -19,7 +19,7 @@
  *   // ... agent does its real work ...
  *   await heartbeat.stop();
  *
- * Health-gated variant: only report liveness if the agent is actually well,
+ * Health-gated variant — only report liveness if the agent is actually well,
  * which is what makes this a real dead-man's switch rather than a cron job:
  *
  *   const heartbeat = new NostromHeartbeat({
@@ -35,7 +35,7 @@
 
 const { ethers } = require("ethers");
 
-/** Minimal ABI: only what the agent needs. */
+/** Minimal ABI — only what the agent needs. */
 const NOSTROM_ABI = [
   "function ping() external",
   "function agentAddress() view returns (address)",
@@ -150,7 +150,7 @@ class NostromHeartbeat {
 
     const status = await this.getStatus();
     if (status.isTriggered) {
-      throw new Error("Vault already triggered: the switch has fired and pings are frozen.");
+      throw new Error("Vault already triggered — the switch has fired and pings are frozen.");
     }
 
     const gasBalance = await this.provider.getBalance(this.address);
@@ -197,7 +197,7 @@ class NostromHeartbeat {
       }
       if (!healthy) {
         // Deliberately do NOT ping. An unhealthy agent should let the switch arm.
-        this.log("warn", "healthCheck failed: withholding heartbeat so the fail-safe can arm.");
+        this.log("warn", "healthCheck failed — withholding heartbeat so the fail-safe can arm.");
         return { skipped: true, reason: "unhealthy" };
       }
     }
@@ -243,7 +243,7 @@ class NostromHeartbeat {
         lastError = error;
         const reason = error.shortMessage ?? error.message;
 
-        // Unrecoverable conditions: stop retrying immediately.
+        // Unrecoverable conditions — stop retrying immediately.
         if (/SwitchAlreadyTriggered/.test(reason)) {
           this.log("error", "Vault is triggered. Heartbeats are permanently frozen.");
           this.running = false;

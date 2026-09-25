@@ -87,7 +87,7 @@ export function useProtocolLimits(vault: Address | undefined) {
  *
  * The factory's own docs say a frontend should gate on this so users cannot be
  * tricked into interacting with a look-alike contract, so the vault console does
- * exactly that, and says plainly when it cannot verify (no factory configured).
+ * exactly that — and says plainly when it cannot verify (no factory configured).
  */
 export function useIsRegisteredVault(vault: Address | undefined) {
   const { address } = useFactory();
@@ -144,7 +144,7 @@ export function useVaultRecord(vault: Address | undefined) {
  * `status()` per vault would be N calls.
  *
  * Note the registry semantics: `vaultsOf` is indexed by who CALLED createVault,
- * and that link never changes. It is not "current owner"; ownership can be
+ * and that link never changes. It is not "current owner" — ownership can be
  * transferred. Consumers are expected to compare snapshot.owner when that
  * distinction matters.
  */
@@ -196,7 +196,7 @@ export function useMyVaults() {
 }
 
 /**
- * Vaults whose switch can be fired right now: the keeper's primary query.
+ * Vaults whose switch can be fired right now — the keeper's primary query.
  * `getExecutableVaults` runs the scan on-chain inside a try/catch per vault, so
  * one pathological vault cannot break the page.
  */
@@ -265,7 +265,7 @@ export interface UseVaultResult {
 /**
  * Full live state for one vault, by address.
  *
- * Works for a factory clone and for a standalone Nostrom.sol deployment alike:
+ * Works for a factory clone and for a standalone Nostrom.sol deployment alike —
  * `status()`, `ping()` and the rest have identical signatures in both, which is
  * why one ABI covers both cases.
  *
