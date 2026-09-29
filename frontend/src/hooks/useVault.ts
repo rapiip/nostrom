@@ -41,7 +41,7 @@ export function useFactoryInfo() {
           { address, abi: nostromFactoryAbi, functionName: "MAX_PAGE_LIMIT" },
         ]
       : [],
-    query: { enabled: Boolean(address) },
+    query: { enabled: Boolean(address), refetchInterval: 30_000 },
   });
 
   const [impl, total, maxPage] = query.data ?? [];
@@ -53,6 +53,7 @@ export function useFactoryInfo() {
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
+    dataUpdatedAt: query.dataUpdatedAt,
     refetch: query.refetch,
   };
 }
@@ -158,7 +159,8 @@ export function useMyVaults() {
     abi: nostromFactoryAbi,
     functionName: "vaultsOf",
     args: account ? [account] : undefined,
-    query: { enabled: Boolean(factory && account) },
+    // A vault created in another tab should appear without a manual refresh.
+    query: { enabled: Boolean(factory && account), refetchInterval: 30_000 },
   });
 
   const addresses = (list.data as readonly Address[] | undefined) ?? [];
@@ -168,7 +170,8 @@ export function useMyVaults() {
     abi: nostromFactoryAbi,
     functionName: "getVaultsSnapshot",
     args: [addresses],
-    query: { enabled: Boolean(factory) && addresses.length > 0 },
+    // The page copy promises a 12-second refresh; this is what keeps it true.
+    query: { enabled: Boolean(factory) && addresses.length > 0, refetchInterval: 12_000 },
   });
 
   const vaults = useMemo<VaultView[]>(() => {
@@ -191,37 +194,82 @@ export function useMyVaults() {
     isError: list.isError || snapshots.isError,
     error: list.error ?? snapshots.error,
     isEmpty: !list.isLoading && addresses.length === 0,
+    isFetching: list.isFetching || snapshots.isFetching,
+    /** Milliseconds; the older of the two reads, since both feed the list. */
+    updatedAt: oldestUpdate(list.dataUpdatedAt, addresses.length > 0 ? snapshots.dataUpdatedAt : undefined),
     refetch,
   };
 }
+
+/** Oldest non-zero timestamp, i.e. how stale the combined view can be. */
+function oldestUpdate(...values: (number | undefined)[]): number | undefined {
+  const set = values.filter((v): v is number => typeof v === "number" && v > 0);
+  return set.length > 0 ? Math.min(...set) : undefined;
+}
+
+/**
+ * Page size for the keeper scan. `getExecutableVaults` calls `isExecutable()`
+ * on every vault in the page inside one eth_call, so the page is kept well
+ * under MAX_PAGE_LIMIT (500) to stay clear of RPC gas caps on eth_call.
+ */
+export const KEEPER_PAGE_SIZE = 250n;
+/** Upper bound on pages per scan: 10 × 250 = 2,500 vaults per refresh. */
+export const KEEPER_MAX_PAGES = 10;
 
 /**
  * Vaults whose switch can be fired right now — the keeper's primary query.
  * `getExecutableVaults` runs the scan on-chain inside a try/catch per vault, so
  * one pathological vault cannot break the page.
+ *
+ * The registry is scanned in full, page by page, sized from `totalVaults`. A
+ * single fixed-size call would silently ignore every vault past the first page
+ * and report "every agent is alive" while vaults further down the registry sat
+ * executable — the one wrong answer a keeper screen must never give.
  */
-export function useExecutableVaults(limit = 100n) {
+export function useExecutableVaults() {
   const { address: factory } = useFactory();
   const now = useClock();
+  const info = useFactoryInfo();
 
-  const scan = useReadContract({
-    address: factory ?? undefined,
-    abi: nostromFactoryAbi,
-    functionName: "getExecutableVaults",
-    args: [0n, limit],
-    query: { enabled: Boolean(factory), refetchInterval: 15_000 },
+  const total = info.totalVaults;
+  const pagesNeeded = total === undefined ? 0 : Number((total + KEEPER_PAGE_SIZE - 1n) / KEEPER_PAGE_SIZE);
+  const pageCount = Math.min(pagesNeeded, KEEPER_MAX_PAGES);
+
+  const scan = useReadContracts({
+    contracts:
+      factory && pageCount > 0
+        ? Array.from({ length: pageCount }, (_, i) => ({
+            address: factory,
+            abi: nostromFactoryAbi,
+            functionName: "getExecutableVaults" as const,
+            args: [BigInt(i) * KEEPER_PAGE_SIZE, KEEPER_PAGE_SIZE] as const,
+          }))
+        : [],
+    query: { enabled: Boolean(factory) && pageCount > 0, refetchInterval: 15_000 },
   });
 
-  const tuple = scan.data as readonly [readonly Address[], bigint] | undefined;
-  const addresses = tuple?.[0] ?? [];
-  const scanned = tuple?.[1];
+  const { addresses, scanned, failedPages } = useMemo(() => {
+    const found: Address[] = [];
+    let count = 0n;
+    let failed = 0;
+    for (const page of scan.data ?? []) {
+      if (page.status !== "success") {
+        failed += 1;
+        continue;
+      }
+      const [hits, n] = page.result as readonly [readonly Address[], bigint];
+      found.push(...hits);
+      count += n;
+    }
+    return { addresses: found, scanned: scan.data ? count : undefined, failedPages: failed };
+  }, [scan.data]);
 
   const snapshots = useReadContract({
     address: factory ?? undefined,
     abi: nostromFactoryAbi,
     functionName: "getVaultsSnapshot",
     args: [addresses],
-    query: { enabled: Boolean(factory) && addresses.length > 0 },
+    query: { enabled: Boolean(factory) && addresses.length > 0, refetchInterval: 15_000 },
   });
 
   const vaults = useMemo<VaultView[]>(() => {
@@ -229,16 +277,27 @@ export function useExecutableVaults(limit = 100n) {
     if (!raw) return [];
     return raw
       .filter((s) => !isEmptySnapshot(s))
-      .map((s) => buildVaultView(s.vault, statusFromSnapshot(s), now));
+      .map((s) => buildVaultView(s.vault, statusFromSnapshot(s), now))
+      // Largest rescue first: that is where a keeper's gas does the most good.
+      .sort((a, b) => (b.balance > a.balance ? 1 : b.balance < a.balance ? -1 : 0));
   }, [snapshots.data, now]);
+
+  const isEmptyRegistry = total === 0n;
 
   return {
     vaults,
-    scanned,
-    isLoading: scan.isLoading,
-    isError: scan.isError,
-    error: scan.error,
+    scanned: isEmptyRegistry ? 0n : scanned,
+    totalVaults: total,
+    /** True when the registry is larger than one refresh will scan. */
+    isTruncated: pagesNeeded > KEEPER_MAX_PAGES,
+    failedPages,
+    isLoading: info.isLoading || (pageCount > 0 && scan.isLoading),
+    isError: info.isError || scan.isError,
+    error: info.error ?? scan.error,
+    isFetching: scan.isFetching || snapshots.isFetching,
+    updatedAt: scan.dataUpdatedAt || info.dataUpdatedAt || undefined,
     refetch: () => {
+      void info.refetch();
       void scan.refetch();
       void snapshots.refetch();
     },
@@ -259,6 +318,9 @@ export interface UseVaultResult {
   error: unknown;
   /** The address is not a contract, or not a Nostrom vault at all. */
   isNotAVault: boolean;
+  isFetching: boolean;
+  /** Milliseconds since epoch of the last successful read, if any. */
+  updatedAt: number | undefined;
   refetch: () => void;
 }
 
@@ -328,6 +390,8 @@ export function useVault(vault: Address | undefined): UseVaultResult {
     isError: query.isError,
     error: query.error ?? (statusResult?.status === "failure" ? statusResult.error : undefined),
     isNotAVault,
+    isFetching: query.isFetching,
+    updatedAt: query.dataUpdatedAt || undefined,
     refetch: () => void query.refetch(),
   };
 }

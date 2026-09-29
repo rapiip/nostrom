@@ -80,10 +80,11 @@ export function ExecutionPanel({
                   control is inert — or who is about to call the contract
                   directly — learns the actual reason rather than a euphemism.
                   A copy pass once reduced this to "disabled while the heartbeat
-                  is active", which dropped the citation; verify-flows asserts the
-                  error name is present precisely so that cannot recur. */}
+                  is active", which dropped the citation, so the error name is
+                  stated explicitly below. */}
               <p className="text-[12px] leading-relaxed text-text-faint">
-                Disabled while the agent heartbeat is current and active.
+                Disabled while the heartbeat is current: the contract would reject the call with{" "}
+                <span className="tnum text-text-dim">AgentStillAlive</span>.
               </p>
             </>
           )}

@@ -4,7 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig } from "@/config/wagmi";
 import { Spinner } from "@/components/ui/Button";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { EmptyState, Panel } from "@/components/ui/Panel";
+import { ToastProvider } from "@/components/ui/Toast";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { AppShell } from "@/routes/AppShell";
 
 /**
@@ -45,30 +48,34 @@ const queryClient = new QueryClient({
 
 export function App() {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <ScrollToTop />
-          <Suspense fallback={<RouteFallback />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/reference" element={<Reference />} />
+    <ErrorBoundary scope="app">
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <ToastProvider>
+              <ScrollToTop />
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/reference" element={<Reference />} />
 
-              <Route path="/app" element={<AppShell />}>
-                <Route index element={<Vaults />} />
-                <Route path="new" element={<CreateVault />} />
-                <Route path="lookup" element={<Lookup />} />
-                <Route path="keeper" element={<Keeper />} />
-                <Route path="vault/:address" element={<VaultDetail />} />
-                <Route path="*" element={<NotFoundInApp />} />
-              </Route>
+                  <Route path="/app" element={<AppShell />}>
+                    <Route index element={<Vaults />} />
+                    <Route path="new" element={<CreateVault />} />
+                    <Route path="lookup" element={<Lookup />} />
+                    <Route path="keeper" element={<Keeper />} />
+                    <Route path="vault/:address" element={<VaultDetail />} />
+                    <Route path="*" element={<NotFoundInApp />} />
+                  </Route>
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </WagmiProvider>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </ToastProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -94,6 +101,7 @@ function RouteFallback() {
 }
 
 function NotFoundInApp() {
+  useDocumentTitle("Page not found");
   return (
     <Panel>
       <EmptyState

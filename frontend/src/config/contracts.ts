@@ -93,4 +93,28 @@ export const LINKS = {
   botchainDocs: "https://dev-docs.botchain.ai/docs/Developers/quick-guide/",
   testnetExplorer: "https://scan.bohr.life",
   mainnetExplorer: "https://scan.botchain.ai",
+  /** Source: "Get Tokens" in the BOT Chain quick guide. */
+  testnetFaucet: "https://faucet.botchain.ai/basic",
+  /** Mainnet BOT is only available via the official DEX (same source). */
+  mainnetDex: "https://dex.botchain.ai/#/swap",
+} as const;
+
+/**
+ * Measured gas costs, used to turn a wallet balance into "how many actions can
+ * this pay for". Source: README "Gas costs (measured)" / scripts/measure-gas.js.
+ */
+export const GAS = {
+  PING: 37_600n,
+  CREATE_VAULT: 343_000n,
+  EXECUTE: 74_400n,
+} as const;
+
+/**
+ * Agent gas runway, in heartbeats. Below WARN the agent wallet is flagged; at
+ * zero-capable (cannot pay one ping) it is flagged as critical, because an
+ * agent that cannot pay for ping() looks exactly like a dead agent and the
+ * switch will fire on a healthy one.
+ */
+export const AGENT_GAS_RUNWAY = {
+  WARN_PINGS: 50n,
 } as const;

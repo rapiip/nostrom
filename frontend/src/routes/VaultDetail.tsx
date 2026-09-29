@@ -1,14 +1,19 @@
+import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { isAddress, getAddress, type Address } from "viem";
-import { ArrowClockwise, ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
+import { ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
 import { formatAmountExact, formatTimestamp, truncateAddress } from "@/lib/format";
-import { describeRole } from "@/lib/vaultState";
+import { describeRole, PHASE_META } from "@/lib/vaultState";
 import { shortErrorText } from "@/lib/errors";
+import { rememberVault } from "@/lib/recentVaults";
 import { useVault, useIsRegisteredVault, useVaultRecord } from "@/hooks/useVault";
 import { useVaultActions } from "@/hooks/useVaultActions";
+import { useVaultChangeToasts } from "@/hooks/useVaultChangeToasts";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { Button } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
+import { Freshness } from "@/components/ui/Freshness";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   DataList,
@@ -25,6 +30,7 @@ import { HeartbeatPanel } from "@/components/app/HeartbeatPanel";
 import { OwnerPanel } from "@/components/app/OwnerPanel";
 import { ExecutionPanel, RegistryWarning } from "@/components/app/ExecutionPanel";
 import { TokenWatchlist } from "@/components/app/TokenWatchlist";
+import { ActivityPanel } from "@/components/app/ActivityPanel";
 
 /**
  * Vault detail.
@@ -45,12 +51,30 @@ export function VaultDetail() {
 
   const parsed: Address | undefined = raw && isAddress(raw) ? getAddress(raw) : undefined;
 
-  const { view, capabilities, trackedTokens, isLoading, isError, error, isNotAVault, refetch } =
+  const { view, capabilities, trackedTokens, isLoading, isError, error, isNotAVault, isFetching, updatedAt, refetch } =
     useVault(parsed);
   const { isRegistered, canVerify } = useIsRegisteredVault(parsed);
   const record = useVaultRecord(parsed);
 
   const actions = useVaultActions(parsed, () => refetch());
+
+  // Title carries the phase so a background tab reads "Executable · 0x12…"
+  // in the tab strip without being opened.
+  useDocumentTitle(
+    view
+      ? `${PHASE_META[view.phase].label} · ${truncateAddress(view.address, 4)}`
+      : parsed
+        ? truncateAddress(parsed, 4)
+        : "Vault",
+  );
+
+  // Remember genuinely resolved vaults only, so a typo never lands in the list.
+  const resolvedAddress = view?.address;
+  useEffect(() => {
+    if (resolvedAddress) rememberVault(wallet.chainId, resolvedAddress);
+  }, [resolvedAddress, wallet.chainId]);
+
+  useVaultChangeToasts(view, { suppress: actions.tx.phase !== "idle" });
 
   /* --- Invalid address ------------------------------------------------- */
   if (!parsed) {
@@ -165,14 +189,7 @@ export function VaultDetail() {
           </p>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          icon={<ArrowClockwise size={13} aria-hidden />}
-          onClick={refetch}
-        >
-          Refresh
-        </Button>
+        <Freshness updatedAt={updatedAt} isFetching={isFetching} onRefresh={refetch} staleAfter={45} />
       </div>
 
       <RegistryWarning isRegistered={isRegistered} canVerify={canVerify} />
@@ -204,6 +221,7 @@ export function VaultDetail() {
         capabilities={capabilities}
         onPing={actions.ping}
         isPinging={actions.tx.isBusy}
+        chainId={wallet.chainId}
       />
 
       {/* --- Two columns --- */}
@@ -303,6 +321,14 @@ export function VaultDetail() {
           />
         </div>
       </div>
+
+      {/* Full width: event descriptions are sentences, and a half-width column
+          would wrap every one of them onto three lines. */}
+      <ActivityPanel
+        vault={view.address}
+        chainId={wallet.chainId}
+        roles={{ owner: view.owner, agent: view.agent, recovery: view.recovery }}
+      />
 
       <TransactionDialog tx={actions.tx} chainId={wallet.chainId} />
     </div>

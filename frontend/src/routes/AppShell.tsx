@@ -1,11 +1,15 @@
 import { clsx } from "clsx";
-import { NavLink, Outlet, Link } from "react-router-dom";
+import { Suspense } from "react";
+import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
 import { Crosshair, Plus, Pulse, Vault } from "@phosphor-icons/react";
 import { useWallet } from "@/hooks/useWallet";
 import { Logo } from "@/components/landing/Logo";
 import { ConnectButton } from "@/components/web3/ConnectButton";
 import { BuiltOnBotChain } from "@/components/web3/BuiltOnBotChain";
-import { Notice } from "@/components/ui/Panel";
+import { GetBotLink, LowBalanceNotice } from "@/components/web3/FundWallet";
+import { WalletEventToasts } from "@/components/web3/WalletEventToasts";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { Notice, Skeleton } from "@/components/ui/Panel";
 
 /**
  * Application shell.
@@ -28,9 +32,11 @@ const NAV = [
 
 export function AppShell() {
   const wallet = useWallet();
+  const { pathname } = useLocation();
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink-950">
+      <WalletEventToasts />
       <a
         href="#app-main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded focus:border focus:border-signal focus:bg-ink-900 focus:px-3 focus:py-2 focus:text-[13px] focus:text-text"
@@ -90,9 +96,11 @@ export function AppShell() {
           <div className="flex flex-col gap-3">
             {wallet.chainId === 968 && (
               <Notice tone="info">
-                Connected to <span className="text-text">BOT Chain Testnet</span>.
+                Connected to <span className="text-text">BOT Chain Testnet</span>. Test BOT has no
+                value; <GetBotLink chainId={wallet.chainId} compact /> tops up gas for free.
               </Notice>
             )}
+            <LowBalanceNotice />
             {wallet.isFactoryMissing && (
               <Notice tone="warn" title="No factory configured for this network">
                 Vault discovery and creation are unavailable. Monitoring and execution still work
@@ -104,7 +112,15 @@ export function AppShell() {
       )}
 
       <main id="app-main" className="mx-auto w-full max-w-[1240px] flex-1 px-5 py-8 sm:px-8 sm:py-10">
-        <Outlet />
+        {/* Route-level containment. Keyed by path so navigating away from a
+            broken screen clears the error, and the shell (nav, wallet) stays
+            usable either way. The inner Suspense keeps the header in place while
+            a lazy route downloads, instead of blanking the whole page. */}
+        <ErrorBoundary key={pathname} scope="route">
+          <Suspense fallback={<RouteSkeleton />}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       <footer className="border-t border-line">
@@ -123,6 +139,21 @@ export function AppShell() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+
+/** Placeholder shaped like a console page header plus a panel. */
+function RouteSkeleton() {
+  return (
+    <div className="flex flex-col gap-6" aria-busy="true">
+      <span className="sr-only">Loading…</span>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-3.5 w-80 max-w-full" />
+      </div>
+      <Skeleton className="h-48 w-full" />
     </div>
   );
 }

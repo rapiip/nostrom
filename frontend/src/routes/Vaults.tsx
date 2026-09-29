@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
-import { ArrowClockwise, ArrowRight, Plus, Vault as VaultIcon, Warning } from "@phosphor-icons/react";
+import { ArrowRight, Plus, Vault as VaultIcon, Warning } from "@phosphor-icons/react";
 import { formatAmount, formatAmountExact, describeTimeout, sameAddress } from "@/lib/format";
-import { PHASE_META, type VaultView } from "@/lib/vaultState";
+import { PHASE_META, type VaultPhase, type VaultView } from "@/lib/vaultState";
 import { useMyVaults } from "@/hooks/useVault";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { shortErrorText } from "@/lib/errors";
 import { Button } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
+import { Freshness } from "@/components/ui/Freshness";
 import { GraceInline } from "@/components/ui/GraceTrack";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
@@ -30,6 +32,7 @@ import { WalletGate } from "@/components/web3/WalletGate";
  * labelled blocks below `md`, rather than being forced into a horizontal scroll.
  */
 export function Vaults() {
+  useDocumentTitle("Your vaults");
   return (
     <WalletGate
       requireFactory
@@ -42,7 +45,17 @@ export function Vaults() {
 
 function VaultsInner() {
   const wallet = useWallet();
-  const { vaults, isLoading, isError, error, isEmpty, refetch } = useMyVaults();
+  const { vaults: unsorted, isLoading, isError, error, isEmpty, isFetching, updatedAt, refetch } =
+    useMyVaults();
+
+  // Most urgent first, then soonest deadline. Registry order is creation order,
+  // which says nothing about which vault needs attention; a lapsed vault at the
+  // bottom of a long list is exactly the one that gets missed.
+  const vaults = [...unsorted].sort((a, b) => {
+    const byPhase = PHASE_RANK[a.phase] - PHASE_RANK[b.phase];
+    if (byPhase !== 0) return byPhase;
+    return a.liveSecondsRemaining < b.liveSecondsRemaining ? -1 : a.liveSecondsRemaining > b.liveSecondsRemaining ? 1 : 0;
+  });
 
   const totals = vaults.reduce(
     (acc, v) => {
@@ -72,15 +85,8 @@ function VaultsInner() {
             health, treasury balances, and active operational status.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<ArrowClockwise size={13} aria-hidden />}
-            onClick={refetch}
-          >
-            Refresh
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Freshness updatedAt={updatedAt} isFetching={isFetching} onRefresh={refetch} />
           <Link
             to="/app/new"
             className="inline-flex min-h-[40px] cursor-pointer items-center gap-1.5 rounded border border-signal bg-signal px-3.5 text-[13px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_16px_-3px_rgba(125,211,160,0.3)] active:scale-[0.985]"
@@ -142,7 +148,7 @@ function VaultsInner() {
           title="Vaults"
           description={
             vaults.length > 0
-              ? "State is read from the chain in one batched call and refreshed every 12 seconds."
+              ? "Most urgent first. State is read from the chain in one batched call and refreshed every 12 seconds."
               : undefined
           }
         />
@@ -282,3 +288,13 @@ function VaultRow({
     </li>
   );
 }
+
+
+/** Sort order for the list: what needs acting on comes first. */
+const PHASE_RANK: Record<VaultPhase, number> = {
+  EXECUTABLE: 0,
+  EXPIRING: 1,
+  ALIVE: 2,
+  UNCONFIGURED: 3,
+  TRIGGERED: 4,
+};

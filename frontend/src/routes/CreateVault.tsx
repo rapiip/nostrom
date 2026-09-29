@@ -1,16 +1,18 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Info } from "@phosphor-icons/react";
-import { getAddress, type Address } from "viem";
-import { useReadContract } from "wagmi";
+import { getAddress, parseEventLogs, type Address, type Hash } from "viem";
+import { usePublicClient, useReadContract } from "wagmi";
 import { nostromFactoryAbi } from "@/contracts/abis";
 import { PROTOCOL, TIMEOUT_PRESETS } from "@/config/contracts";
-import { describeTimeout, formatAmount, formatDuration, truncateAddress } from "@/lib/format";
+import { describeTimeout, formatAmount, formatDuration, sameAddress, truncateAddress } from "@/lib/format";
 import { normalizeAddress, validateAmount, validateSaltLabel, validateVaultConfig } from "@/lib/validation";
+import { rememberVault } from "@/lib/recentVaults";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { useFactory } from "@/hooks/useVault";
 import { toSalt, useCreateVault } from "@/hooks/useVaultActions";
-import { Button } from "@/components/ui/Button";
+import { Button, Spinner } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
 import {
   Disclosure,
@@ -30,6 +32,7 @@ import {
 } from "@/components/ui/Panel";
 import { WalletGate } from "@/components/web3/WalletGate";
 import { TransactionDialog } from "@/components/web3/TransactionDialog";
+import { GetBotLink } from "@/components/web3/FundWallet";
 
 /**
  * Create a vault.
@@ -43,6 +46,7 @@ import { TransactionDialog } from "@/components/web3/TransactionDialog";
  * consequence of getting the recovery address wrong is not recoverable.
  */
 export function CreateVault() {
+  useDocumentTitle("Create a vault");
   return (
     <WalletGate requireFactory intent="Creating a vault is a transaction, so a connected wallet is required.">
       <CreateVaultInner />
@@ -64,6 +68,8 @@ function CreateVaultInner() {
   const [useSalt, setUseSalt] = useState(false);
   const [salt, setSalt] = useState("");
   const [createdVault, setCreatedVault] = useState<Address | undefined>();
+  const [resolvingVault, setResolvingVault] = useState(false);
+  const publicClient = usePublicClient();
 
   const timeoutSeconds = useMemo(() => {
     if (useCustom) {
@@ -100,15 +106,44 @@ function CreateVaultInner() {
     query: { enabled: Boolean(factory && wallet.address && useSalt && saltResult.ok && salt) },
   });
 
-  const create = useCreateVault(factory, () => {
-    // Resolve the created vault from the receipt's VaultCreated event rather
-    // than assuming, then offer a link. Nothing is claimed before this fires.
-    void 0;
+  /**
+   * Resolve the new vault from the receipt's VaultCreated event.
+   *
+   * Only a confirmed receipt reaches this callback, so nothing is claimed
+   * before the chain has said so. The event is matched on creator as well, in
+   * case a future router batches several creations into one transaction.
+   * The CREATE2 path already knows its address, but the log is still preferred
+   * as the authority when present.
+   */
+  const resolveCreatedVault = async (hash: Hash) => {
+    if (!publicClient) return;
+    setResolvingVault(true);
+    try {
+      const receipt = await publicClient.getTransactionReceipt({ hash });
+      const events = parseEventLogs({
+        abi: nostromFactoryAbi,
+        eventName: "VaultCreated",
+        logs: receipt.logs,
+      });
+      const mine = events.find((e) => sameAddress(e.args.creator, wallet.address)) ?? events[0];
+      if (mine) {
+        const vault = getAddress(mine.args.vault);
+        setCreatedVault(vault);
+        rememberVault(wallet.chainId, vault);
+      }
+    } catch {
+      // Fall back to the predicted address (CREATE2) or the vault list.
+    } finally {
+      setResolvingVault(false);
+    }
+  };
+
+  const create = useCreateVault(factory, (hash) => {
+    void resolveCreatedVault(hash);
   });
 
-  // The vault address comes from the predicted value when deterministic; for the
-  // non-deterministic path the user is sent to the list, since the address is
-  // only knowable from the receipt logs.
+  // The CREATE2 path knows its address up front; the standard path learns it
+  // from the receipt (see resolveCreatedVault).
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit) return;
@@ -274,9 +309,18 @@ function CreateVaultInner() {
                 label="Amount"
                 result={depositResult}
                 hint={
-                  wallet.balance !== undefined
-                    ? `Wallet balance: ${formatAmount(wallet.balance)} BOT. Depositing now funds the vault in the same creation transaction.`
-                    : undefined
+                  wallet.balance !== undefined ? (
+                    <>
+                      Wallet balance: {formatAmount(wallet.balance)} BOT. Depositing now funds the
+                      vault in the same creation transaction.
+                      {wallet.balance === 0n && (
+                        <>
+                          {" "}
+                          <GetBotLink chainId={wallet.chainId} />
+                        </>
+                      )}
+                    </>
+                  ) : undefined
                 }
               >
                 {(a11y) => (
@@ -435,7 +479,12 @@ function CreateVaultInner() {
         chainId={wallet.chainId}
         successSlot={
           <div className="flex flex-col gap-3 border-t border-line pt-4">
-            {createdVault ? (
+            {resolvingVault && !createdVault ? (
+              <p className="flex items-center gap-2 text-[12px] text-text-dim" aria-live="polite">
+                <Spinner className="size-3" />
+                Reading the new vault address from the receipt…
+              </p>
+            ) : createdVault ? (
               <>
                 <div>
                   <Label>New vault</Label>

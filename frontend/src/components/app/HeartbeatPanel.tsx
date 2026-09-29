@@ -1,11 +1,14 @@
 import { clsx } from "clsx";
-import { Pulse } from "@phosphor-icons/react";
-import { formatDuration, formatRelative, formatTimestamp } from "@/lib/format";
+import { GasPump, Pulse } from "@phosphor-icons/react";
+import { useBalance, useGasPrice } from "wagmi";
+import { AGENT_GAS_RUNWAY, GAS } from "@/config/contracts";
+import { formatAmount, formatCount, formatDuration, formatRelative, formatTimestamp } from "@/lib/format";
 import { PHASE_META, type VaultCapabilities, type VaultView } from "@/lib/vaultState";
 import { useClock } from "@/hooks/useClock";
 import { Button } from "@/components/ui/Button";
 import { GraceCountdown, GraceTrack } from "@/components/ui/GraceTrack";
 import { DataList, DataRow, Label, Notice, Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
+import { GetBotLink } from "@/components/web3/FundWallet";
 
 /**
  * Heartbeat panel: the vault's vital sign.
@@ -22,14 +25,17 @@ export function HeartbeatPanel({
   capabilities,
   onPing,
   isPinging,
+  chainId,
 }: {
   view: VaultView;
   capabilities: VaultCapabilities;
   onPing: () => void;
   isPinging: boolean;
+  chainId: number | undefined;
 }) {
   const now = useClock();
   const meta = PHASE_META[view.phase];
+  const gas = useAgentGasRunway(view, chainId);
 
   return (
     <Panel>
@@ -119,6 +125,36 @@ export function HeartbeatPanel({
           </Notice>
         )}
 
+        {/* An agent that cannot pay for ping() is indistinguishable, on-chain,
+            from a dead one. Flag it while there is still time to top it up. */}
+        {gas.level !== "ok" && gas.level !== "unknown" && (
+          <Notice
+            tone={gas.level === "empty" ? "danger" : "warn"}
+            title={
+              gas.level === "empty"
+                ? "The agent wallet cannot pay for a heartbeat"
+                : "The agent wallet is running low on gas"
+            }
+          >
+            {gas.level === "empty" ? (
+              <>
+                The agent holds {formatAmount(gas.balance)} BOT, less than one ping costs at the
+                current gas price. Its heartbeats will fail and the switch will fire on a healthy
+                agent in{" "}
+                <span className="tnum text-text">{formatDuration(view.liveSecondsRemaining)}</span>.
+              </>
+            ) : (
+              <>
+                Enough for about <span className="tnum text-text">{formatCount(gas.pingsLeft)}</span>{" "}
+                more heartbeats ({formatAmount(gas.balance)} BOT at ~{formatAmount(gas.pingCost, { maxFractionDigits: 6 })}{" "}
+                BOT each).
+              </>
+            )}{" "}
+            Send BOT to the agent address to keep it alive.{" "}
+            <GetBotLink chainId={chainId} compact />
+          </Notice>
+        )}
+
         {/* --- Timing detail --- */}
         <DataList className="border-t border-line pt-1">
           <DataRow
@@ -139,6 +175,30 @@ export function HeartbeatPanel({
           >
             <span className="tnum">{view.pingCount.toString()}</span>
           </DataRow>
+          {gas.level !== "unknown" && view.phase !== "TRIGGERED" && (
+            <DataRow
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <GasPump size={11} aria-hidden />
+                  Agent gas
+                </span>
+              }
+              hint={
+                gas.pingsLeft !== undefined
+                  ? `≈ ${formatCount(gas.pingsLeft)} heartbeats at the current gas price`
+                  : undefined
+              }
+            >
+              <span
+                className={clsx(
+                  "tnum",
+                  gas.level === "empty" ? "text-danger" : gas.level === "low" ? "text-warn" : undefined,
+                )}
+              >
+                {formatAmount(gas.balance)} <span className="text-text-faint">BOT</span>
+              </span>
+            </DataRow>
+          )}
         </DataList>
 
         {capabilities.canPing && (
@@ -150,4 +210,46 @@ export function HeartbeatPanel({
       </PanelBody>
     </Panel>
   );
+}
+
+
+/* ===========================================================================
+   Agent gas runway
+   =========================================================================== */
+
+type GasLevel = "unknown" | "ok" | "low" | "empty";
+
+/**
+ * How many heartbeats the agent's own wallet can still pay for.
+ *
+ * Public data (anyone can read any balance), so it is shown to every visitor,
+ * not just the owner: a keeper deciding whether a lapse is "agent died" or
+ * "agent ran out of gas" benefits from the same number.
+ *
+ * Only meaningful while the vault is armed; after a trigger the agent no longer
+ * needs gas for this vault.
+ */
+function useAgentGasRunway(view: VaultView, chainId: number | undefined) {
+  const active = view.phase === "ALIVE" || view.phase === "EXPIRING" || view.phase === "EXECUTABLE";
+
+  const balance = useBalance({
+    address: view.agent,
+    chainId: chainId as never,
+    query: { enabled: active, refetchInterval: 30_000 },
+  });
+  const gasPrice = useGasPrice({ chainId: chainId as never, query: { enabled: active, refetchInterval: 60_000 } });
+
+  const wei = balance.data?.value;
+  const price = gasPrice.data;
+
+  if (!active || wei === undefined || price === undefined || price === 0n) {
+    return { level: "unknown" as GasLevel, balance: wei, pingCost: undefined, pingsLeft: undefined };
+  }
+
+  const pingCost = GAS.PING * price;
+  const pingsLeft = wei / pingCost;
+  const level: GasLevel =
+    pingsLeft < 1n ? "empty" : pingsLeft < AGENT_GAS_RUNWAY.WARN_PINGS ? "low" : "ok";
+
+  return { level, balance: wei, pingCost, pingsLeft };
 }

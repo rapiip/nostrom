@@ -3,6 +3,36 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowSquareOut, Check, Copy } from "@phosphor-icons/react";
 import { explorerAddressUrl, explorerTxUrl } from "@/config/chains";
 import { truncateAddress, truncateHash } from "@/lib/format";
+import { useToast } from "./Toast";
+
+/**
+ * Clipboard write with a fallback for non-secure contexts (plain-http preview
+ * hosts, some embedded webviews) where navigator.clipboard is undefined.
+ */
+async function writeClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  try {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(area);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Copy-to-clipboard button.
@@ -22,20 +52,28 @@ export function CopyButton({
 }) {
   const [copied, setCopied] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const { toast } = useToast();
 
   useEffect(() => () => clearTimeout(timeout.current), []);
 
   const copy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(value);
+    const ok = await writeClipboard(value);
+    if (ok) {
       setCopied(true);
       clearTimeout(timeout.current);
       timeout.current = setTimeout(() => setCopied(false), 1400);
-    } catch {
-      // Clipboard can be blocked by permissions policy; failing silently here is
-      // acceptable because the full value is always visible in the title.
+      return;
     }
-  }, [value]);
+    // Previously this failed silently. For an address the user is about to
+    // paste into a wallet, a silent failure means they paste whatever was on
+    // the clipboard before, so say so explicitly.
+    toast({
+      id: "copy-failed",
+      tone: "warn",
+      title: "Could not copy",
+      description: `The browser blocked clipboard access. Select the ${label} manually; the full value is shown on hover.`,
+    });
+  }, [value, label, toast]);
 
   return (
     <>

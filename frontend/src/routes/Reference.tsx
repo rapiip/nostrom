@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { supportedChains } from "@/config/chains";
 import { factoryAddress, LINKS, PROTOCOL } from "@/config/contracts";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { GAS_GROUPS, READS, ROLES, ROLE_TONES, SAFETY } from "@/config/protocol-reference";
 import { formatCount, formatDuration, formatGas, truncateAddress } from "@/lib/format";
 import { useFactoryInfo } from "@/hooks/useVault";
@@ -34,6 +35,7 @@ const TOC = [
 ] as const;
 
 export function Reference() {
+  useDocumentTitle("Protocol reference");
   // Scroll to an incoming hash. Keyed on the hash rather than on mount alone, so
   // a link to /reference#safety also works when the reader is already here and
   // the component therefore never remounts.

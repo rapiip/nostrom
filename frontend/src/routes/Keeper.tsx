@@ -1,16 +1,18 @@
 import { Link } from "react-router-dom";
-import { ArrowClockwise, ArrowRight, Broadcast, Crosshair } from "@phosphor-icons/react";
+import { ArrowRight, Broadcast, Crosshair } from "@phosphor-icons/react";
 import type { Address } from "viem";
-import { formatAmount, formatDuration } from "@/lib/format";
+import { formatAmount, formatCount, formatDuration } from "@/lib/format";
 import type { VaultView } from "@/lib/vaultState";
 import { shortErrorText } from "@/lib/errors";
 import { useClock } from "@/hooks/useClock";
-import { useExecutableVaults, useFactoryInfo } from "@/hooks/useVault";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { KEEPER_MAX_PAGES, KEEPER_PAGE_SIZE, useExecutableVaults } from "@/hooks/useVault";
 import { useVaultActions } from "@/hooks/useVaultActions";
 import { useWallet } from "@/hooks/useWallet";
 import { Button } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
 import { ConfirmDialog } from "@/components/ui/Dialog";
+import { Freshness } from "@/components/ui/Freshness";
 import {
   EmptyState,
   Label,
@@ -37,6 +39,7 @@ import { useState } from "react";
  * vault cannot break the page.
  */
 export function Keeper() {
+  useDocumentTitle("Keeper scan");
   return (
     <WalletGate
       requireFactory
@@ -49,8 +52,19 @@ export function Keeper() {
 
 function KeeperInner() {
   const wallet = useWallet();
-  const { totalVaults } = useFactoryInfo();
-  const { vaults, scanned, isLoading, isError, error, refetch } = useExecutableVaults();
+  const {
+    vaults,
+    scanned,
+    totalVaults,
+    isTruncated,
+    failedPages,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+    updatedAt,
+    refetch,
+  } = useExecutableVaults();
 
   const [target, setTarget] = useState<VaultView | null>(null);
   const [executing, setExecuting] = useState<Address | null>(null);
@@ -77,15 +91,35 @@ function KeeperInner() {
             You pay the gas and receive nothing; there is no bounty and no caller reward.
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          icon={<ArrowClockwise size={13} aria-hidden />}
-          onClick={refetch}
-        >
-          Rescan
-        </Button>
+        <Freshness
+          updatedAt={updatedAt}
+          isFetching={isFetching}
+          onRefresh={refetch}
+          label="Rescan"
+          staleAfter={60}
+        />
       </div>
+
+      {/* Coverage is a correctness fact for a keeper, not a detail: an empty
+          list only means "nothing to do" if the whole registry was examined. */}
+      {isTruncated && totalVaults !== undefined && (
+        <Notice tone="warn" title="Partial scan">
+          The registry holds <span className="tnum text-text">{formatCount(totalVaults)}</span>{" "}
+          vaults; this page examines the first{" "}
+          <span className="tnum text-text">
+            {formatCount(KEEPER_PAGE_SIZE * BigInt(KEEPER_MAX_PAGES))}
+          </span>{" "}
+          on each refresh. Run <span className="tnum text-text">node scripts/keeper.js</span> for a
+          full sweep.
+        </Notice>
+      )}
+      {failedPages > 0 && (
+        <Notice tone="warn" title="Some of the registry could not be scanned">
+          {failedPages} page{failedPages === 1 ? "" : "s"} of{" "}
+          {formatCount(KEEPER_PAGE_SIZE)} vaults failed to read and will be retried on the next
+          refresh. Results below may be incomplete.
+        </Notice>
+      )}
 
       <Panel>
         <PanelBody className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
@@ -100,10 +134,18 @@ function KeeperInner() {
             unit="BOT"
             hint="Native balance only"
           />
-          <Stat label="Vaults scanned" value={scanned !== undefined ? String(scanned) : "…"} />
+          <Stat
+            label="Vaults scanned"
+            value={scanned !== undefined ? formatCount(scanned) : "…"}
+            hint={
+              scanned !== undefined && totalVaults !== undefined && scanned >= totalVaults
+                ? "Entire registry"
+                : undefined
+            }
+          />
           <Stat
             label="Registry size"
-            value={totalVaults !== undefined ? String(totalVaults) : "…"}
+            value={totalVaults !== undefined ? formatCount(totalVaults) : "…"}
             hint="Total vaults ever created"
           />
         </PanelBody>
@@ -112,7 +154,7 @@ function KeeperInner() {
       <Panel>
         <PanelHeader
           title="Executable vaults"
-          description="Scanned on-chain and refreshed every 15 seconds."
+          description="Largest rescue first. Scanned on-chain and refreshed every 15 seconds."
         />
 
         {isLoading ? (
@@ -129,11 +171,23 @@ function KeeperInner() {
             </Notice>
           </PanelBody>
         ) : vaults.length === 0 ? (
-          <EmptyState
-            icon={<Crosshair size={28} aria-hidden />}
-            title="Every agent is alive"
-            description="No vault in the registry has a lapsed heartbeat. This is the healthy state; nothing to do. The scan refreshes automatically."
-          />
+          totalVaults === 0n ? (
+            <EmptyState
+              icon={<Crosshair size={28} aria-hidden />}
+              title="The registry is empty"
+              description="No vault has been created through this factory yet, so there is nothing to watch. The scan refreshes automatically."
+            />
+          ) : (
+            <EmptyState
+              icon={<Crosshair size={28} aria-hidden />}
+              title={isTruncated || failedPages > 0 ? "Nothing executable in the scanned range" : "Every agent is alive"}
+              description={
+                isTruncated || failedPages > 0
+                  ? "No lapsed heartbeat among the vaults examined. See the notice above for what was not covered."
+                  : "No vault in the registry has a lapsed heartbeat. This is the healthy state; nothing to do. The scan refreshes automatically."
+              }
+            />
+          )
         ) : (
           <>
             <div className="hidden grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 border-b border-line px-5 py-2.5 md:grid">
@@ -165,9 +219,12 @@ function KeeperInner() {
         )}
       </Panel>
 
-      <Notice tone="info" title="Automated keeper infrastructure">
-        Keepers can also run as autonomous background daemons via the Nostrom Keeper service,
-        continuously monitoring the registry and executing evacuations with automated gas management.
+      <Notice tone="info" title="Run a keeper unattended">
+        This page only scans while it is open. For continuous coverage, run the bundled watchtower
+        from the repository: <span className="tnum text-text">node scripts/keeper.js</span> polls
+        the registry and fires any lapsed switch, <span className="tnum text-text">--dry-run</span>{" "}
+        reports without sending, and <span className="tnum text-text">--once</span> performs a
+        single pass.
       </Notice>
 
       <ConfirmDialog
