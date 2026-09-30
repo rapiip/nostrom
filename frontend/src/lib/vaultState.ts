@@ -156,7 +156,11 @@ export function classifyVault(
     return { phase: "EXECUTABLE", liveSecondsRemaining: 0n, gracePct: 0 };
   }
 
-  const remaining = status.deadline > now ? status.deadline - now : 0n;
+  // Clamped to the timeout: if this device's clock runs behind the chain's
+  // block timestamps, deadline - now exceeds the whole window and the countdown
+  // showed more grace than a vault can have (e.g. "1d 00h 04m" of 1 day).
+  const raw = status.deadline > now ? status.deadline - now : 0n;
+  const remaining = raw > status.timeoutPeriod ? status.timeoutPeriod : raw;
   const pct = gracePercent(remaining, status.timeoutPeriod);
   const phase: VaultPhase = pct <= EXPIRING_THRESHOLD_FRACTION * 100 ? "EXPIRING" : "ALIVE";
 

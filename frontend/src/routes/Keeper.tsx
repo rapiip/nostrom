@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
 import { ArrowRight, Broadcast, Crosshair } from "@phosphor-icons/react";
 import type { Address } from "viem";
-import { formatAmount, formatCount, formatDuration } from "@/lib/format";
+import { formatAmount, formatCount, formatDuration, truncateAddress } from "@/lib/format";
 import type { VaultView } from "@/lib/vaultState";
 import { shortErrorText } from "@/lib/errors";
 import { useClock } from "@/hooks/useClock";
@@ -9,7 +8,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { KEEPER_MAX_PAGES, KEEPER_PAGE_SIZE, useExecutableVaults } from "@/hooks/useVault";
 import { useVaultActions } from "@/hooks/useVaultActions";
 import { useWallet } from "@/hooks/useWallet";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonRouterLink } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { Freshness } from "@/components/ui/Freshness";
@@ -82,13 +81,13 @@ function KeeperInner() {
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Keeper scan</h1>
           <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
-            Public keeper portal for executing expired vaults. Anyone can trigger eligible fail-safes;
-            all assets route strictly to each vault's predetermined cold recovery destination.{" "}
+            Every vault whose heartbeat has lapsed, ready for anyone to execute. The funds always go
+            to that vault's own recovery address, never to you.{" "}
             {/* Stated before the list, not only inside the confirm dialog. Someone
                 scanning for work should learn there is no bounty here before they
                 spend attention on it — a permissionless call with no reward is
                 unusual enough that silence would read as an omission. */}
-            You pay the gas and receive nothing; there is no bounty and no caller reward.
+            You pay the gas and receive nothing: there is no bounty and no caller reward.
           </p>
         </div>
         <Freshness
@@ -316,8 +315,8 @@ function KeeperRow({
             chars={6}
             showExplorer={false}
           />
-          <p className="mt-1 text-[11px] text-text-faint">
-            → recovery {view.recovery.slice(0, 10)}…
+          <p className="mt-1 text-[11px] text-text-faint" title={view.recovery}>
+            → recovery {truncateAddress(view.recovery, 4)}
           </p>
         </div>
 
@@ -341,13 +340,13 @@ function KeeperRow({
 
         <div className="flex flex-col items-start gap-1.5 md:items-end">
           <div className="flex items-center gap-2">
-            <Link
+            <ButtonRouterLink
               to={`/app/vault/${view.address}`}
-              className="inline-flex min-h-[32px] cursor-pointer items-center gap-1 rounded border border-line-strong bg-ink-850 px-2.5 text-[12px] text-text-dim no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 hover:text-text active:scale-[0.985]"
+              size="sm"
+              iconRight={<ArrowRight size={11} aria-hidden />}
             >
               Inspect
-              <ArrowRight size={11} aria-hidden />
-            </Link>
+            </ButtonRouterLink>
             <Button
               variant="danger"
               size="sm"

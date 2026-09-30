@@ -1,18 +1,21 @@
+import { clsx } from "clsx";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { isAddress, getAddress, type Address } from "viem";
 import { ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
-import { formatAmountExact, formatTimestamp, truncateAddress } from "@/lib/format";
+import { formatAmount, formatAmountExact, formatTimestamp, sameAddress, truncateAddress } from "@/lib/format";
 import { describeRole, PHASE_META } from "@/lib/vaultState";
 import { shortErrorText } from "@/lib/errors";
 import { rememberVault } from "@/lib/recentVaults";
+import { useAddressName } from "@/lib/addressBook";
 import { useVault, useIsRegisteredVault, useVaultRecord } from "@/hooks/useVault";
 import { useVaultActions } from "@/hooks/useVaultActions";
 import { useVaultChangeToasts } from "@/hooks/useVaultChangeToasts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonRouterLink } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
+import { AddressNameButton } from "@/components/ui/AddressName";
 import { Freshness } from "@/components/ui/Freshness";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
@@ -26,6 +29,7 @@ import {
   Skeleton,
 } from "@/components/ui/Panel";
 import { TransactionDialog } from "@/components/web3/TransactionDialog";
+import { ConnectButton } from "@/components/web3/ConnectButton";
 import { HeartbeatPanel } from "@/components/app/HeartbeatPanel";
 import { OwnerPanel } from "@/components/app/OwnerPanel";
 import { ExecutionPanel, RegistryWarning } from "@/components/app/ExecutionPanel";
@@ -57,16 +61,13 @@ export function VaultDetail() {
   const record = useVaultRecord(parsed);
 
   const actions = useVaultActions(parsed, () => refetch());
+  const vaultName = useAddressName(wallet.chainId, parsed);
 
-  // Title carries the phase so a background tab reads "Executable · 0x12…"
-  // in the tab strip without being opened.
-  useDocumentTitle(
-    view
-      ? `${PHASE_META[view.phase].label} · ${truncateAddress(view.address, 4)}`
-      : parsed
-        ? truncateAddress(parsed, 4)
-        : "Vault",
-  );
+  // Title carries the phase so a background tab reads "Executable · Treasury"
+  // (or "Executable · 0x12…" when unnamed) in the tab strip without being
+  // opened.
+  const tabLabel = vaultName?.name ?? (parsed ? truncateAddress(parsed, 4) : "Vault");
+  useDocumentTitle(view ? `${PHASE_META[view.phase].label} · ${tabLabel}` : tabLabel);
 
   // Remember genuinely resolved vaults only, so a typo never lands in the list.
   const resolvedAddress = view?.address;
@@ -90,12 +91,9 @@ export function VaultDetail() {
             </>
           }
           action={
-            <Link
-              to="/app/lookup"
-              className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-signal bg-signal px-4 text-[13px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_16px_-3px_rgba(125,211,160,0.3)] active:scale-[0.985]"
-            >
+            <ButtonRouterLink to="/app/lookup" variant="primary">
               Look up a vault
-            </Link>
+            </ButtonRouterLink>
           }
         />
       </Panel>
@@ -128,10 +126,9 @@ export function VaultDetail() {
             title="No Nostrom vault at this address"
             description={
               <>
-                No active Nostrom vault contract was found at{" "}
-                <span className="tnum break-all">{parsed}</span> on{" "}
-                {wallet.chainName ?? `chain ${wallet.chainId}`}. Please verify the contract
-                address and ensure your wallet is connected to the correct network.
+                Nothing at <span className="tnum break-all">{parsed}</span> answers like a Nostrom
+                vault on {wallet.chainName ?? `chain ${wallet.chainId}`}. The address may be wrong,
+                or the vault may live on another network: check which one your wallet is using.
               </>
             }
             action={
@@ -139,12 +136,7 @@ export function VaultDetail() {
                 <Button variant="secondary" onClick={refetch}>
                   Retry
                 </Button>
-                <Link
-                  to="/app/lookup"
-                  className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]"
-                >
-                  Try another address
-                </Link>
+                <ButtonRouterLink to="/app/lookup">Try another address</ButtonRouterLink>
               </div>
             }
           />
@@ -159,32 +151,127 @@ export function VaultDetail() {
   }
 
   /* --- Vault ----------------------------------------------------------- */
+  const participants = (
+    <Panel>
+      <PanelHeader title="Participants" description="Three roles, with deliberately unequal power." />
+      <PanelBody>
+        <DataList>
+          <DataRow label="Owner" hint={capabilities.isOwner ? "You · full control while healthy" : "Full control while healthy"}>
+            <AddressDisplay address={view.owner} chainId={wallet.chainId} label="owner address" chars={6} nameable={{ kind: "account", role: "owner" }} />
+          </DataRow>
+          <DataRow label="Agent" hint={capabilities.isAgent ? "You · can only send heartbeats" : "Can only send heartbeats"}>
+            <AddressDisplay address={view.agent} chainId={wallet.chainId} label="agent address" chars={6} nameable={{ kind: "account", role: "agent" }} />
+          </DataRow>
+          <DataRow label="Recovery" hint={capabilities.isRecovery ? "You · receives everything on failure" : "Receives everything on failure"}>
+            <AddressDisplay address={view.recovery} chainId={wallet.chainId} label="recovery address" chars={6} nameable={{ kind: "account", role: "recovery" }} />
+          </DataRow>
+          {record.creator && !sameAddress(record.creator, view.owner) && (
+            // Only worth a row when it differs: after a handover the creator
+            // still indexes the vault, which explains why it shows up in (or
+            // is missing from) someone's list.
+            <DataRow label="Created by" hint="Indexes the vault in the registry; ownership has since moved">
+              <AddressDisplay address={record.creator} chainId={wallet.chainId} label="creator address" chars={6} nameable={{ kind: "account", role: "owner" }} />
+            </DataRow>
+          )}
+        </DataList>
+      </PanelBody>
+    </Panel>
+  );
+
+  const execution = (
+    <ExecutionPanel view={view} capabilities={capabilities} actions={actions} chainId={wallet.chainId} />
+  );
+
+  const watchlist = (
+    <TokenWatchlist
+      view={view}
+      capabilities={capabilities}
+      actions={actions}
+      trackedTokens={trackedTokens}
+      chainId={wallet.chainId}
+    />
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <BackLink />
 
-      {/* --- Identity header --- */}
+      {/* --- Identity header ---
+          A named vault leads with its name; the address stays directly below
+          it, so the name can never hide which contract this is. */}
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="tnum text-[20px] font-medium tracking-[-0.01em] text-text">
-              {truncateAddress(view.address, 8)}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <h1
+              className={clsx(
+                "min-w-0 text-[20px] font-medium tracking-[-0.01em] break-words text-text",
+                !vaultName && "tnum",
+              )}
+              title={vaultName?.note}
+            >
+              <span className="sr-only">Vault </span>
+              {vaultName ? vaultName.name : truncateAddress(view.address, 6)}
             </h1>
             <StatusBadge phase={view.phase} />
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <AddressDisplay
-              address={view.address}
+            <AddressNameButton
               chainId={wallet.chainId}
-              label="vault address"
-              full
-              tone="dim"
+              address={view.address}
+              kind="vault"
+              role="vault"
+              label="vault"
+              withText
             />
           </div>
-          <p className="mt-2 text-[12px] text-text-faint">
-            Your role: <span className="text-text-dim">{describeRole(capabilities)}</span>
+          {vaultName?.note && (
+            <p className="mt-1.5 max-w-[70ch] text-[13px] leading-relaxed text-text-dim">
+              {vaultName.note}
+            </p>
+          )}
+          {/* Full address from sm up, where it fits on one line. On a phone
+              the 42 characters broke mid-hash onto a second line, which reads
+              as two different values; the truncated title plus copy and
+              explorer actions carry the same information there. */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+            {/* Wrappers own the breakpoint: AddressDisplay's own inline-flex
+                would otherwise win over `hidden` by stylesheet order. The name
+                is already the heading, so it is not repeated here. */}
+            <span className="hidden sm:block">
+              <AddressDisplay
+                address={view.address}
+                chainId={wallet.chainId}
+                label="vault address"
+                full
+                tone="dim"
+                showName={false}
+              />
+            </span>
+            <span className="sm:hidden">
+              <AddressDisplay
+                address={view.address}
+                chainId={wallet.chainId}
+                label="vault address"
+                chars={10}
+                tone="dim"
+                showName={false}
+              />
+            </span>
+          </div>
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] text-text-faint">
+            <span>
+              Holds{" "}
+              <span className="tnum text-[13px] font-medium text-text" title={`${formatAmountExact(view.balance)} BOT`}>
+                {formatAmount(view.balance)} BOT
+              </span>
+            </span>
+            <span aria-hidden>·</span>
+            <span>
+              Your role: <span className="text-text-dim">{describeRole(capabilities)}</span>
+            </span>
             {record.createdAt !== undefined && (
-              <> · created {formatTimestamp(record.createdAt)}</>
+              <>
+                <span aria-hidden>·</span>
+                <span>created {formatTimestamp(record.createdAt)}</span>
+              </>
             )}
           </p>
         </div>
@@ -209,9 +296,13 @@ export function VaultDetail() {
           acting on it.
         </Notice>
       ) : wallet.status !== "connected" ? (
-        <Notice tone="info" title="Read-only">
-          You are viewing this vault without a connected wallet. Monitoring is public; connect to
-          send a heartbeat, manage the vault, or execute the switch.
+        <Notice
+          tone="info"
+          title="Read-only view"
+          action={wallet.status === "no-wallet" ? undefined : <ConnectButton size="sm" />}
+        >
+          Anyone can watch a vault, so nothing here needs a wallet. Connect one to send a
+          heartbeat, manage the vault, or fire the switch.
         </Notice>
       ) : null}
 
@@ -220,107 +311,53 @@ export function VaultDetail() {
         view={view}
         capabilities={capabilities}
         onPing={actions.ping}
+        onRearm={capabilities.canRearm ? actions.rearm : undefined}
         isPinging={actions.tx.isBusy}
         chainId={wallet.chainId}
       />
 
-      {/* --- Two columns --- */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-6">
-          <Panel>
-            <PanelHeader
-              title="Participants"
-              description="Three roles with deliberately unequal power."
-            />
-            <PanelBody>
-              <DataList>
-                <DataRow
-                  label="Owner"
-                  hint={capabilities.isOwner ? "This is you" : undefined}
-                >
-                  <AddressDisplay
-                    address={view.owner}
-                    chainId={wallet.chainId}
-                    label="owner address"
-                    chars={6}
-                  />
-                </DataRow>
-                <DataRow
-                  label="Agent"
-                  hint={
-                    capabilities.isAgent
-                      ? "This is you: can only report heartbeats"
-                      : "Can only report heartbeats"
-                  }
-                >
-                  <AddressDisplay
-                    address={view.agent}
-                    chainId={wallet.chainId}
-                    label="agent address"
-                    chars={6}
-                  />
-                </DataRow>
-                <DataRow
-                  label="Recovery"
-                  hint={capabilities.isRecovery ? "This is you" : "Receives everything on failure"}
-                >
-                  <AddressDisplay
-                    address={view.recovery}
-                    chainId={wallet.chainId}
-                    label="recovery address"
-                    chars={6}
-                  />
-                </DataRow>
-                <DataRow label="Balance">
-                  <span className="tnum" title={`${formatAmountExact(view.balance)} BOT`}>
-                    {formatAmountExact(view.balance)}{" "}
-                    <span className="text-text-faint">BOT</span>
-                  </span>
-                </DataRow>
-                {record.creator && (
-                  <DataRow
-                    label="Created by"
-                    hint="Registry index, immutable (not the same as current owner)"
-                  >
-                    <AddressDisplay
-                      address={record.creator}
-                      chainId={wallet.chainId}
-                      label="creator address"
-                      chars={6}
-                    />
-                  </DataRow>
-                )}
-              </DataList>
-            </PanelBody>
-          </Panel>
-
-          {wallet.status === "connected" && (
+      {/* --- Two columns ---
+          Balanced by role. For the owner, the right column is their control
+          surface (funding + configuration) and everything read-only sits on
+          the left; stacking all of it on the left, as before, left the right
+          column ending halfway down with a screen-high void beside it. For
+          everyone else the owner surface is absent or deposit-only, so the
+          public facts are split across both columns instead. */}
+      {capabilities.isOwner && wallet.status === "connected" ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            {participants}
+            {execution}
+            {watchlist}
+          </div>
+          <div className="flex flex-col gap-6">
             <OwnerPanel
               view={view}
               capabilities={capabilities}
               actions={actions}
               walletBalance={wallet.balance}
             />
-          )}
+          </div>
         </div>
-
-        <div className="flex flex-col gap-6">
-          <ExecutionPanel
-            view={view}
-            capabilities={capabilities}
-            actions={actions}
-            chainId={wallet.chainId}
-          />
-
-          <TokenWatchlist
-            view={view}
-            capabilities={capabilities}
-            actions={actions}
-            trackedTokens={trackedTokens}
-            chainId={wallet.chainId}
-          />
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            {participants}
+            {wallet.status === "connected" && (
+              <OwnerPanel
+                view={view}
+                capabilities={capabilities}
+                actions={actions}
+                walletBalance={wallet.balance}
+              />
+            )}
+          </div>
+          <div className="flex flex-col gap-6">
+            {execution}
+            {watchlist}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Full width: event descriptions are sentences, and a half-width column
           would wrap every one of them onto three lines. */}
@@ -339,7 +376,7 @@ function BackLink() {
   return (
     <Link
       to="/app"
-      className="inline-flex min-h-[28px] w-fit cursor-pointer items-center gap-1.5 text-[13px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
+      className="-ml-1 inline-flex min-h-[36px] w-fit cursor-pointer items-center gap-1.5 rounded px-1 text-[13px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
     >
       <ArrowLeft size={13} aria-hidden />
       All vaults

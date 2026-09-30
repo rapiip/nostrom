@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Info } from "@phosphor-icons/react";
+import { clsx } from "clsx";
+import { useId, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Check } from "@phosphor-icons/react";
 import { getAddress, parseEventLogs, type Address, type Hash } from "viem";
 import { usePublicClient, useReadContract } from "wagmi";
 import { nostromFactoryAbi } from "@/contracts/abis";
@@ -8,11 +9,12 @@ import { PROTOCOL, TIMEOUT_PRESETS } from "@/config/contracts";
 import { describeTimeout, formatAmount, formatDuration, sameAddress, truncateAddress } from "@/lib/format";
 import { normalizeAddress, validateAmount, validateSaltLabel, validateVaultConfig } from "@/lib/validation";
 import { rememberVault } from "@/lib/recentVaults";
+import { NAME_MAX, setAddressName, useAddressName } from "@/lib/addressBook";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { useFactory } from "@/hooks/useVault";
 import { toSalt, useCreateVault } from "@/hooks/useVaultActions";
-import { Button, Spinner } from "@/components/ui/Button";
+import { Button, ButtonRouterLink, Spinner } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
 import {
   Disclosure,
@@ -69,7 +71,16 @@ function CreateVaultInner() {
   const [salt, setSalt] = useState("");
   const [createdVault, setCreatedVault] = useState<Address | undefined>();
   const [resolvingVault, setResolvingVault] = useState(false);
+  const [vaultName, setVaultName] = useState("");
+  const [agentName, setAgentName] = useState("");
   const publicClient = usePublicClient();
+
+  // Read at confirmation time, which may be many renders after submit.
+  const namesRef = useRef({ vault: "", agent: "", agentAddress: "" });
+  namesRef.current = { vault: vaultName, agent: agentName, agentAddress: agent };
+
+  const agentSaved = useAddressName(wallet.chainId, normalizeAddress(agent) ?? undefined);
+  const recoverySaved = useAddressName(wallet.chainId, normalizeAddress(recovery) ?? undefined);
 
   const timeoutSeconds = useMemo(() => {
     if (useCustom) {
@@ -92,8 +103,13 @@ function CreateVaultInner() {
   });
   const saltResult = useSalt ? validateSaltLabel(salt) : { ok: true };
 
-  const canSubmit =
-    validation.ok && depositResult.ok && saltResult.ok && Boolean(factory) && !wallet.isFactoryMissing;
+  const formValid = validation.ok && depositResult.ok && saltResult.ok;
+  const canSubmit = formValid && Boolean(factory) && !wallet.isFactoryMissing;
+
+  // Set on the first submit attempt: from then on every field shows its error,
+  // not only the ones the user has already left.
+  const [attempted, setAttempted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Predicted CREATE2 address, shown before the transaction so the user can
   // pre-fund it or record it. The factory namespaces the salt by msg.sender, so
@@ -130,6 +146,14 @@ function CreateVaultInner() {
         const vault = getAddress(mine.args.vault);
         setCreatedVault(vault);
         rememberVault(wallet.chainId, vault);
+        // Names are saved only now, against the address the chain reported,
+        // so a failed or reverted creation never leaves a dangling name.
+        const n = namesRef.current;
+        if (n.vault.trim()) setAddressName(wallet.chainId, vault, n.vault, { kind: "vault" });
+        const agentAddr = normalizeAddress(n.agentAddress);
+        if (n.agent.trim() && agentAddr) {
+          setAddressName(wallet.chainId, agentAddr, n.agent, { kind: "account" });
+        }
       }
     } catch {
       // Fall back to the predicted address (CREATE2) or the vault list.
@@ -146,7 +170,16 @@ function CreateVaultInner() {
   // from the receipt (see resolveCreatedVault).
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      // The button stays clickable so a click always gets an answer: reveal
+      // every error and move focus to the first field that needs attention,
+      // rather than leaving a dead grey button and a guessing game.
+      setAttempted(true);
+      requestAnimationFrame(() => {
+        formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
+      return;
+    }
 
     const agentAddr = normalizeAddress(agent);
     const recoveryAddr = normalizeAddress(recovery);
@@ -167,17 +200,36 @@ function CreateVaultInner() {
 
   const recommendedPing = timeoutSeconds / PROTOCOL.RECOMMENDED_PING_DIVISOR;
 
+  // Name the first thing still missing, rather than repeating the full list of
+  // requirements no matter how much of the form is already complete.
+  const missingHint = !normalizeAddress(agent)
+    ? "Add the agent address to continue."
+    : !normalizeAddress(recovery)
+      ? "Add the recovery address to continue."
+      : !validation.ok
+        ? "Fix the highlighted field to continue."
+        : !depositResult.ok
+          ? "Check the deposit amount to continue."
+          : !saltResult.ok
+            ? "Check the salt label to continue."
+            : "The factory for this network is unavailable.";
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Create a vault</h1>
         <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
-          You become the owner. The vault is a separate contract at its own address holding its own
-          balance; nothing is commingled with other users.
+          Three decisions: who checks in, where the money goes if they stop, and how long to wait.
+          You become the owner of a contract that holds only your funds.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        noValidate
+        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]"
+      >
         {/* --- Configuration --- */}
         <div className="flex flex-col gap-6">
           <Panel>
@@ -190,7 +242,17 @@ function CreateVaultInner() {
                 label="Agent address"
                 required
                 result={validation.agent}
-                hint="The wallet your agent signs heartbeats from. It can only report liveness and cannot move funds."
+                revealErrors={attempted || agent.trim().length >= 42}
+                hint={
+                  agentSaved ? (
+                    <>
+                      This is <span className="text-text">{agentSaved.name}</span>. It can only
+                      report liveness and cannot move funds.
+                    </>
+                  ) : (
+                    "The wallet your agent signs heartbeats from. It can only report liveness and cannot move funds."
+                  )
+                }
                 aside={
                   wallet.address && (
                     <button
@@ -221,7 +283,17 @@ function CreateVaultInner() {
                 label="Recovery address"
                 required
                 result={validation.recovery}
-                hint="The cold wallet that receives everything if the heartbeat lapses. Cannot equal the agent address. Choose carefully: while the vault is healthy you can change it, but after the switch fires the funds are already gone."
+                revealErrors={attempted || recovery.trim().length >= 42}
+                hint={
+                  recoverySaved ? (
+                    <>
+                      This is <span className="text-text">{recoverySaved.name}</span>. It receives
+                      everything if the heartbeat lapses, and must differ from the agent address.
+                    </>
+                  ) : (
+                    "The cold wallet that receives everything if the heartbeat lapses. It must differ from the agent address. You can change it later while the vault is healthy, but not after the switch has fired."
+                  )
+                }
               >
                 {(a11y) => (
                   <Input
@@ -236,6 +308,28 @@ function CreateVaultInner() {
                   />
                 )}
               </Field>
+
+              {/* Names: optional, local-only, saved once the vault exists. */}
+              <div className="rounded border border-line bg-ink-850/60 px-3.5 py-3.5">
+                <p className="text-[13px] font-medium text-text">
+                  Names <span className="font-normal text-text-faint">(optional)</span>
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <NameInput
+                    label="Vault name"
+                    value={vaultName}
+                    onChange={setVaultName}
+                    placeholder="e.g. Trading treasury"
+                  />
+                  <NameInput
+                    label="Agent name"
+                    value={agentName}
+                    onChange={setAgentName}
+                    placeholder={agentSaved ? agentSaved.name : "e.g. Trading agent · prod"}
+                    hint={agentSaved && !agentName ? `Already saved as “${agentSaved.name}”` : undefined}
+                  />
+                </div>
+              </div>
             </PanelBody>
           </Panel>
 
@@ -263,6 +357,7 @@ function CreateVaultInner() {
                 <Field
                   label="Timeout in seconds"
                   result={useCustom ? validation.timeout : undefined}
+                  revealErrors={attempted}
                   hint={`Between ${PROTOCOL.MIN_TIMEOUT_SECONDS} and ${PROTOCOL.MAX_TIMEOUT_SECONDS} seconds (30s to 365 days).`}
                 >
                   {(a11y) => (
@@ -286,14 +381,10 @@ function CreateVaultInner() {
 
               {timeoutSeconds > 0n && validation.timeout.ok && (
                 <Notice tone="info">
-                  <div className="flex items-start gap-2">
-                    <Info size={14} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
-                    <span>
-                      Recommended heartbeat interval: every{" "}
-                      <span className="tnum text-text">{formatDuration(recommendedPing)}</span> (one-third
-                      of the timeout window) to allow for network delays without triggering false alarms.
-                    </span>
-                  </div>
+                  Set your agent to check in every{" "}
+                  <span className="tnum text-text">{formatDuration(recommendedPing)}</span>, a third
+                  of the timeout. That way two missed heartbeats in a row still do not fire the
+                  switch.
                 </Notice>
               )}
             </PanelBody>
@@ -308,6 +399,7 @@ function CreateVaultInner() {
               <Field
                 label="Amount"
                 result={depositResult}
+                revealErrors={attempted}
                 hint={
                   wallet.balance !== undefined ? (
                     <>
@@ -361,7 +453,8 @@ function CreateVaultInner() {
                       <Field
                         label="Salt label"
                         result={saltResult}
-                        hint="A unique text label or 32-byte hex salt for deterministic address deployment. Each address salt is isolated to your wallet."
+                        revealErrors={attempted}
+                        hint="Any short text label (or a 32-byte hex value). It is combined with your address, so another account using the same label gets a different vault."
                       >
                         {(a11y) => (
                           <Input
@@ -413,18 +506,37 @@ function CreateVaultInner() {
                 </DataRow>
                 <DataRow label="Agent">
                   {normalizeAddress(agent) ? (
-                    <span className="tnum text-[13px]">{truncateAddress(agent, 6)}</span>
+                    <span className="flex flex-col items-end">
+                      {(agentName.trim() || agentSaved) && (
+                        <span className="max-w-[16ch] truncate text-[13px] font-medium">
+                          {agentName.trim() || agentSaved?.name}
+                        </span>
+                      )}
+                      <span className="tnum text-[12px] text-text-dim">{truncateAddress(agent, 6)}</span>
+                    </span>
                   ) : (
                     <span className="text-text-faint">Not set</span>
                   )}
                 </DataRow>
                 <DataRow label="Recovery">
                   {normalizeAddress(recovery) ? (
-                    <span className="tnum text-[13px]">{truncateAddress(recovery, 6)}</span>
+                    <span className="flex flex-col items-end">
+                      {recoverySaved && (
+                        <span className="max-w-[16ch] truncate text-[13px] font-medium">
+                          {recoverySaved.name}
+                        </span>
+                      )}
+                      <span className="tnum text-[12px] text-text-dim">{truncateAddress(recovery, 6)}</span>
+                    </span>
                   ) : (
                     <span className="text-text-faint">Not set</span>
                   )}
                 </DataRow>
+                {vaultName.trim() && (
+                  <DataRow label="Name">
+                    <span className="max-w-[18ch] truncate text-[13px] font-medium">{vaultName.trim()}</span>
+                  </DataRow>
+                )}
                 <DataRow label="Timeout">
                   {validation.timeout.ok ? (
                     <span className="tnum text-[13px] text-signal">
@@ -442,7 +554,7 @@ function CreateVaultInner() {
                 </DataRow>
                 <DataRow label="Deployment">
                   <span className="text-[13px] text-text-dim">
-                    {useSalt ? "Deterministic (CREATE2)" : "Standard Factory"}
+                    {useSalt ? "Deterministic (CREATE2)" : "Standard"}
                   </span>
                 </DataRow>
               </DataList>
@@ -452,25 +564,43 @@ function CreateVaultInner() {
                 variant="primary"
                 full
                 className="mt-5"
-                disabled={!canSubmit}
+                disabled={!factory || wallet.isFactoryMissing}
                 loading={create.isBusy}
                 iconRight={<ArrowRight size={14} aria-hidden />}
               >
                 {create.isBusy ? "Creating…" : "Create vault"}
               </Button>
 
-              {!canSubmit && (
-                <p className="mt-3 text-[12px] leading-relaxed text-text-faint">
-                  Fill in a valid agent address, recovery address and timeout to continue.
-                </p>
-              )}
+              <p
+                className={clsx(
+                  "mt-3 flex items-start gap-1.5 text-[12px] leading-relaxed",
+                  canSubmit ? "text-text-faint" : attempted ? "text-danger" : "text-text-faint",
+                )}
+                aria-live="polite"
+              >
+                {canSubmit ? (
+                  <>
+                    <Check size={13} className="mt-px shrink-0 text-signal" aria-hidden />
+                    Ready. Your wallet will ask you to confirm the transaction.
+                  </>
+                ) : (
+                  missingHint
+                )}
+              </p>
             </PanelBody>
           </Panel>
 
-          <Notice tone="warn" title="Critical recovery destination">
-            If the fail-safe triggers, all treasury assets are permanently evacuated to this address.
-            Ensure you designate a secure, independent cold storage wallet.
+          <Notice tone="warn" title="Double-check the recovery address">
+            If the switch fires, everything in the vault goes there, and a transfer on-chain cannot
+            be reversed. Use a cold wallet you control that is separate from the agent and from
+            this browser wallet.
           </Notice>
+
+          {wallet.chainId === 677 && (
+            <Notice tone="info" title="You are on BOT Chain mainnet">
+              Real BOT is at stake. Start with an amount you are comfortable testing with.
+            </Notice>
+          )}
         </aside>
       </form>
 
@@ -497,14 +627,15 @@ function CreateVaultInner() {
                     />
                   </div>
                 </div>
-                <Link
+                <ButtonRouterLink
                   to={`/app/vault/${createdVault}`}
                   onClick={() => create.reset()}
-                  className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded border border-signal bg-signal px-4 text-[13px] font-medium text-ink-950 no-underline transition-colors hover:bg-signal/90"
+                  variant="primary"
+                  full
+                  iconRight={<ArrowRight size={13} aria-hidden />}
                 >
                   Open vault
-                  <ArrowRight size={13} aria-hidden />
-                </Link>
+                </ButtonRouterLink>
               </>
             ) : (
               <Button
@@ -521,6 +652,39 @@ function CreateVaultInner() {
           </div>
         }
       />
+    </div>
+  );
+}
+
+/** Compact optional text input for a local name. */
+function NameInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  hint?: string;
+}) {
+  const id = useId();
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <label htmlFor={id} className="text-[12px] text-text-dim">
+        {label}
+      </label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, NAME_MAX))}
+        placeholder={placeholder}
+        maxLength={NAME_MAX}
+        autoComplete="off"
+      />
+      {hint && <p className="text-[11px] text-text-faint">{hint}</p>}
     </div>
   );
 }

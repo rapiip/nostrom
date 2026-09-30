@@ -19,8 +19,9 @@ import {
   type Icon,
 } from "@phosphor-icons/react";
 import { explorerTxUrl } from "@/config/chains";
-import { describeTimeout, formatAmount, formatCount, formatRelative, formatTimestamp, truncateAddress } from "@/lib/format";
+import { describeTimeout, formatAmount, formatCount, formatAgo, formatTimestamp, truncateAddress } from "@/lib/format";
 import { shortErrorText } from "@/lib/errors";
+import { useNameResolver } from "@/lib/addressBook";
 import { useClock } from "@/hooks/useClock";
 import { useVaultActivity, type VaultEvent, type VaultEventName } from "@/hooks/useVaultActivity";
 import { Button } from "@/components/ui/Button";
@@ -101,7 +102,8 @@ export function ActivityPanel({
     [activity.events, filter],
   );
 
-  const label = (a: unknown) => describeAddress(a, roles);
+  const resolveName = useNameResolver(chainId);
+  const label = (a: unknown) => describeAddress(a, roles, (addr) => resolveName(addr)?.name);
 
   return (
     <Panel>
@@ -277,7 +279,7 @@ function EventRow({
           <p className="tnum text-[11px] text-text-faint">
             {event.timestamp !== undefined ? (
               <time dateTime={new Date(Number(event.timestamp) * 1000).toISOString()} title={formatTimestamp(event.timestamp)}>
-                {formatRelative(event.timestamp, now)}
+                {formatAgo(event.timestamp, now)}
               </time>
             ) : (
               <>block {formatCount(event.blockNumber)}</>
@@ -319,11 +321,18 @@ function isInitialOwnership(event: VaultEvent): boolean {
   );
 }
 
-/** Name an address by its current role in this vault, else truncate it. */
-function describeAddress(a: unknown, roles: { owner: Address; agent: Address; recovery: Address }): string {
+/**
+ * Name an address by its role in this vault and, if the user saved one, by its
+ * name: "the agent (Trading bot)", else "the agent (0x7099…79C8)".
+ */
+function describeAddress(
+  a: unknown,
+  roles: { owner: Address; agent: Address; recovery: Address },
+  nameOf: (address: string) => string | undefined,
+): string {
   if (typeof a !== "string") return "an unknown address";
   const lower = a.toLowerCase();
-  const short = truncateAddress(a, 4);
+  const short = nameOf(a) ?? truncateAddress(a, 4);
   if (lower === roles.recovery.toLowerCase()) return `the recovery address (${short})`;
   if (lower === roles.owner.toLowerCase()) return `the owner (${short})`;
   if (lower === roles.agent.toLowerCase()) return `the agent (${short})`;

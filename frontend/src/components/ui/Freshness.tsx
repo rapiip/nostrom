@@ -54,7 +54,7 @@ export function Freshness({
       <span
         aria-hidden
         className={clsx(
-          "tnum hidden text-[11px] sm:inline",
+          "tnum text-[11px]",
           stale ? "text-warn" : "text-text-faint",
         )}
         title={updatedAt ? new Date(updatedAt).toLocaleString() : undefined}
@@ -68,7 +68,7 @@ export function Freshness({
         aria-label={`${label}. ${ageText}${stale ? ", may be out of date" : ""}.`}
         aria-busy={isFetching || undefined}
         className={clsx(
-          "inline-flex min-h-[32px] items-center gap-1.5 rounded border px-2.5 text-[13px] transition-all duration-150",
+          "inline-flex min-h-[36px] items-center gap-1.5 rounded border px-2.5 text-[13px] transition-all duration-150",
           stale
             ? "border-warn-dim text-warn hover:bg-warn/10"
             : "border-transparent text-text-dim hover:bg-ink-850 hover:text-text",

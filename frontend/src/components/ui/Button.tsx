@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { Link, type LinkProps } from "react-router-dom";
 
 /**
  * The single button primitive.
@@ -51,7 +52,7 @@ const VARIANTS: Record<Variant, string> = {
 const SIZES: Record<Size, string> = {
   // min-h keeps every control at or above a 44px touch target at md/lg, and
   // sm is only used inside already-padded rows where the row provides the target.
-  sm: "text-[13px] px-2.5 py-1.5 gap-1.5 min-h-[32px]",
+  sm: "text-[13px] px-3 py-1.5 gap-1.5 min-h-[36px]",
   md: "text-sm px-3.5 py-2.5 gap-2 min-h-[44px]",
   lg: "text-[15px] px-5 py-3 gap-2 min-h-[48px]",
 };
@@ -125,6 +126,34 @@ export function Spinner({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Class string for anything that must LOOK like a button but is not a
+ * <button>: router links, in-page anchors, external links. Exported so every
+ * call site shares one definition instead of re-typing a 300-character class
+ * string (which is how the console ended up with five slightly different
+ * "primary" greens and three different heights).
+ */
+export function buttonClass({
+  variant = "secondary",
+  size = "md",
+  full = false,
+  className,
+}: {
+  variant?: Variant;
+  size?: Size;
+  full?: boolean;
+  className?: string;
+} = {}) {
+  return clsx(
+    "group inline-flex cursor-pointer items-center justify-center rounded border no-underline",
+    "transition-all duration-150 ease-out",
+    VARIANTS[variant],
+    SIZES[size],
+    full && "w-full",
+    className,
+  );
+}
+
 /** Anchor styled as a button, for external links that leave the app. */
 export function ButtonLink({
   variant = "secondary",
@@ -143,20 +172,43 @@ export function ButtonLink({
   full?: boolean;
 }) {
   return (
-    <a
-      {...rest}
-      className={clsx(
-        "inline-flex cursor-pointer items-center justify-center rounded border no-underline",
-        "transition-all duration-150 ease-out",
-        VARIANTS[variant],
-        SIZES[size],
-        full && "w-full",
-        className,
-      )}
-    >
+    <a {...rest} className={buttonClass({ variant, size, full, className })}>
       {icon}
       {children}
       {iconRight}
     </a>
+  );
+}
+
+/**
+ * Router link styled as a button. Client-side navigation, so no full reload.
+ * A trailing arrow nudges right on hover, the one motion cue used for "go".
+ */
+export function ButtonRouterLink({
+  variant = "secondary",
+  size = "md",
+  icon,
+  iconRight,
+  full = false,
+  className,
+  children,
+  ...rest
+}: LinkProps & {
+  variant?: Variant;
+  size?: Size;
+  icon?: ReactNode;
+  iconRight?: ReactNode;
+  full?: boolean;
+}) {
+  return (
+    <Link {...rest} className={buttonClass({ variant, size, full, className })}>
+      {icon}
+      {children}
+      {iconRight && (
+        <span className="inline-flex transition-transform duration-200 group-hover:translate-x-0.5">
+          {iconRight}
+        </span>
+      )}
+    </Link>
   );
 }

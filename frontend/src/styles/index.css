@@ -83,6 +83,16 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Keeps anchor jumps and keyboard focus clear of the sticky header
+       (WCAG 2.2 2.4.11 Focus Not Obscured). The console adds a second row of
+       tabs below md, hence the larger offset there. */
+    scroll-padding-top: 5.5rem;
+  }
+
+  @media (max-width: 767px) {
+    html {
+      scroll-padding-top: 8.5rem;
+    }
   }
 
   body {
@@ -303,6 +313,17 @@
       opacity: 0;
       transform: translateY(4px);
     }
+  }
+}
+
+/* ===========================================================================
+   Print — scroll reveals never fire on paper, so show everything.
+   =========================================================================== */
+
+@media print {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

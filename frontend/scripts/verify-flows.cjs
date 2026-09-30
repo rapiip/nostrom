@@ -209,6 +209,18 @@ function has(text, needle) {
   return text.toLowerCase().includes(needle.toLowerCase());
 }
 
+/** Count visible, enabled <button>s whose label matches. */
+async function buttonsMatching(page, re) {
+  return page.$$eval(
+    "button",
+    (els, src) =>
+      els.filter(
+        (b) => !b.disabled && b.offsetParent !== null && new RegExp(src).test(b.textContent || ""),
+      ).length,
+    re.source,
+  );
+}
+
 /**
  * Connect only if a Connect button is present. wagmi's shimDisconnect persists
  * the authorisation in localStorage, which the browser shares across pages on
@@ -360,9 +372,11 @@ async function ensureConnected(page) {
     await new Promise((r) => setTimeout(r, 2000));
 
     const text = await bodyText(page);
+    const executeButtons = await buttonsMatching(page, /Execute/);
     check(
-      "execute button disabled while agent alive",
-      has(text, "Disabled while the agent heartbeat is current"),
+      "execute is not offered while agent alive, and the revert is named",
+      executeButtons === 0 && has(text, "AgentStillAlive"),
+      `${executeButtons} execute button(s)`,
     );
     check(
       "non-owner is not offered owner controls",
@@ -469,7 +483,9 @@ async function ensureConnected(page) {
     const text = await bodyText(page);
     check("vault state readable with no wallet", has(text, "Heartbeat"));
     check("read-only mode declared", has(text, "Read-only"));
-    check("no write controls offered", !has(text, "Send heartbeat"));
+    // Checked on real controls, not page text: prose such as "Can only send
+    // heartbeats" legitimately contains the phrase.
+    check("no write controls offered", (await buttonsMatching(page, /Send heartbeat|Withdraw|Execute/)) === 0);
     check("install prompt offered instead of a dead button", has(text, "Install a wallet"));
     await page.close();
     await context.close();

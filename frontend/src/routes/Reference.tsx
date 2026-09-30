@@ -357,7 +357,7 @@ function Block({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-20 border-b border-line py-14 sm:py-16">
+    <section id={id} className="border-b border-line py-14 sm:py-16">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:items-end lg:gap-x-16">
           <div className="lg:col-span-7">

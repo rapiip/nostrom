@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Warning } from "@phosphor-icons/react";
 import type { FieldResult } from "@/lib/validation";
 
@@ -19,6 +19,11 @@ export interface FieldProps {
   hint?: ReactNode;
   result?: FieldResult;
   required?: boolean;
+  /**
+   * Show the error even if the field has not been left yet: after a failed
+   * submit, or once the value is obviously complete (a pasted 42-char address).
+   */
+  revealErrors?: boolean;
   /** Extra content on the label row, e.g. a "Use my address" shortcut. */
   aside?: ReactNode;
   children: (props: {
@@ -29,24 +34,44 @@ export interface FieldProps {
   className?: string;
 }
 
+/**
+ * Error timing: "reward early, punish late".
+ *
+ * An error is only shown once the user has left the field (blur) or the form
+ * asks for it via `revealErrors`. Before this, an untouched Create form opened
+ * with two red "…is required" messages, and every address field turned red on
+ * the first keystroke of a paste-in-progress. Once shown, the message updates
+ * live, so it clears the moment the value becomes valid. Warnings are advisory
+ * and are never gated.
+ */
 export function Field({
   label,
   hint,
   result,
   required,
+  revealErrors = false,
   aside,
   children,
   className,
 }: FieldProps) {
   const id = useId();
   const messageId = `${id}-message`;
+  const [touched, setTouched] = useState(false);
 
-  const hasError = result?.ok === false && Boolean(result.error);
+  const errorVisible = touched || revealErrors;
+  const hasError = errorVisible && result?.ok === false && Boolean(result.error);
   const hasWarning = !hasError && Boolean(result?.warning);
   const message = hasError ? result?.error : hasWarning ? result?.warning : undefined;
 
   return (
-    <div className={clsx("flex flex-col gap-2", className)}>
+    <div
+      className={clsx("flex flex-col gap-2", className)}
+      // Only a real departure from the field counts: moving focus between the
+      // input and its own suffix button (e.g. MAX) is not "leaving".
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setTouched(true);
+      }}
+    >
       <div className="flex items-baseline justify-between gap-3">
         <label htmlFor={id} className="text-[13px] font-medium text-text">
           {label}
@@ -100,13 +125,17 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function Input({ suffix, invalid, mono = false, className, ...rest }: InputProps) {
+  // Inside a <Field>, the field owns error timing and passes aria-invalid only
+  // once the error is visible; that wins over the caller's raw `invalid`, so an
+  // untouched field never turns red. Outside a Field, `invalid` applies as-is.
+  const showInvalid = "aria-invalid" in rest ? rest["aria-invalid"] === true : Boolean(invalid);
   return (
     <div
       className={clsx(
         "flex items-center gap-2 rounded border bg-ink-800 transition-all duration-150",
         "shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]",
         "focus-within:border-signal focus-within:ring-1 focus-within:ring-signal/30",
-        invalid
+        showInvalid
           ? "border-danger focus-within:border-danger focus-within:ring-danger/30"
           : "border-line-strong hover:border-text-faint",
         className,
@@ -114,7 +143,7 @@ export function Input({ suffix, invalid, mono = false, className, ...rest }: Inp
     >
       <input
         {...rest}
-        aria-invalid={invalid || undefined}
+        aria-invalid={showInvalid || undefined}
         className={clsx(
           "min-h-[44px] w-full min-w-0 bg-transparent px-3 py-2.5 text-[14px] text-text",
           "placeholder:text-text-faint focus:outline-none",

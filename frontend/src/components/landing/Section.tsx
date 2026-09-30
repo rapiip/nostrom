@@ -43,7 +43,7 @@ export function Section({
     <section
       id={id}
       className={clsx(
-        "scroll-mt-20 py-16 sm:py-24",
+        "py-16 sm:py-24",
         bordered && "border-t border-line",
         className,
       )}

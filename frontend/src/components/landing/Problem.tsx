@@ -63,7 +63,7 @@ export function Problem() {
             {FAILURES.map((f, i) => (
               <div
                 key={f.cause}
-                className="flex items-start gap-4 border-b border-line py-4 first:border-t first:border-line transition-colors hover:bg-ink-900/40"
+                className="flex items-start gap-4 border-b border-line py-4 first:border-t first:border-line"
               >
                 <span className="tnum pt-0.5 text-[11px] font-mono text-text-faint">
                   {String(i + 1).padStart(2, "0")}
@@ -95,7 +95,7 @@ export function Problem() {
             {NON_SOLUTIONS.map((s) => (
               <div
                 key={s.approach}
-                className="border-b border-line py-4 first:border-t first:border-line transition-colors hover:bg-ink-900/40"
+                className="border-b border-line py-4 first:border-t first:border-line"
               >
                 <dt className="text-[14px] font-medium text-text">{s.approach}</dt>
                 <dd className="mt-1 max-w-[52ch] text-[13px] leading-relaxed text-text-dim">

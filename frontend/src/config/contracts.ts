@@ -39,6 +39,35 @@ export function hasFactory(chainId: number | undefined): boolean {
   return factoryAddress(chainId) !== null;
 }
 
+/* ===========================================================================
+   Deployed Nostrom contract, per chain
+   ---------------------------------------------------------------------------
+   The canonical deployed contract on each chain, used for "View Contract"
+   links that point straight at the source on the block explorer instead of the
+   explorer homepage. Env-overridable so a fork or a redeploy can point the UI
+   at a different address without a code change:
+
+     VITE_CONTRACT_ADDRESS_677=0x...   # BOT Chain mainnet
+     VITE_CONTRACT_ADDRESS_968=0x...   # BOT Chain testnet
+
+   The mainnet address is the live deployment on BOT Chain Mainnet (chainId
+   677). Anything malformed or unset falls back to null and the link degrades
+   to the explorer homepage rather than a broken URL.
+   =========================================================================== */
+
+const DEPLOYED_RAW: Record<number, string | undefined> = {
+  677: import.meta.env.VITE_CONTRACT_ADDRESS_677 || "0x86328F808d018cB8A58436eB8Dbc5437711041CC",
+  968: import.meta.env.VITE_CONTRACT_ADDRESS_968,
+};
+
+/** Deployed contract for a chain, or null when unset/malformed. */
+export function deployedContractAddress(chainId: number | undefined): Address | null {
+  if (chainId === undefined) return null;
+  const raw = DEPLOYED_RAW[chainId]?.trim();
+  if (!raw || !isAddress(raw)) return null;
+  return raw as Address;
+}
+
 /** Chains that currently have a factory configured. */
 export function chainsWithFactory(ids: readonly SupportedChainId[]): SupportedChainId[] {
   return ids.filter((id) => hasFactory(id));

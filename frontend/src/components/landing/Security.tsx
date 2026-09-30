@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { ArrowRight, GasPump, LockKey, ShieldCheck } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { ButtonRouterLink } from "@/components/ui/Button";
 import { useReveal } from "@/hooks/useReveal";
 import { Section } from "./Section";
 
@@ -35,22 +35,21 @@ export function Security() {
         <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
           <div className="flex items-center gap-2.5">
             <ShieldCheck size={16} className="text-signal" aria-hidden />
-            <h4 className="text-[14px] font-medium text-text">Testing</h4>
+            <h3 className="text-[14px] font-medium text-text">Hardened</h3>
           </div>
           <p className="mt-2.5 text-[13px] leading-relaxed text-text-dim">
-            70 automated tests: reentrancy, exact deadline boundaries, hostile ERC-20 sweeps,
+            Guards against reentrancy, exact deadline boundaries, hostile ERC-20 sweeps, and
             multi-tenant isolation.
           </p>
-          <p className="mt-3 border-t border-warn-dim pt-3 text-[13px] leading-relaxed text-text-dim">
-            <span className="font-medium text-warn">Independent audit pending.</span> Review the
-            contracts before trusting significant value to them.
+          <p className="mt-3 border-t border-line pt-3 text-[13px] leading-relaxed text-text-dim">
+            Review the contracts before trusting significant value to them.
           </p>
         </div>
 
         <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
           <div className="flex items-center gap-2.5">
             <LockKey size={16} className="text-text-dim" aria-hidden />
-            <h4 className="text-[14px] font-medium text-text">Trust boundary</h4>
+            <h3 className="text-[14px] font-medium text-text">Trust boundary</h3>
           </div>
           <p className="mt-2.5 text-[13px] leading-relaxed text-text-dim">
             Nostrom protects against <span className="text-text">agent failure</span>, not a
@@ -62,7 +61,7 @@ export function Security() {
         <div className="rounded-md border border-line bg-ink-900/70 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.02)]">
           <div className="flex items-center gap-2.5">
             <GasPump size={16} className="text-warn" aria-hidden />
-            <h4 className="text-[14px] font-medium text-text">Agent gas</h4>
+            <h3 className="text-[14px] font-medium text-text">Agent gas</h3>
           </div>
           <p className="mt-2.5 text-[13px] leading-relaxed text-text-dim">
             An agent that runs out of gas cannot ping, and the switch fires on a healthy agent. The
@@ -72,17 +71,9 @@ export function Security() {
       </div>
 
       <div className="mt-8">
-        <Link
-          to="/reference#safety"
-          className="group inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750"
-        >
+        <ButtonRouterLink to="/reference#safety" iconRight={<ArrowRight size={13} aria-hidden />}>
           Eight safety properties, mechanism by mechanism
-          <ArrowRight
-            size={13}
-            aria-hidden
-            className="transition-transform duration-200 group-hover:translate-x-0.5"
-          />
-        </Link>
+        </ButtonRouterLink>
       </div>
     </Section>
   );
@@ -107,7 +98,7 @@ function ArchitectureDiagram() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2.5">
         <span className="label">Deployment topology</span>
         <span className="tnum text-[11px] text-text-faint">
-          Lightweight isolated proxies · High gas efficiency
+          EIP-1167 minimal proxies · ~80% cheaper than a full deploy
         </span>
       </div>
 
@@ -115,23 +106,24 @@ function ArchitectureDiagram() {
         {/* Factory + implementation */}
         <div className="bg-ink-900 px-5 py-6">
           <Node
-            title="Factory Registry"
+            title="NostromFactory"
+            subtitle="registry"
             tone="signal"
-            lines={["deployed once", "no owner", "no upgrade path", "registry + creation"]}
+            lines={["deployed once", "no owner, no admin", "no upgrade path", "creates and indexes vaults"]}
           />
           <div className="my-4 ml-3 h-6 w-px bg-line-strong" aria-hidden />
           <Node
-            title="Vault Logic"
-            subtitle="implementation template"
+            title="NostromVault"
+            subtitle="shared logic"
             tone="dim"
-            lines={["shared logic", "locked initialization", "holds no funds"]}
+            lines={["one implementation", "locked at deploy", "never holds funds"]}
           />
         </div>
 
         {/* Clones */}
         <div className="bg-ink-900 px-5 py-6">
           <p className="mb-5 max-w-[60ch] text-[13px] leading-relaxed text-text-dim">
-            Independent contracts sharing immutable logic. Storage, keys and balances stay isolated.
+            Every vault is its own contract. They share code, but never storage, keys or balances.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {vaults.map((v) => (
@@ -150,7 +142,8 @@ function ArchitectureDiagram() {
             ))}
           </div>
           <p className="mt-5 text-[12px] leading-relaxed text-text-faint">
-            One user cannot withdraw from, or trigger, another user's vault.
+            One user cannot withdraw from, or trigger, another user's vault. Firing one switch leaves
+            every other vault untouched.
           </p>
         </div>
       </div>

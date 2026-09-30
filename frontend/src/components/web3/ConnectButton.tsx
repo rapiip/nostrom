@@ -6,6 +6,9 @@ import { formatAmount, truncateAddress } from "@/lib/format";
 import { useWallet } from "@/hooks/useWallet";
 import { Button } from "@/components/ui/Button";
 import { CopyButton } from "@/components/ui/Address";
+import { AddressNameButton } from "@/components/ui/AddressName";
+import { useAddressName } from "@/lib/addressBook";
+import { useToast } from "@/components/ui/Toast";
 
 /**
  * Connect / account control.
@@ -19,6 +22,8 @@ import { CopyButton } from "@/components/ui/Address";
  */
 export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const wallet = useWallet();
+  const { toast } = useToast();
+  const accountName = useAddressName(wallet.chainId, wallet.address);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -54,23 +59,35 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   }
 
   if (wallet.status === "disconnected" || wallet.status === "connecting") {
+    // A failed connection is reported as a toast, not as text under the
+    // button: in the 64px header an inline message pushed the button out of
+    // the bar and overflowed the viewport on a phone. The toast id dedupes it
+    // when several Connect buttons are on screen at once.
     return (
-      <div className="flex flex-col items-end gap-1.5">
-        <Button
-          variant="primary"
-          size={size}
-          loading={wallet.status === "connecting"}
-          icon={wallet.status === "connecting" ? undefined : <Wallet size={14} aria-hidden />}
-          onClick={wallet.connect}
-        >
-          {wallet.status === "connecting" ? "Connecting…" : "Connect wallet"}
-        </Button>
-        {wallet.connectError && wallet.connectError.kind !== "rejected" && (
-          <p role="alert" className="max-w-[240px] text-right text-[11px] text-danger">
-            {wallet.connectError.title}
-          </p>
-        )}
-      </div>
+      <Button
+        variant="primary"
+        size={size}
+        loading={wallet.status === "connecting"}
+        icon={wallet.status === "connecting" ? undefined : <Wallet size={14} aria-hidden />}
+        onClick={() =>
+          wallet.connect({
+            onError: (e) => {
+              if (e.kind === "rejected") return;
+              toast({
+                id: "connect-error",
+                tone: "danger",
+                title: "Could not connect your wallet",
+                description:
+                  e.kind === "unknown"
+                    ? "Open your wallet extension, unlock it if needed, and try again."
+                    : e.detail,
+              });
+            },
+          })
+        }
+      >
+        {wallet.status === "connecting" ? "Connecting…" : "Connect wallet"}
+      </Button>
     );
   }
 
@@ -93,16 +110,28 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
         type="button"
         onClick={() => setMenuOpen((v) => !v)}
         aria-expanded={menuOpen}
-        aria-haspopup="menu"
+        aria-controls="account-menu"
+        aria-label={`Account ${truncateAddress(wallet.address)} on ${wallet.chainName ?? "unknown network"}`}
         className={clsx(
           "flex cursor-pointer items-center gap-2.5 rounded border border-line-strong bg-ink-850 px-3",
           "min-h-[44px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]",
         )}
       >
         <span className="pulse-dot text-signal" aria-hidden />
-        <span className="flex flex-col items-start leading-none">
-          <span className="tnum text-[13px] text-text">{truncateAddress(wallet.address)}</span>
-          <span className="mt-1 text-[10px] text-text-faint">{wallet.chainName}</span>
+        <span className="flex min-w-0 flex-col items-start leading-none">
+          {accountName ? (
+            <>
+              <span className="max-w-[14ch] truncate text-[13px] text-text">{accountName.name}</span>
+              <span className="tnum mt-1 text-[11px] text-text-faint">
+                {truncateAddress(wallet.address)} · {wallet.chainName}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="tnum text-[13px] text-text">{truncateAddress(wallet.address)}</span>
+              <span className="mt-1 text-[11px] text-text-faint">{wallet.chainName}</span>
+            </>
+          )}
         </span>
         <CaretDown
           size={12}
@@ -113,11 +142,27 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 
       {menuOpen && (
         <div
-          role="menu"
-          className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-md border border-line-strong bg-ink-900/98 shadow-[0_12px_36px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md"
+          id="account-menu"
+          className="absolute right-0 z-50 mt-2 w-[min(18rem,calc(100vw-2.5rem))] overflow-hidden rounded-md border border-line-strong bg-ink-900/98 shadow-[0_12px_36px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md"
         >
           <div className="border-b border-line px-4 py-3.5">
-            <span className="label">Connected account</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="label">Connected account</span>
+              <AddressNameButton
+                chainId={wallet.chainId}
+                address={wallet.address}
+                kind="account"
+                role="owner"
+                label="wallet"
+                withText
+                className="-mr-2"
+              />
+            </div>
+            {accountName && (
+              <p className="mt-2 truncate text-[14px] font-medium text-text" title={accountName.note}>
+                {accountName.name}
+              </p>
+            )}
             <div className="mt-2 flex items-center gap-1.5">
               <span className="tnum truncate text-[13px] text-text" title={wallet.address}>
                 {wallet.address}
@@ -142,14 +187,14 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
                   <button
                     key={chain.id}
                     type="button"
-                    role="menuitem"
+                    aria-current={active ? "true" : undefined}
                     onClick={() => {
                       wallet.switchToChain(chain.id);
                       setMenuOpen(false);
                     }}
                     disabled={active}
                     className={clsx(
-                      "flex items-center justify-between rounded px-2 py-2 text-left text-[13px] transition-colors duration-150",
+                      "flex min-h-[40px] items-center justify-between rounded px-2 py-2 text-left text-[13px] transition-colors duration-150",
                       active
                         ? "cursor-default bg-ink-800 text-text"
                         : "cursor-pointer text-text-dim hover:bg-ink-800 hover:text-text",
@@ -174,7 +219,6 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 
           <button
             type="button"
-            role="menuitem"
             onClick={() => {
               wallet.disconnect();
               setMenuOpen(false);

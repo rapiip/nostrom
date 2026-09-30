@@ -62,7 +62,11 @@ const VIEWPORTS = [
   const browser = await puppeteer.launch({
     executablePath: CHROME,
     headless: true,
-    args: ["--no-sandbox", "--hide-scrollbars", "--force-prefers-reduced-motion=false"],
+    // No --force-prefers-reduced-motion: it is a boolean switch, so passing it
+    // at all — including "=false" — makes Chrome report `reduce`, which silently
+    // verified the reduced-motion rendering of every page instead of the real
+    // one. Chrome's default is already "no-preference".
+    args: ["--no-sandbox", "--hide-scrollbars"],
   });
 
   const report = [];

@@ -20,15 +20,19 @@ export function Panel({
   className,
   inset = false,
   as: Tag = "section",
+  id,
 }: {
   children: ReactNode;
   className?: string;
   /** Darker recessed surface, for a panel inside a panel. */
   inset?: boolean;
   as?: "section" | "div" | "article" | "aside";
+  /** Anchor target, e.g. for "jump to withdrawal" links. */
+  id?: string;
 }) {
   return (
     <Tag
+      id={id}
       className={clsx(
         "rounded-md border",
         inset
@@ -297,7 +301,6 @@ export function Notice({
     warn: "border-warn-dim bg-warn/[0.06] text-text-dim",
     danger: "border-danger-dim bg-danger/[0.06] text-text-dim",
   } as const;
-
   const titleTones = {
     info: "text-text",
     signal: "text-signal",
@@ -320,7 +323,10 @@ export function Notice({
       <div className="flex items-start gap-3">
         <Icon size={16} className={clsx("mt-0.5 shrink-0", titleTones[tone])} aria-hidden />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+          {/* Action stacks under the text on narrow screens. Side by side, a
+              button next to a paragraph squeezed the message into a column a
+              few words wide on a phone. */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4">
             <div className="min-w-0 flex-1">
               {title && (
                 <p className={clsx("text-[13px] font-medium leading-snug", titleTones[tone])}>

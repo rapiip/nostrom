@@ -14,6 +14,9 @@ import { BotChainMark } from "./BotChainMark";
  * Two shapes:
  *   variant="chip"    — bordered pill, for nav / dense rows (default)
  *   variant="lockup"  — larger stacked mark + label, for footers / hero
+ *
+ * The mark is decorative here: the visible text already says "BOT Chain", and a
+ * labelled SVG made screen readers announce the name twice.
  */
 export function BuiltOnBotChain({
   variant = "chip",
@@ -29,11 +32,11 @@ export function BuiltOnBotChain({
         target="_blank"
         rel="noopener noreferrer"
         className={clsx(
-          "group inline-flex items-center gap-3 no-underline",
+          "group inline-flex min-h-[44px] items-center gap-3 no-underline",
           className,
         )}
       >
-        <BotChainMark className="h-7 w-auto shrink-0 text-botchain" />
+        <BotChainMark decorative className="h-7 w-auto shrink-0 text-botchain" />
         <span className="flex flex-col leading-tight">
           <span className="text-[11px] uppercase tracking-[0.14em] text-text-faint">
             Built on
@@ -47,6 +50,7 @@ export function BuiltOnBotChain({
             />
           </span>
         </span>
+        <span className="sr-only">(opens botchain.ai in a new tab)</span>
       </a>
     );
   }
@@ -58,14 +62,15 @@ export function BuiltOnBotChain({
       rel="noopener noreferrer"
       title="Nostrom runs on BOT Chain: visit botchain.ai"
       className={clsx(
-        "group inline-flex min-h-[32px] cursor-pointer items-center gap-2 rounded-full border border-line-strong bg-ink-900 px-3 py-1 no-underline transition-colors duration-150 hover:border-botchain/60 hover:bg-ink-850",
+        "group inline-flex min-h-[36px] cursor-pointer items-center gap-2 rounded-full border border-line-strong bg-ink-900 px-3 py-1 no-underline transition-colors duration-150 hover:border-botchain/60 hover:bg-ink-850",
         className,
       )}
     >
-      <BotChainMark className="h-4 w-auto shrink-0 text-botchain" />
-      <span className="text-[12px] font-medium text-text-dim transition-colors duration-150 group-hover:text-text">
+      <BotChainMark decorative className="h-4 w-auto shrink-0 text-botchain" />
+      <span className="text-[12px] font-medium whitespace-nowrap text-text-dim transition-colors duration-150 group-hover:text-text">
         Built on <span className="text-text">BOT Chain</span>
       </span>
+      <span className="sr-only">(opens botchain.ai in a new tab)</span>
     </a>
   );
 }

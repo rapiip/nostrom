@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Plus, Vault as VaultIcon, Warning } from "@phosphor-icons/react";
-import { formatAmount, formatAmountExact, describeTimeout, sameAddress } from "@/lib/format";
+import {
+  formatAmount,
+  formatAmountExact,
+  formatCount,
+  describeTimeout,
+  sameAddress,
+  truncateAddress,
+} from "@/lib/format";
 import { PHASE_META, type VaultPhase, type VaultView } from "@/lib/vaultState";
 import { useMyVaults } from "@/hooks/useVault";
+import { useAddressName } from "@/lib/addressBook";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { shortErrorText } from "@/lib/errors";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonRouterLink, buttonClass } from "@/components/ui/Button";
 import { AddressDisplay } from "@/components/ui/Address";
 import { Freshness } from "@/components/ui/Freshness";
 import { GraceInline } from "@/components/ui/GraceTrack";
@@ -80,20 +88,18 @@ function VaultsInner() {
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Your vaults</h1>
           <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-text-dim">
-            Overview of vaults deployed by{" "}
-            <span className="tnum text-text">{wallet.address?.slice(0, 10)}…</span>. Monitor real-time
-            health, treasury balances, and active operational status.
+            Every vault created by{" "}
+            <span className="tnum text-text" title={wallet.address}>
+              {truncateAddress(wallet.address, 4)}
+            </span>
+            , with live countdowns and balances read straight from the chain.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Freshness updatedAt={updatedAt} isFetching={isFetching} onRefresh={refetch} />
-          <Link
-            to="/app/new"
-            className="inline-flex min-h-[40px] cursor-pointer items-center gap-1.5 rounded border border-signal bg-signal px-3.5 text-[13px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_16px_-3px_rgba(125,211,160,0.3)] active:scale-[0.985]"
-          >
-            <Plus size={13} aria-hidden />
+          <ButtonRouterLink to="/app/new" variant="primary" icon={<Plus size={14} aria-hidden />}>
             New vault
-          </Link>
+          </ButtonRouterLink>
         </div>
       </div>
 
@@ -106,10 +112,21 @@ function VaultsInner() {
               ? `${totals.executable} vault${totals.executable === 1 ? "" : "s"} can be rescued right now`
               : `${totals.expiring} vault${totals.expiring === 1 ? "" : "s"} running low on grace`
           }
+          action={
+            // Sorting puts the most urgent vault first, so this is the one to open.
+            <ButtonRouterLink
+              to={`/app/vault/${needsAttention[0]!.address}`}
+              variant={totals.executable > 0 ? "danger" : "secondary"}
+              size="sm"
+              iconRight={<ArrowRight size={12} aria-hidden />}
+            >
+              {needsAttention.length === 1 ? "Open vault" : "Open most urgent"}
+            </ButtonRouterLink>
+          }
         >
           {totals.executable > 0
-            ? "The heartbeat has lapsed. Anyone can evacuate the treasury to the recovery address: send a heartbeat or withdraw immediately if this is unexpected."
-            : "A heartbeat is overdue. One ping resets the countdown."}
+            ? "The heartbeat has lapsed, so anyone can move the treasury to its recovery address. If that is unexpected, send a heartbeat or withdraw now."
+            : "A heartbeat is overdue. One ping from the agent refills the countdown."}
         </Notice>
       )}
 
@@ -148,7 +165,7 @@ function VaultsInner() {
           title="Vaults"
           description={
             vaults.length > 0
-              ? "Most urgent first. State is read from the chain in one batched call and refreshed every 12 seconds."
+              ? "Most urgent first. Refreshes every 12 seconds; select a row to manage it."
               : undefined
           }
         />
@@ -170,15 +187,16 @@ function VaultsInner() {
           <EmptyState
             icon={<VaultIcon size={28} aria-hidden />}
             title="No vaults yet"
-            description="Create one to give an agent a treasury it cannot strand. You choose the agent key, the cold wallet that receives funds if it goes dark, and how much silence to tolerate."
+            description="Give an agent a treasury it cannot strand. You choose the key it checks in with, the cold wallet that receives everything if it goes dark, and how much silence to tolerate. Takes one transaction."
             action={
-              <Link
+              <ButtonRouterLink
                 to="/app/new"
-                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_20px_-3px_rgba(125,211,160,0.35)] active:scale-[0.985]"
+                variant="primary"
+                size="lg"
+                icon={<Plus size={14} aria-hidden />}
               >
-                <Plus size={14} aria-hidden />
                 Create your first vault
-              </Link>
+              </ButtonRouterLink>
             }
           />
         ) : (
@@ -213,77 +231,94 @@ function VaultRow({
   account: string | undefined;
   chainId: number;
 }) {
-  const meta = PHASE_META[view.phase];
   const transferredAway = !sameAddress(view.owner, account);
+  const saved = useAddressName(chainId, view.address);
 
   return (
     <li className="border-b border-line last:border-b-0">
-      <div className="grid gap-4 px-4 py-4 transition-colors duration-150 hover:bg-ink-850 sm:px-5 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_auto] md:items-center">
+      {/* The whole row is one link: a full-bleed overlay that carries the
+          accessible name, so there is one tab stop and one announcement per
+          vault. The copy button sits above it (z-10) and stays independently
+          clickable. (Stretching a Manage button's ::after instead broke on
+          press: its active:scale transform made the button the containing
+          block, the overlay shrank under the pointer and the click was lost.) */}
+      {/* Below md the row is a compact card: identity + status on top, countdown
+          and balance side by side, and a chevron as the keyboard/SR link. The
+          old stacked layout labelled every value on its own line and made five
+          vaults about four screens tall on a phone. */}
+      <div className="group/row relative grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 px-4 py-4 transition-colors duration-150 hover:bg-ink-850 sm:px-5 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_auto] md:items-center md:gap-4">
+        <Link
+          to={`/app/vault/${view.address}`}
+          className="absolute inset-0 z-[1] rounded-none focus-visible:outline-offset-[-2px]"
+          aria-label={`Manage vault ${saved ? `${saved.name}, ` : ""}${truncateAddress(view.address, 4)}: ${PHASE_META[view.phase].label}, ${formatAmount(view.balance)} BOT`}
+        />
         {/* Identity */}
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="relative z-10 flex w-fit items-center gap-2">
             <AddressDisplay
               address={view.address}
               chainId={chainId}
               label="vault address"
               chars={6}
               showExplorer={false}
+              nameable={{ kind: "vault", role: "vault" }}
             />
           </div>
           <p className="mt-1 text-[11px] text-text-faint">
-            {describeTimeout(view.timeoutPeriod)} timeout · {view.pingCount.toString()} pings
+            {describeTimeout(view.timeoutPeriod)} timeout · {formatCount(view.pingCount)}{" "}
+            {view.pingCount === 1n ? "ping" : "pings"}
             {transferredAway && (
-              <span className="ml-1.5 text-warn" title={`Current owner: ${view.owner}`}>
-                · transferred away
-              </span>
+              <span className="ml-1.5 text-warn">· transferred to another owner</span>
             )}
           </p>
         </div>
 
-        {/* Status */}
-        <div className="flex items-center gap-2">
+        {/* Status: top-right on mobile, its own column from md. */}
+        <div className="flex items-start justify-end md:items-center md:justify-start">
           <StatusBadge phase={view.phase} size="sm" />
-          <span className="md:hidden">
-            <Label>{meta.label}</Label>
-          </span>
         </div>
 
-        {/* Grace */}
-        <div>
-          <span className="md:hidden">
-            <Label>Grace remaining</Label>
-          </span>
-          <GraceInline view={view} className="mt-1 md:mt-0" />
-        </div>
+        {/* Grace + balance share a line on mobile. */}
+        <div className="col-span-2 flex items-end justify-between gap-4 md:contents">
+          <div>
+            <span className="md:hidden">
+              <Label>Grace</Label>
+            </span>
+            <GraceInline view={view} className="mt-1.5 md:mt-0" />
+          </div>
 
-        {/* Balance */}
-        <div>
-          <span className="md:hidden">
-            <Label>Balance</Label>
-          </span>
-          <p className="tnum mt-1 text-[13px] text-text md:mt-0" title={`${formatAmountExact(view.balance)} BOT`}>
-            {formatAmount(view.balance)} <span className="text-text-faint">BOT</span>
-          </p>
-          {view.balance === 0n && view.phase !== "TRIGGERED" && (
-            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-warn">
-              <Warning size={10} aria-hidden />
-              unfunded
+          <div className="text-right md:text-left">
+            <span className="md:hidden">
+              <Label>Balance</Label>
+            </span>
+            <p
+              className="tnum mt-1.5 text-[13px] text-text md:mt-0"
+              title={`${formatAmountExact(view.balance)} BOT`}
+            >
+              {formatAmount(view.balance)} <span className="text-text-faint">BOT</span>
             </p>
-          )}
+            {view.balance === 0n && view.phase !== "TRIGGERED" && (
+              <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-warn">
+                <Warning size={10} aria-hidden />
+                unfunded
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Action */}
-        <Link
-          to={`/app/vault/${view.address}`}
-          className="group inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 justify-self-start rounded border border-line-strong bg-ink-850 px-3 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985] md:justify-self-end"
+        {/* Action cue. Presentational: the row's overlay link is the real,
+            single link (one tab stop, one screen-reader announcement per
+            vault), and clicks on this cue fall through to it. Hidden on a
+            phone, where the whole card is obviously the tap target. */}
+        <span
+          aria-hidden="true"
+          className="hidden md:block md:justify-self-end"
         >
-          Manage
-          <ArrowRight
-            size={12}
-            aria-hidden
-            className="transition-transform duration-200 group-hover:translate-x-0.5"
-          />
-        </Link>
+          <span className={buttonClass({ className: "pointer-events-none group-hover/row:border-text-faint group-hover/row:bg-ink-750" })}>
+            Manage
+            <ArrowRight size={12} className="transition-transform duration-200 group-hover/row:translate-x-0.5" />
+          </span>
+        </span>
       </div>
     </li>
   );

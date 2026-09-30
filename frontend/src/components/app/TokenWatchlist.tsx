@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Coins, Plus, Trash } from "@phosphor-icons/react";
+import { ArrowLineUp, Coins, Plus, Trash } from "@phosphor-icons/react";
 import type { Address } from "viem";
 import { PROTOCOL } from "@/config/contracts";
 import { formatAmount } from "@/lib/format";
@@ -8,9 +8,10 @@ import { useTrackedTokenDetails } from "@/hooks/useVault";
 import type { VaultActions } from "@/hooks/useVaultActions";
 import type { VaultCapabilities, VaultView } from "@/lib/vaultState";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/Dialog";
 import { AddressDisplay } from "@/components/ui/Address";
 import { Field, Input } from "@/components/ui/Field";
-import { EmptyState, Label, Notice, Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
+import { Label, Notice, Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
 
 /**
  * ERC-20 sweep watchlist.
@@ -38,6 +39,7 @@ export function TokenWatchlist({
   chainId: number | undefined;
 }) {
   const [newToken, setNewToken] = useState("");
+  const [withdrawTarget, setWithdrawTarget] = useState<TokenDetail | null>(null);
   const details = useTrackedTokenDetails(view.address, trackedTokens);
 
   const addResult = newToken ? validateAddressField(newToken, "Token address") : { ok: false };
@@ -50,15 +52,17 @@ export function TokenWatchlist({
     <Panel>
       <PanelHeader
         title="ERC-20 watchlist"
-        description={`Tokens swept to the recovery address when the switch fires. Native BOT is always rescued and needs no registration. ${trackedTokens.length} of ${PROTOCOL.MAX_TRACKED_TOKENS} slots used.`}
+        description={`Tokens swept to the recovery address when the switch fires. Native BOT is always rescued and needs no entry here. ${trackedTokens.length} of ${PROTOCOL.MAX_TRACKED_TOKENS} slots used.`}
       />
 
       {trackedTokens.length === 0 ? (
-        <EmptyState
-          icon={<Coins size={24} aria-hidden />}
-          title="No tokens tracked"
-          description="The EVM cannot enumerate a contract's token holdings, so any ERC-20 you want rescued has to be registered here. Native BOT is unaffected: it is always swept."
-        />
+        <p className="flex items-start gap-3 px-4 py-4 text-[13px] leading-relaxed text-text-dim sm:px-5">
+          <Coins size={16} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
+          <span>
+            No tokens tracked. Contracts cannot list the tokens they hold, so any ERC-20 you want
+            rescued has to be added here{capabilities.canManageTokens && !view.isTriggered ? " below" : ""}.
+          </span>
+        </p>
       ) : (
         <div>
           <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 border-b border-line px-4 py-2.5 sm:grid sm:px-5">
@@ -105,17 +109,34 @@ export function TokenWatchlist({
                   </p>
                 </div>
 
-                {capabilities.canManageTokens && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    icon={<Trash size={13} aria-hidden />}
-                    onClick={() => actions.removeTrackedToken(token.address)}
-                    aria-label={`Remove ${token.symbol} from the watchlist`}
-                    className="justify-self-start sm:justify-self-end"
-                  >
-                    Remove
-                  </Button>
+                {(capabilities.canManageTokens || capabilities.canWithdraw) && (
+                  <div className="flex flex-wrap items-center gap-1.5 justify-self-start sm:justify-self-end">
+                    {/* withdrawTokenByOwner is onlyOwner + whenNotTriggered, the
+                        same guard as a native withdrawal. It was exposed by the
+                        contract and the action hook but had no control. */}
+                    {capabilities.canWithdraw && token.readable && (token.balance ?? 0n) > 0n && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={<ArrowLineUp size={13} aria-hidden />}
+                        onClick={() => setWithdrawTarget(token)}
+                        aria-label={`Withdraw ${token.symbol} to the owner`}
+                      >
+                        Withdraw
+                      </Button>
+                    )}
+                    {capabilities.canManageTokens && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={<Trash size={13} aria-hidden />}
+                        onClick={() => actions.removeTrackedToken(token.address)}
+                        aria-label={`Stop tracking ${token.symbol}`}
+                      >
+                        Untrack
+                      </Button>
+                    )}
+                  </div>
                 )}
               </li>
             ))}
@@ -123,8 +144,9 @@ export function TokenWatchlist({
         </div>
       )}
 
-      {/* --- Owner: add --- */}
-      {capabilities.canManageTokens && (
+      {/* --- Owner: add. Pointless once the switch has fired (the rescue already
+          ran), so the form is hidden rather than inviting a wasted transaction. --- */}
+      {capabilities.canManageTokens && !view.isTriggered && (
         <PanelBody className="border-t border-line">
           {atLimit ? (
             <Notice tone="warn" title="Watchlist full">
@@ -141,7 +163,8 @@ export function TokenWatchlist({
                     ? addResult
                     : undefined
               }
-              hint="The contract accepts any address. A non-standard or non-ERC-20 token is swept in isolation and skipped on failure, so it cannot brick the rescue."
+              revealErrors={newToken.trim().length >= 42}
+              hint="Any token address works. A broken or non-standard token is simply skipped during a rescue, so it cannot block the rest."
             >
               {(a11y) => (
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -203,6 +226,33 @@ export function TokenWatchlist({
           </div>
         </PanelBody>
       )}
+
+      <ConfirmDialog
+        open={withdrawTarget !== null}
+        onClose={() => setWithdrawTarget(null)}
+        onConfirm={() => {
+          const t = withdrawTarget;
+          setWithdrawTarget(null);
+          if (t?.balance) actions.withdrawToken(t.address, view.owner, t.balance, t.symbol);
+        }}
+        title={`Withdraw ${withdrawTarget?.symbol ?? "token"}`}
+        confirmLabel="Withdraw"
+        consequence={
+          withdrawTarget ? (
+            <>
+              The vault's entire{" "}
+              <span className="tnum text-text">
+                {formatAmount(withdrawTarget.balance, { decimals: withdrawTarget.decimals })}{" "}
+                {withdrawTarget.symbol}
+              </span>{" "}
+              will be sent to you, the owner. The token stays on the watchlist, and the countdown is
+              not affected.
+            </>
+          ) : null
+        }
+      />
     </Panel>
   );
 }
+
+type TokenDetail = ReturnType<typeof useTrackedTokenDetails>[number];

@@ -1,8 +1,11 @@
 import { clsx } from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowSquareOut, Check, Copy } from "@phosphor-icons/react";
+import type { Address } from "viem";
 import { explorerAddressUrl, explorerTxUrl } from "@/config/chains";
+import { useAddressName, type AddressKind } from "@/lib/addressBook";
 import { truncateAddress, truncateHash } from "@/lib/format";
+import { AddressNameButton } from "./AddressName";
 import { useToast } from "./Toast";
 
 /**
@@ -83,7 +86,7 @@ export function CopyButton({
         title={`Copy ${label}`}
         aria-label={`Copy ${label}`}
         className={clsx(
-          "inline-flex size-7 cursor-pointer items-center justify-center rounded",
+          "inline-flex size-8 cursor-pointer items-center justify-center rounded",
           "text-text-faint transition-colors duration-150 hover:bg-ink-800 hover:text-text",
           className,
         )}
@@ -102,10 +105,13 @@ export function CopyButton({
 }
 
 /**
- * On-chain address: truncated monospace value, copy action, explorer link.
+ * On-chain address: saved name (if any), truncated monospace value, copy
+ * action, explorer link, and optionally a "name this" action.
  *
- * The explorer link is omitted rather than broken when the chain is unknown:
- * a dead link on a fund-moving screen is worse than no link.
+ * A saved name is shown BESIDE the address, never in place of it: the hex
+ * stays visible so a wrong or stale label cannot hide which address is really
+ * there. The explorer link is omitted rather than broken when the chain is
+ * unknown: a dead link on a fund-moving screen is worse than no link.
  */
 export function AddressDisplay({
   address,
@@ -115,6 +121,8 @@ export function AddressDisplay({
   full = false,
   showCopy = true,
   showExplorer = true,
+  showName = true,
+  nameable,
   className,
   tone = "default",
 }: {
@@ -126,26 +134,42 @@ export function AddressDisplay({
   full?: boolean;
   showCopy?: boolean;
   showExplorer?: boolean;
+  /** Show the locally saved name next to the address. */
+  showName?: boolean;
+  /** Offer the "add a name / rename" action. */
+  nameable?: { kind: AddressKind; role?: "vault" | "agent" | "recovery" | "owner" | "token" };
   className?: string;
   tone?: "default" | "dim";
 }) {
+  const saved = useAddressName(chainId, address);
+
   if (!address) {
     return <span className={clsx("tnum text-text-faint", className)}>-</span>;
   }
 
   const href = showExplorer ? explorerAddressUrl(chainId, address) : null;
+  const named = showName && saved;
 
   return (
-    <span className={clsx("inline-flex items-center gap-1.5", className)}>
+    <span className={clsx("inline-flex min-w-0 items-center gap-1.5", className)}>
+      {named && (
+        <span
+          className="max-w-[16ch] truncate text-[13px] font-medium text-text sm:max-w-[22ch]"
+          title={saved.note ? `${saved.name} · ${saved.note}` : saved.name}
+        >
+          {saved.name}
+        </span>
+      )}
       <span
         className={clsx(
-          "tnum text-[13px]",
+          "tnum",
+          named ? "text-[12px] text-text-faint" : "text-[13px]",
           full && "break-all",
-          tone === "dim" ? "text-text-dim" : "text-text",
+          !named && (tone === "dim" ? "text-text-dim" : "text-text"),
         )}
         title={address}
       >
-        {full ? address : truncateAddress(address, chars)}
+        {full ? address : truncateAddress(address, named ? Math.min(chars, 4) : chars)}
       </span>
       {showCopy && <CopyButton value={address} label={label} />}
       {href && (
@@ -155,10 +179,19 @@ export function AddressDisplay({
           rel="noopener noreferrer"
           title={`View ${label} on the block explorer`}
           aria-label={`View ${label} on the block explorer`}
-          className="inline-flex size-7 cursor-pointer items-center justify-center rounded text-text-faint transition-colors duration-150 hover:bg-ink-800 hover:text-text"
+          className="inline-flex size-8 cursor-pointer items-center justify-center rounded text-text-faint transition-colors duration-150 hover:bg-ink-800 hover:text-text"
         >
           <ArrowSquareOut size={13} aria-hidden />
         </a>
+      )}
+      {nameable && (
+        <AddressNameButton
+          chainId={chainId}
+          address={address as Address}
+          kind={nameable.kind}
+          role={nameable.role}
+          label={label}
+        />
       )}
     </span>
   );

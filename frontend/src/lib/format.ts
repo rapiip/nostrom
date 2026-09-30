@@ -76,6 +76,16 @@ export function formatRelative(unixSeconds: bigint | number, nowSeconds: number)
     : `in ${formatDuration(delta, { short: true })}`;
 }
 
+/**
+ * Like formatRelative, for events that have already happened (a ping, a log).
+ * A block timestamp can sit a little ahead of this device's clock, and "last
+ * ping in 3m" reads as nonsense, so anything in the future is "just now".
+ */
+export function formatAgo(unixSeconds: bigint | number, nowSeconds: number): string {
+  const target = Number(unixSeconds);
+  return formatRelative(target > nowSeconds ? nowSeconds : target, nowSeconds);
+}
+
 /* ===========================================================================
    Addresses
    =========================================================================== */

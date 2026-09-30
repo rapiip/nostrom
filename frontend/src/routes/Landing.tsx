@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Nav } from "@/components/landing/Nav";
 import { Hero } from "@/components/landing/Hero";
 import { Problem } from "@/components/landing/Problem";
@@ -18,19 +19,22 @@ import { Footer, Integration } from "@/components/landing/Integration";
  * and the app (integration).
  */
 export function Landing() {
-  // Honour a hash arriving from another route, which the router alone won't do.
+  // Honour a hash arriving from another route AND a router link to "/#x" while
+  // already on "/" (the component does not remount, so a mount-only effect
+  // silently ignored footer links such as "How it works").
+  const { hash } = useLocation();
   useEffect(() => {
-    if (!window.location.hash) return;
-    const el = document.querySelector(window.location.hash);
+    if (!hash) return;
+    const el = document.getElementById(decodeURIComponent(hash.slice(1)));
     if (el) {
       requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
     }
-  }, []);
+  }, [hash]);
 
   return (
     <div className="min-h-dvh bg-ink-950">
       <Nav />
-      <main id="main">
+      <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <Problem />
         <HowItWorks />

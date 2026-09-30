@@ -1,7 +1,8 @@
 import { clsx } from "clsx";
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "@phosphor-icons/react";
+import { Button } from "./Button";
 
 /**
  * Modal dialog.
@@ -38,11 +39,23 @@ export function Dialog({
   labelledBy?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Every dialog needs an accessible name. Callers rarely passed `labelledBy`,
+  // so screen readers announced a bare "dialog"; the title is now wired up by
+  // default and a caller-supplied id still wins.
+  const autoId = useId();
+  const titleId = labelledBy ?? `${autoId}-title`;
+  const descId = `${autoId}-desc`;
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (open && !el.open) el.showModal();
+    if (open && !el.open) {
+      el.showModal();
+      // showModal() focuses the first focusable element, which is the close
+      // button. A child can opt in to initial focus with data-autofocus (React's
+      // autoFocus prop fires before showModal and is then overridden).
+      el.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    }
     if (!open && el.open) el.close();
   }, [open]);
 
@@ -71,7 +84,8 @@ export function Dialog({
       ref={ref}
       onCancel={handleCancel}
       onClick={handleBackdrop}
-      aria-labelledby={labelledBy}
+      aria-labelledby={titleId}
+      aria-describedby={description ? descId : undefined}
       className={clsx(
         "m-auto w-[calc(100vw-2rem)] bg-transparent p-0 text-text backdrop:bg-ink-950/80",
         // Backdrop blur is used once, here, where it genuinely isolates the
@@ -84,11 +98,13 @@ export function Dialog({
         <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto rounded-lg border border-line-strong bg-ink-900 shadow-2xl shadow-ink-950">
           <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
             <div className="min-w-0">
-              <h2 id={labelledBy} className="text-[15px] font-medium text-text">
+              <h2 id={titleId} className="text-[15px] font-medium text-text">
                 {title}
               </h2>
               {description && (
-                <p className="mt-1 text-[13px] leading-relaxed text-text-dim">{description}</p>
+                <p id={descId} className="mt-1 text-[13px] leading-relaxed text-text-dim">
+                  {description}
+                </p>
               )}
             </div>
             <button
@@ -97,7 +113,7 @@ export function Dialog({
               disabled={!dismissible}
               aria-label="Close dialog"
               className={clsx(
-                "-mr-1.5 -mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded",
+                "-mr-2 -mt-1.5 inline-flex size-10 shrink-0 items-center justify-center rounded",
                 "text-text-faint transition-colors duration-150",
                 dismissible
                   ? "cursor-pointer hover:bg-ink-800 hover:text-text"
@@ -155,25 +171,14 @@ export function ConfirmDialog({
       size="sm"
       footer={
         <>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex min-h-[44px] cursor-pointer items-center rounded border border-line-strong bg-ink-850 px-3.5 text-sm text-text transition-colors duration-150 hover:bg-ink-750"
-          >
+          {/* Cancel takes initial focus: on a fund-moving confirmation, an
+              accidental Enter should back out, not go through. */}
+          <Button variant="secondary" onClick={onClose} data-autofocus>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className={clsx(
-              "inline-flex min-h-[44px] cursor-pointer items-center rounded border px-3.5 text-sm font-medium transition-colors duration-150",
-              tone === "danger"
-                ? "border-danger bg-danger/10 text-danger hover:bg-danger/20"
-                : "border-signal bg-signal text-ink-950 hover:bg-signal/90",
-            )}
-          >
+          </Button>
+          <Button variant={tone === "danger" ? "danger" : "primary"} onClick={onConfirm}>
             {confirmLabel}
-          </button>
+          </Button>
         </>
       }
     >

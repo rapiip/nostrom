@@ -12,13 +12,20 @@
     <meta name="theme-color" content="#08090A" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nostrom" />
     <meta property="og:title" content="Nostrom | Fail-safe vaults for autonomous agent treasuries" />
     <meta
       property="og:description"
       content="Silence is the trigger. If an agent's heartbeat stops, anyone can evacuate its treasury to a pre-set cold wallet."
     />
     <meta property="og:image" content="/og.png" />
+    <meta property="og:image:alt" content="Nostrom: a heartbeat trace that flatlines into a treasury evacuation" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Nostrom | Fail-safe vaults for autonomous agent treasuries" />
+    <meta
+      name="twitter:description"
+      content="Silence is the trigger. If an agent's heartbeat stops, anyone can evacuate its treasury to a pre-set cold wallet."
+    />
     <meta name="twitter:image" content="/og.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,6 +42,13 @@
     <link rel="shortcut icon" href="/icon.ico" />
   </head>
   <body>
+    <noscript>
+      <div style="max-width:32rem;margin:6rem auto;padding:0 1.25rem;font-family:system-ui,sans-serif;color:#e8eaeb;line-height:1.6">
+        <strong>Nostrom needs JavaScript.</strong>
+        The vault console reads live state from BOT Chain and signs transactions in your wallet, both
+        of which run in the browser. Enable JavaScript and reload.
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

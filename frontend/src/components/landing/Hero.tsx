@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen } from "@phosphor-icons/react";
 import { defaultChain } from "@/config/chains";
 import { Label } from "@/components/ui/Panel";
+import { buttonClass, ButtonRouterLink } from "@/components/ui/Button";
 import { ProtocolDiagram } from "./ProtocolDiagram";
 
 /**
@@ -39,28 +39,23 @@ export function Hero() {
             </h1>
 
             <p className="mt-7 max-w-[46ch] text-[15px] leading-[1.65] text-text-dim">
-              Nostrom is a fail-safe vault for autonomous AI agents. The agent proves it is alive on
-              a schedule. If the heartbeat stops for longer than the timeout you set,{" "}
-              <span className="text-text">anyone</span> can evacuate the vault to a cold wallet you
-              chose in advance: no key recovery, no admin, no waiting for you to notice.
+              Nostrom is a fail-safe vault for autonomous AI agents. Your agent checks in on a
+              schedule. If it goes silent for longer than the timeout you set,{" "}
+              <span className="text-text">anyone</span> can move the treasury to a cold wallet you
+              chose in advance. No admin keys, no support ticket, and nobody has to be awake when it
+              happens.
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
+              <ButtonRouterLink
                 to="/app/new"
-                className="group inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-signal bg-signal px-5 text-[14px] font-medium text-ink-950 no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-150 hover:bg-signal/90 hover:shadow-[0_0_20px_-3px_rgba(125,211,160,0.35)] active:scale-[0.985]"
+                variant="primary"
+                size="lg"
+                iconRight={<ArrowRight size={14} aria-hidden />}
               >
                 Create a vault
-                <ArrowRight
-                  size={14}
-                  aria-hidden
-                  className="transition-transform duration-200 group-hover:translate-x-0.5"
-                />
-              </Link>
-              <a
-                href="#how"
-                className="inline-flex min-h-[48px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-5 text-[14px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750 active:scale-[0.985]"
-              >
+              </ButtonRouterLink>
+              <a href="#how" className={buttonClass({ variant: "secondary", size: "lg" })}>
                 <BookOpen size={14} aria-hidden />
                 How it works
               </a>
@@ -96,7 +91,7 @@ export function Hero() {
 
 function HeroFact({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 rounded border border-line/80 bg-ink-900/60 px-3.5 py-3 backdrop-blur-xs transition-colors hover:border-line-strong sm:block">
+    <div className="flex items-baseline justify-between gap-3 rounded border border-line/80 bg-ink-900/60 px-3.5 py-3 backdrop-blur-xs sm:block">
       <dt className="label">{label}</dt>
       <dd className="text-right sm:mt-1.5 sm:text-left">
         <span className="block text-[14px] font-medium text-text">{value}</span>

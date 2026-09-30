@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { Plugs, Warning, WifiSlash } from "@phosphor-icons/react";
 import { defaultChain, supportedChains } from "@/config/chains";
 import { LINKS } from "@/config/contracts";
 import { useWallet } from "@/hooks/useWallet";
-import { Button, ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink, ButtonRouterLink } from "@/components/ui/Button";
 import { EmptyState, Notice, Panel } from "@/components/ui/Panel";
 import { ConnectButton } from "./ConnectButton";
 
@@ -36,8 +35,8 @@ export function WalletGate({
       <Panel>
         <EmptyState
           icon={<Plugs size={28} aria-hidden />}
-          title="No EVM wallet detected"
-          description="Nostrom needs an injected wallet to read your vaults and sign transactions. Install MetaMask, Rabby or another EVM wallet, then reload this page."
+          title="No wallet found in this browser"
+          description="Signing heartbeats and managing vaults needs a browser wallet such as MetaMask or Rabby. Install one, then reload. You can still watch any vault by address without one."
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <ButtonLink
@@ -48,6 +47,7 @@ export function WalletGate({
               >
                 Install MetaMask
               </ButtonLink>
+              <ButtonRouterLink to="/app/lookup">Watch a vault</ButtonRouterLink>
               <Button variant="ghost" onClick={() => window.location.reload()}>
                 Reload
               </Button>
@@ -80,7 +80,7 @@ export function WalletGate({
         <EmptyState
           icon={<WifiSlash size={28} aria-hidden />}
           title="Unsupported network"
-          description={`Your wallet is connected to chain ${wallet.chainId}, which Nostrom does not support. Switch to BOT Chain to continue.`}
+          description={`Your wallet is on chain ${wallet.chainId}, which Nostrom does not run on. Switch to BOT Chain to continue; your wallet will ask before changing anything.`}
           action={
             <div className="flex flex-wrap justify-center gap-2">
               {supportedChains.map((chain) => (
@@ -146,23 +146,22 @@ export function FactoryMissingNotice({
     <Panel>
       <EmptyState
         icon={<Warning size={28} aria-hidden />}
-        title="No factory configured for this network"
+        title="No factory on this network"
         description={
           <>
-            No factory contract is configured for {chainName ?? `chain ${chainId}`}.
-            Switch to a supported network to create or discover vaults, or look up an existing vault by address.
+            Nostrom has no factory configured for {chainName ?? `chain ${chainId}`}, so it cannot
+            list or create vaults here. Switch networks from the wallet menu, or open an existing
+            vault directly by its address.
           </>
         }
         action={
           <div className="flex flex-col items-center gap-3">
-            <Link
-              to="/app/lookup"
-              className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded border border-line-strong bg-ink-850 px-3.5 text-sm text-text no-underline transition-colors duration-150 hover:border-text-faint hover:bg-ink-750"
-            >
-              Open a vault by address instead
-            </Link>
+            <ButtonRouterLink to="/app/lookup" variant="primary">
+              Open a vault by address
+            </ButtonRouterLink>
             <p className="max-w-sm text-[12px] leading-relaxed text-text-faint">
-              Vault monitoring, heartbeats, and execution remain fully accessible directly by contract address.
+              Watching a vault, sending heartbeats and firing the switch all work from an address
+              alone.
             </p>
           </div>
         }

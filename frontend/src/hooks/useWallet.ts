@@ -50,7 +50,7 @@ export interface WalletState {
   connectError: DecodedTxError | undefined;
   switchError: DecodedTxError | undefined;
   isSwitching: boolean;
-  connect: () => void;
+  connect: (opts?: { onError?: (error: DecodedTxError) => void }) => void;
   disconnect: () => void;
   switchToChain: (chainId: number) => void;
   switchToDefault: () => void;
@@ -129,14 +129,20 @@ export function useWallet(): WalletState {
     return isSupportedChain ? "connected" : "wrong-network";
   })();
 
-  const connect = useCallback(() => {
-    if (!injectedConnector) return;
-    // Deliberately no `chainId` here. Forcing one would drag a user who is
-    // already on a supported chain (say BOT Chain mainnet) over to the default
-    // (testnet) the moment they connect. Connect on whatever chain the wallet is
-    // on; if that chain is unsupported, the network gate offers the switch.
-    connectMutation.mutate({ connector: injectedConnector });
-  }, [connectMutation, injectedConnector]);
+  const connect = useCallback(
+    (opts?: { onError?: (error: DecodedTxError) => void }) => {
+      if (!injectedConnector) return;
+      // Deliberately no `chainId` here. Forcing one would drag a user who is
+      // already on a supported chain (say BOT Chain mainnet) over to the default
+      // (testnet) the moment they connect. Connect on whatever chain the wallet
+      // is on; if that chain is unsupported, the network gate offers the switch.
+      connectMutation.mutate(
+        { connector: injectedConnector },
+        { onError: (e) => opts?.onError?.(decodeTxError(e)) },
+      );
+    },
+    [connectMutation, injectedConnector],
+  );
 
   const disconnect = useCallback(() => {
     disconnectMutation.mutate({});

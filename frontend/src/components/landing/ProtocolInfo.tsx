@@ -1,5 +1,5 @@
 import { ArrowRight } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { ButtonRouterLink } from "@/components/ui/Button";
 import { supportedChains } from "@/config/chains";
 import { PING_GAS } from "@/config/protocol-reference";
 import { formatCount, formatGas } from "@/lib/format";
@@ -29,9 +29,9 @@ export function ProtocolInfo() {
     <Section
       id="protocol"
       index="05"
-      eyebrow="Protocol"
+      eyebrow="Costs"
       title="No protocol fees. One recurring cost."
-      lede="Nostrom runs on BOT Chain, which is EVM-compatible with a standard JSON-RPC surface. There is no creation fee and no cut of a rescue; every figure below is network gas paid to validators."
+      lede="Nostrom runs on BOT Chain, an EVM network with a standard JSON-RPC surface. There is no creation fee and no cut of a rescue: every number below is network gas paid to validators, and the heartbeat is the only one you pay on repeat."
     >
       <dl
         ref={ref}
@@ -79,17 +79,12 @@ export function ProtocolInfo() {
       </dl>
 
       <div className="mt-8">
-        <Link
+        <ButtonRouterLink
           to="/reference#parameters"
-          className="group inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750"
+          iconRight={<ArrowRight size={13} aria-hidden />}
         >
           Parameters, contract addresses and the full gas table
-          <ArrowRight
-            size={13}
-            aria-hidden
-            className="transition-transform duration-200 group-hover:translate-x-0.5"
-          />
-        </Link>
+        </ButtonRouterLink>
       </div>
     </Section>
   );

@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { ArrowRight } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { ButtonRouterLink } from "@/components/ui/Button";
 import { ROLES, ROLE_TONES } from "@/config/protocol-reference";
 import { useReveal } from "@/hooks/useReveal";
 import { Section } from "./Section";
@@ -25,9 +25,9 @@ export function Capabilities() {
     <Section
       id="capabilities"
       index="03"
-      eyebrow="Capabilities"
+      eyebrow="Roles & permissions"
       title="Three roles. Only one of them can move funds."
-      lede="Security rests on separating privileges. The agent key, live in a running process, can only report liveness; the treasury answers to the owner and to the cold wallet chosen in advance."
+      lede="The key that lives inside a running process is the one most likely to leak, so it gets the least power: it can only say “still alive”. The treasury answers to the owner and, if the agent goes dark, to a cold wallet chosen in advance."
     >
       <div ref={ref} className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
         {ROLES.map((role) => {
@@ -65,17 +65,12 @@ export function Capabilities() {
       </div>
 
       <div className="mt-8">
-        <Link
+        <ButtonRouterLink
           to="/reference#permissions"
-          className="group inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded border border-line-strong bg-ink-850 px-4 text-[13px] text-text no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 hover:border-text-faint hover:bg-ink-750"
+          iconRight={<ArrowRight size={13} aria-hidden />}
         >
           Full permission matrix and read paths
-          <ArrowRight
-            size={13}
-            aria-hidden
-            className="transition-transform duration-200 group-hover:translate-x-0.5"
-          />
-        </Link>
+        </ButtonRouterLink>
       </div>
     </Section>
   );

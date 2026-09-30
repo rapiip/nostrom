@@ -9,14 +9,22 @@
  * This is a third-party trademark shown to attribute the network the protocol
  * runs on. Do not restyle the glyph itself — only its size and colour.
  */
-export function BotChainMark({ className }: { className?: string }) {
+export function BotChainMark({
+  className,
+  decorative = false,
+}: {
+  className?: string;
+  /** Hide from assistive tech when adjacent text already says "BOT Chain". */
+  decorative?: boolean;
+}) {
   return (
     <svg
       viewBox="0 0 75 120"
       className={className}
       fill="none"
-      role="img"
-      aria-label="BOT Chain"
+      {...(decorative
+        ? { "aria-hidden": true, focusable: "false" as const }
+        : { role: "img", "aria-label": "BOT Chain" })}
     >
       <path
         fill="currentColor"

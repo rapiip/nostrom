@@ -50,17 +50,22 @@ export function AppShell() {
             <Link
               to="/"
               className="flex h-11 shrink-0 items-center gap-2.5 no-underline"
+              aria-label="Nostrom overview"
               title="Back to the Nostrom overview"
             >
               <Logo className="h-4 w-auto text-white" />
-              <span className="hidden text-[15px] font-medium tracking-[-0.01em] text-text sm:inline">
+              <span className="text-[15px] font-medium tracking-[-0.01em] text-text">
                 Nostrom
               </span>
             </Link>
 
-            <span className="h-5 w-px bg-line-strong" aria-hidden />
+            <span className="hidden h-5 w-px bg-line-strong md:block" aria-hidden />
 
-            <nav aria-label="Console" className="flex min-w-0 items-center gap-0.5 overflow-x-auto">
+            {/* Inline rail from md up. Below that the four destinations get a
+                row of their own: squeezed next to the wallet button they were
+                clipped mid-word ("+ Cr") at 375px, and a horizontally scrolling
+                strip hid two of four destinations with no cue they existed. */}
+            <nav aria-label="Console" className="hidden min-w-0 items-center gap-0.5 md:flex">
               {NAV.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
                   key={to}
@@ -68,7 +73,7 @@ export function AppShell() {
                   end={end}
                   className={({ isActive }) =>
                     clsx(
-                      "inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[13px] no-underline transition-all duration-150",
+                      "inline-flex min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded px-2.5 text-[13px] no-underline transition-all duration-150",
                       isActive
                         ? "border border-line-strong/70 bg-ink-850 text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                         : "border border-transparent text-text-dim hover:bg-ink-900 hover:text-text",
@@ -86,6 +91,31 @@ export function AppShell() {
             </div>
           </div>
         </div>
+
+        <nav
+          aria-label="Console"
+          className="grid grid-cols-4 border-t border-line md:hidden"
+        >
+          {NAV.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                clsx(
+                  "relative flex min-h-[52px] cursor-pointer flex-col items-center justify-center gap-1 text-[11px] no-underline transition-colors duration-150",
+                  "after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors",
+                  isActive
+                    ? "text-text after:bg-signal"
+                    : "text-text-dim after:bg-transparent hover:text-text",
+                )
+              }
+            >
+              <Icon size={17} aria-hidden />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
       </header>
 
       {/* Global banners. Testnet is stated plainly so nobody mistakes a test
@@ -96,15 +126,20 @@ export function AppShell() {
           <div className="flex flex-col gap-3">
             {wallet.chainId === 968 && (
               <Notice tone="info">
-                Connected to <span className="text-text">BOT Chain Testnet</span>. Test BOT has no
-                value; <GetBotLink chainId={wallet.chainId} compact /> tops up gas for free.
+                You are on <span className="text-text">BOT Chain Testnet</span>. Test BOT has no
+                value, so nothing here is at risk. Need gas?{" "}
+                <GetBotLink chainId={wallet.chainId} compact /> tops you up for free.
               </Notice>
             )}
             <LowBalanceNotice />
             {wallet.isFactoryMissing && (
               <Notice tone="warn" title="No factory configured for this network">
-                Vault discovery and creation are unavailable. Monitoring and execution still work
-                from a vault address (use <span className="text-text">Look up</span>).
+                Vault discovery and creation are unavailable here. You can still monitor a vault,
+                send heartbeats and fire the switch by address: use{" "}
+                <Link to="/app/lookup" className="text-signal underline decoration-signal/30 underline-offset-2 hover:decoration-signal">
+                  Look up
+                </Link>
+                .
               </Notice>
             )}
           </div>
@@ -126,15 +161,21 @@ export function AppShell() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-3 px-5 py-6 sm:px-8">
           <p className="text-[12px] text-text-faint">
-            Nostrom · Autonomous dead man's switch on BOT Chain.
+            Nostrom · Fail-safe vaults for autonomous agent treasuries.
           </p>
           <div className="flex items-center gap-4">
             <BuiltOnBotChain />
             <Link
-              to="/"
-              className="inline-flex min-h-[28px] cursor-pointer items-center text-[12px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
+              to="/reference"
+              className="inline-flex min-h-[36px] cursor-pointer items-center text-[12px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
             >
-              Protocol overview
+              Reference
+            </Link>
+            <Link
+              to="/"
+              className="inline-flex min-h-[36px] cursor-pointer items-center text-[12px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
+            >
+              Overview
             </Link>
           </div>
         </div>

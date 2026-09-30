@@ -219,3 +219,7 @@ wallet would silently read a different network than the app claims to default to
 - The app is fully static. `dist/` can go on any static host or CDN.
 - There is no backend, no API, no analytics and no telemetry. The only network traffic is
   JSON-RPC to the configured BOT Chain endpoint and Google Fonts.
+- **Saved names** (the address book used to label vaults and wallets) live in the browser's
+  `localStorage` under `nostrom:address-book:v1`, per chain, and are never transmitted. The
+  only way to move them is the explicit Export / Import on the Look up page. Names are shown
+  beside an address, never in place of it, and are rendered as plain text.

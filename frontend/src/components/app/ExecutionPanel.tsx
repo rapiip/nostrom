@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Broadcast, Warning } from "@phosphor-icons/react";
+import { Broadcast, Lock, Warning } from "@phosphor-icons/react";
 import { formatAmount, formatDuration } from "@/lib/format";
 import type { VaultActions } from "@/hooks/useVaultActions";
 import type { VaultCapabilities, VaultView } from "@/lib/vaultState";
@@ -41,17 +41,15 @@ export function ExecutionPanel({
       <Panel>
         <PanelHeader
           title="Permissionless execution"
-          description="Anyone can trigger emergency evacuation once the deadline passes. Funds route strictly to the stored recovery address."
+          description="Once the deadline passes, anyone can fire the switch. They cannot choose where the money goes."
         />
 
         <PanelBody className="flex flex-col gap-5">
           {/* Destination is fixed: the single most important fact here. */}
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 rounded border border-line bg-ink-800 px-3.5 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded border border-line bg-ink-800 px-3.5 py-3">
             <div>
-              <span className="label">Fixed destination</span>
-              <p className="mt-1.5 text-[12px] leading-relaxed text-text-dim">
-                The caller cannot redirect the funds. They always go to the stored recovery address.
-              </p>
+              <span className="label">Funds always go to</span>
+              <p className="mt-1 text-[12px] text-text-faint">The stored recovery address</p>
             </div>
             <AddressDisplay
               address={view.recovery}
@@ -63,46 +61,38 @@ export function ExecutionPanel({
 
           {/* --- Mode: armed, not yet lapsed --- */}
           {(view.phase === "ALIVE" || view.phase === "EXPIRING") && (
-            <>
-              <Notice tone="info">
-                Not executable yet. The agent has{" "}
-                <span className="tnum text-text">
-                  {formatDuration(view.liveSecondsRemaining)}
-                </span>{" "}
-                of grace left. The fail-safe arms automatically once the countdown reaches zero.
-              </Notice>
-              <Button variant="danger" disabled full>
-                Execute dead-man's switch
-              </Button>
-              {/* Name the on-chain error, not just the disabled state.
-                  `executeDeadManSwitch()` reverts with AgentStillAlive while the
-                  deadline is in the future, so a reader who wonders why the
-                  control is inert — or who is about to call the contract
-                  directly — learns the actual reason rather than a euphemism.
-                  A copy pass once reduced this to "disabled while the heartbeat
-                  is active", which dropped the citation, so the error name is
-                  stated explicitly below. */}
-              <p className="text-[12px] leading-relaxed text-text-faint">
-                Disabled while the heartbeat is current: the contract would reject the call with{" "}
-                <span className="tnum text-text-dim">AgentStillAlive</span>.
-              </p>
-            </>
+            <div className="flex items-start gap-3 rounded border border-line px-3.5 py-3">
+              <Lock size={15} className="mt-0.5 shrink-0 text-text-faint" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-[13px] text-text">
+                  Locked for{" "}
+                  <span className="tnum">{formatDuration(view.liveSecondsRemaining)}</span>
+                </p>
+                {/* Name the on-chain error, not just the locked state.
+                    `executeDeadManSwitch()` reverts with AgentStillAlive while
+                    the deadline is in the future, so a reader who is about to
+                    call the contract directly learns the actual reason. */}
+                <p className="mt-1 text-[12px] leading-relaxed text-text-faint">
+                  Opens to anyone when the countdown reaches zero. Calling it earlier is rejected by
+                  the contract with <span className="tnum text-text-dim">AgentStillAlive</span>.
+                </p>
+              </div>
+            </div>
           )}
 
           {/* --- Mode: executable --- */}
           {capabilities.canExecute && (
             <>
-              <Notice tone="danger" title="Ready to execute">
-                The heartbeat lapsed {formatDuration(BigInt(now) - view.deadline)} ago.{" "}
-                {view.balance > 0n ? (
-                  <>
-                    <span className="tnum text-text">{formatAmount(view.balance)} BOT</span> plus any
-                    tracked ERC-20 balances will move to the recovery address.
-                  </>
-                ) : (
-                  "The vault holds no native BOT, but tracked ERC-20s will still be swept and the vault will be marked triggered."
-                )}
-              </Notice>
+              <div className="rounded border border-danger-dim bg-danger/[0.04] px-3.5 py-3">
+                <span className="label">Will be moved</span>
+                <p className="tnum mt-1.5 text-[20px] font-medium text-text">
+                  {formatAmount(view.balance)} <span className="text-[13px] text-text-faint">BOT</span>
+                </p>
+                <p className="mt-1 text-[12px] text-text-faint">
+                  plus every tracked ERC-20 · lapsed{" "}
+                  {formatDuration(BigInt(now) - view.deadline)} ago
+                </p>
+              </div>
 
               <Button
                 variant="danger"
@@ -112,12 +102,12 @@ export function ExecutionPanel({
                 loading={actions.tx.isBusy}
                 onClick={() => setConfirmExecute(true)}
               >
-                Execute dead-man's switch
+                Execute switch
               </Button>
 
               <p className="text-[12px] leading-relaxed text-text-faint">
-                You pay the gas (around 74,400 for a native-only rescue). You receive nothing; the
-                funds go to the vault's recovery address. Anyone can run this, which is the point.
+                You pay the gas (about 74,400 units for a native-only rescue) and receive nothing.
+                Anyone can do this, which is the point.
               </p>
             </>
           )}
@@ -125,26 +115,27 @@ export function ExecutionPanel({
           {/* --- Mode: triggered --- */}
           {view.phase === "TRIGGERED" && (
             <>
-              <Notice tone="danger" title="Already executed">
-                This vault's switch has fired and the treasury was evacuated. The sweeps below exist
-                for anything that arrives afterwards: forced transfers, late refunds, or tokens that
-                were never on the watchlist.
-              </Notice>
+              {/* The heartbeat panel already announces the trigger in red; this
+                  panel only explains what is still possible here. */}
+              <p className="text-[13px] leading-relaxed text-text-dim">
+                The switch has already fired. If BOT arrives later (a late deposit, a refund), anyone
+                can push it on to the recovery address.
+              </p>
 
-              <div className="flex flex-wrap gap-2">
+              {view.balance > 0n ? (
                 <Button
                   variant="secondary"
-                  size="sm"
-                  disabled={view.balance === 0n}
+                  icon={<Broadcast size={14} aria-hidden />}
                   loading={actions.tx.isBusy}
                   onClick={actions.sweepNative}
+                  className="self-start"
                 >
                   Sweep {formatAmount(view.balance)} BOT to recovery
                 </Button>
-              </div>
-              {view.balance === 0n && (
-                <p className="text-[12px] leading-relaxed text-text-faint">
-                  No native BOT balance remaining to sweep.
+              ) : (
+                <p className="flex items-center gap-2 text-[12px] text-text-faint">
+                  <span className="size-1.5 rounded-full bg-text-faint" aria-hidden />
+                  Nothing left to sweep: the vault holds 0 BOT.
                 </p>
               )}
             </>
@@ -152,7 +143,8 @@ export function ExecutionPanel({
 
           {view.phase === "UNCONFIGURED" && (
             <Notice tone="warn" title="Vault is not configured">
-              This vault has not been initialized yet. Configuration must be completed before the switch can be armed.
+              This vault was never initialised, so there is no countdown to lapse and nothing can
+              be executed.
             </Notice>
           )}
         </PanelBody>
