@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { isAddress, getAddress, type Address } from "viem";
 import { ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
@@ -11,6 +11,7 @@ import { useAddressName } from "@/lib/addressBook";
 import { useVault, useIsRegisteredVault, useVaultRecord } from "@/hooks/useVault";
 import { useVaultActions } from "@/hooks/useVaultActions";
 import { useVaultChangeToasts } from "@/hooks/useVaultChangeToasts";
+import { useDeadlineNotifications, type WatchedVault } from "@/hooks/useBrowserAlerts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { Button, ButtonRouterLink } from "@/components/ui/Button";
@@ -35,6 +36,7 @@ import { OwnerPanel } from "@/components/app/OwnerPanel";
 import { ExecutionPanel, RegistryWarning } from "@/components/app/ExecutionPanel";
 import { TokenWatchlist } from "@/components/app/TokenWatchlist";
 import { ActivityPanel } from "@/components/app/ActivityPanel";
+import { ReminderPanel } from "@/components/app/ReminderPanel";
 
 /**
  * Vault detail.
@@ -76,6 +78,12 @@ export function VaultDetail() {
   }, [resolvedAddress, wallet.chainId]);
 
   useVaultChangeToasts(view, { suppress: actions.tx.phase !== "idle" });
+
+  const watched = useMemo<WatchedVault[]>(
+    () => (view ? [{ address: view.address, phase: view.phase, label: tabLabel }] : []),
+    [view, tabLabel],
+  );
+  useDeadlineNotifications(watched, wallet.chainId);
 
   /* --- Invalid address ------------------------------------------------- */
   if (!parsed) {
@@ -189,6 +197,14 @@ export function VaultDetail() {
       actions={actions}
       trackedTokens={trackedTokens}
       chainId={wallet.chainId}
+    />
+  );
+
+  const reminders = (
+    <ReminderPanel
+      view={view}
+      label={tabLabel}
+      chainName={wallet.chainName ?? `chain ${wallet.chainId}`}
     />
   );
 
@@ -329,6 +345,7 @@ export function VaultDetail() {
             {participants}
             {execution}
             {watchlist}
+            {reminders}
           </div>
           <div className="flex flex-col gap-6">
             <OwnerPanel
@@ -355,6 +372,7 @@ export function VaultDetail() {
           <div className="flex flex-col gap-6">
             {execution}
             {watchlist}
+            {reminders}
           </div>
         </div>
       )}

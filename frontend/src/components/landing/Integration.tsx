@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, Terminal } from "@phosphor-icons/react";
 import { LINKS, deployedContractAddress } from "@/config/contracts";
 import { botchainMainnet, explorerAddressUrl } from "@/config/chains";
 import { useReveal } from "@/hooks/useReveal";
-import { ButtonRouterLink, ButtonLink } from "@/components/ui/Button";
+import { ButtonRouterLink } from "@/components/ui/Button";
 import { CopyButton } from "@/components/ui/Address";
 import { Eyebrow } from "@/components/ui/Panel";
 import { Logo } from "./Logo";
@@ -71,7 +71,7 @@ export function Integration() {
               <Bullet>Checks the agent wallet can pay for gas before it starts</Bullet>
             </ul>
 
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-9 flex flex-wrap items-center gap-3">
               <ButtonRouterLink
                 to="/app/new"
                 variant="primary"
@@ -87,16 +87,20 @@ export function Integration() {
               >
                 Run a keeper
               </ButtonRouterLink>
-              <ButtonLink
-                href={contractUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="lg"
-                iconRight={<ArrowUpRight size={14} aria-hidden />}
-              >
-                View Contract
-              </ButtonLink>
             </div>
+            {/* Tertiary action: a text link rather than a third button. Three
+                lg buttons do not fit this column above ~1100px, and the wrapped
+                orphan read as a layout accident rather than a choice. */}
+            <a
+              href={contractUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex min-h-[32px] cursor-pointer items-center gap-1 text-[13px] text-text-dim no-underline transition-colors duration-150 hover:text-text"
+            >
+              View Contract
+              <ArrowUpRight size={11} aria-hidden className="text-text-faint" />
+              <span className="sr-only">(opens in a new tab)</span>
+            </a>
           </div>
 
           <div className="reveal min-w-0 lg:col-span-7 lg:self-center">

@@ -425,7 +425,7 @@ function ParamRow({ label, value, note }: { label: string; value: string; note: 
     <div className="border-t border-line py-3 last:border-b">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <dt className="text-[13px] font-medium text-text">{label}</dt>
-        <dd className="tnum text-[13px] text-signal">{value}</dd>
+        <dd className="tnum text-[13px] text-text">{value}</dd>
       </div>
       <p className="mt-1 text-[12px] text-text-faint">{note}</p>
     </div>

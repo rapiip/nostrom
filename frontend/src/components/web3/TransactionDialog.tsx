@@ -23,26 +23,32 @@ import type { TxState } from "@/hooks/useTransaction";
  * A mined-but-reverted transaction gets the failure treatment, not the success
  * one, even though it has a hash and a block number.
  *
- * The dialog is non-dismissible while signing or pending, so a user cannot lose
- * track of an in-flight transaction by clicking outside.
+ * The dialog is non-dismissible while checking, signing or pending, so a user
+ * cannot lose track of an in-flight transaction by clicking outside.
  */
 
 const STEPS = [
+  { key: "checking", label: "Check against the chain" },
   { key: "signing", label: "Sign in wallet" },
   { key: "pending", label: "Waiting for a block" },
   { key: "success", label: "Confirmed" },
 ] as const;
 
+/** Index of the step that is `pending` in STEPS, where a revert is shown. */
+const PENDING_STEP = 2;
+
 function stepIndexFor(phase: TxState["phase"]): number {
   switch (phase) {
-    case "signing":
+    case "checking":
       return 0;
+    case "signing":
+      return 1;
     case "pending":
-      return 1;
-    case "success":
       return 2;
+    case "success":
+      return 3;
     case "reverted":
-      return 1;
+      return PENDING_STEP;
     default:
       return 0;
   }
@@ -74,6 +80,8 @@ export function TransactionDialog({
 
   const title = (() => {
     switch (tx.phase) {
+      case "checking":
+        return "Checking the transaction";
       case "signing":
         return "Confirm in your wallet";
       case "pending":
@@ -83,7 +91,11 @@ export function TransactionDialog({
       case "reverted":
         return "Transaction reverted";
       case "error":
-        return isRejected ? "Signature declined" : "Transaction failed";
+        return isRejected
+          ? "Signature declined"
+          : tx.failedBeforeSigning
+            ? "This transaction would revert"
+            : "Transaction failed";
       default:
         return "Transaction";
     }
@@ -118,7 +130,7 @@ export function TransactionDialog({
               const current = stepIndexFor(tx.phase);
               const isDone = i < current || tx.phase === "success";
               const isActive = i === current && tx.phase !== "success";
-              const isFailedHere = tx.phase === "reverted" && i === 1;
+              const isFailedHere = tx.phase === "reverted" && i === PENDING_STEP;
 
               return (
                 <li key={step.key} className="flex items-start gap-3">
@@ -170,6 +182,12 @@ export function TransactionDialog({
                     >
                       {isFailedHere ? "Reverted in block" : step.label}
                     </p>
+                    {isActive && step.key === "checking" && (
+                      <p className="mt-0.5 text-[12px] text-text-faint">
+                        Simulating against the current chain state, so a transaction that would
+                        revert never reaches your wallet.
+                      </p>
+                    )}
                     {isActive && step.key === "signing" && (
                       <p className="mt-0.5 text-[12px] text-text-faint">
                         Nothing has been sent to the chain yet.
@@ -251,6 +269,12 @@ export function TransactionDialog({
                   reverted.
                 </p>
               )}
+              {tx.failedBeforeSigning && (
+                <p className="mt-2 text-[12px] text-text-dim">
+                  Caught by a simulation before your wallet opened. Nothing was sent and no gas was
+                  spent. The vault's state has probably changed since this page last refreshed.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -315,6 +339,8 @@ export function TxInlineStatus({
 
   const text = (() => {
     switch (tx.phase) {
+      case "checking":
+        return "Checking…";
       case "signing":
         return "Awaiting signature…";
       case "pending":

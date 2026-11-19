@@ -539,7 +539,7 @@ function CreateVaultInner() {
                 )}
                 <DataRow label="Timeout">
                   {validation.timeout.ok ? (
-                    <span className="tnum text-[13px] text-signal">
+                    <span className="tnum text-[13px] text-text">
                       {describeTimeout(timeoutSeconds)}
                     </span>
                   ) : (

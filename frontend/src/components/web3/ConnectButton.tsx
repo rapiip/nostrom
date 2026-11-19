@@ -9,6 +9,7 @@ import { CopyButton } from "@/components/ui/Address";
 import { AddressNameButton } from "@/components/ui/AddressName";
 import { useAddressName } from "@/lib/addressBook";
 import { useToast } from "@/components/ui/Toast";
+import { OpenInWalletButton, useIsMobileBrowser } from "./OpenInWallet";
 
 /**
  * Connect / account control.
@@ -22,6 +23,7 @@ import { useToast } from "@/components/ui/Toast";
  */
 export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const wallet = useWallet();
+  const isMobile = useIsMobileBrowser();
   const { toast } = useToast();
   const accountName = useAddressName(wallet.chainId, wallet.address);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -45,6 +47,9 @@ export function ConnectButton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   }, [menuOpen]);
 
   if (wallet.status === "no-wallet") {
+    // On a phone the extension download page is a dead end; reopening this
+    // page inside a wallet app is what actually works.
+    if (isMobile) return <OpenInWalletButton size={size} />;
     return (
       <Button
         variant="secondary"

@@ -41,7 +41,6 @@ export function ProtocolInfo() {
           <Stat
             label="Protocol fees"
             value="None"
-            tone="signal"
             hint="No creation fee, no cut of a rescue"
           />
         </div>

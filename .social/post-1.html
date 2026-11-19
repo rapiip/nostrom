@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Tokens lifted verbatim from design-system/nostrom/pages/frontend.md */
+  :root {
+    --ink-950: #08090A;
+    --ink-900: #0C0E10;
+    --ink-850: #111417;
+    --ink-800: #16191D;
+    --line: #1D2226;
+    --line-strong: #2B3238;
+    --text: #E8EAEB;
+    --text-dim: #949CA3;
+    --text-faint: #7D858C;
+    --danger: #E5534B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1600px;
+    height: 900px;
+    overflow: hidden;
+    background: var(--ink-950);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .canvas {
+    position: relative;
+    width: 1600px;
+    height: 900px;
+    padding: 64px 72px 60px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The measuring lattice, same motif as the landing hero. Masked so it frames
+     the type instead of becoming a decorative background. */
+  .grid-field {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.028) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.028) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 38%, #000 25%, transparent 78%);
+            mask-image: radial-gradient(ellipse 85% 70% at 50% 38%, #000 25%, transparent 78%);
+    pointer-events: none;
+  }
+
+  /* ---------- Header ---------- */
+  .head {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+    box-shadow: 0 0 0 4px rgba(229, 83, 75, 0.14);
+  }
+
+  h1 {
+    margin-top: 18px;
+    font-size: 58px;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    line-height: 1.04;
+    color: var(--text);
+  }
+
+  .sub {
+    margin-top: 16px;
+    max-width: 62ch;
+    font-size: 17.5px;
+    line-height: 1.55;
+    color: var(--text-dim);
+  }
+
+  /* ---------- Logo lockup ---------- */
+  .brand { display: flex; align-items: center; gap: 13px; padding-top: 4px; }
+  .brand svg { width: 62px; height: auto; color: #fff; display: block; }
+  .brand span {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.17em;
+    color: #fff;
+  }
+
+  /* ---------- Panels ---------- */
+  .panels {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+
+  .panel {
+    position: relative;
+    background: var(--ink-900);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 30px 28px 28px;
+    overflow: hidden;
+  }
+
+  /* A hairline of danger along the top edge: each panel is a failure. */
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--danger);
+    opacity: 0.85;
+  }
+
+  .art {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .art svg { width: 100%; height: 100%; overflow: visible; }
+
+  .n {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+  }
+
+  h2 {
+    margin-top: 8px;
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+
+  .panel p {
+    margin-top: 9px;
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--text-dim);
+  }
+
+  /* ---------- Verdict strip ---------- */
+  .verdict {
+    margin-top: 34px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--ink-850);
+    padding: 28px 28px;
+    display: grid;
+    grid-template-columns: 300px repeat(3, 1fr);
+    gap: 22px;
+    align-items: center;
+  }
+
+  .verdict-label {
+    font-size: 16.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--text);
+  }
+  .verdict-label em {
+    font-style: normal;
+    color: var(--danger);
+  }
+
+  .readout {
+    border-left: 1px solid var(--line-strong);
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+  }
+  .row .k { color: var(--text-faint); letter-spacing: 0.06em; }
+  .row .v { color: var(--text); }
+  .row .v.none { color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grid-field"></div>
+
+  <header class="head">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> Autonomous agent treasury</div>
+      <h1>Three ways it ends.</h1>
+      <p class="sub">
+        An agent needs a hot key to spend its budget. That key lives in a running process,
+        on a server, signing unattended — the least protected thing in the system.
+      </p>
+    </div>
+
+    <div class="brand">
+      <!-- Exact path from frontend/src/components/landing/Logo.tsx -->
+      <svg viewBox="0 0 64 31.46" fill="none" aria-hidden="true">
+        <path fill="currentColor" d="M63.88 15.25L61.72 18.49L51.03 18.49L50.19 19.45L41.79 30.98L41.43 31.34L41.19 31.34L40.47 30.62L33.38 21.01L24.02 8.77L23.41 9.37L18.13 17.05L17.41 17.89L0 17.89L0 13.93L14.17 13.93L15.13 12.73L15.49 12.01L23.29 0.6L23.77 0L24.14 0L36.5 16.57L39.98 21.01L40.11 20.89L40.11 2.04L40.23 1.92L45.39 1.92L45.39 19.09L45.51 19.21L48.75 14.77L63.88 14.77ZM30.26 31.22L25.34 31.22L25.22 31.1L25.22 15.25L25.34 15.13L25.94 15.85L30.38 21.73L30.38 31.1Z"/>
+      </svg>
+      <span>NOSTROM</span>
+    </div>
+  </header>
+
+  <div class="panels">
+    <!-- 01 — Process dies: the heartbeat trace flatlines mid-beat. -->
+    <section class="panel">
+      <div class="art">
+        <svg viewBox="0 0 360 132">
+          <rect x="1" y="14" width="358" height="104" rx="6" fill="#16191D" stroke="#2B3238" stroke-width="2"/>
+          <line x1="1" y1="44" x2="359" y2="44" stroke="#1D2226" stroke-width="2"/>
+          <circle cx="24" cy="29" r="4" fill="#7D858C" opacity="0.45"/>
+          <circle cx="40" cy="29" r="4" fill="#7D858C" opacity="0.45"/>
+          <circle cx="56" cy="29" r="4" fill="#7D858C" opacity="0.45"/>
+          <!-- living beats -->
+          <polyline points="20,84 56,84 66,84 74,58 84,110 92,84 128,84 138,84 146,58 156,110 164,84 196,84"
+                    fill="none" stroke="#7D858C" stroke-width="3.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- the break -->
+          <circle cx="196" cy="84" r="6.5" fill="#E5534B"/>
+          <!-- flatline out -->
+          <line x1="203" y1="84" x2="340" y2="84" stroke="#E5534B" stroke-width="3.5"
+                stroke-linecap="round" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="n">01</div>
+      <h2>Process dies</h2>
+      <p>Nothing signs again. The balance simply sits there, unreachable.</p>
+    </section>
+
+    <!-- 02 — Key is lost: the key disintegrates away from an empty keyhole. -->
+    <section class="panel">
+      <div class="art">
+        <svg viewBox="0 0 360 132">
+          <rect x="30" y="16" width="140" height="100" rx="6" fill="#16191D" stroke="#2B3238" stroke-width="2"/>
+          <!-- Keyhole as one merged silhouette. The slot is narrower than the bow
+               and flares *wider* toward the bottom: reverse that taper and the
+               shape reads as a lightbulb instead of a keyhole. -->
+          <g fill="#7D858C">
+            <circle cx="100" cy="54" r="18"/>
+            <path d="M92 60 L108 60 L116 101 L84 101 Z"/>
+          </g>
+          <!-- The key that no longer exists, coming apart as it leaves. -->
+          <g stroke="#E5534B" stroke-width="4" fill="none" stroke-linecap="round">
+            <circle cx="218" cy="62" r="19"/>
+            <line x1="237" y1="62" x2="276" y2="62"/>
+            <line x1="262" y1="62" x2="262" y2="79"/>
+            <line x1="274" y1="62" x2="274" y2="74"/>
+          </g>
+          <g fill="#E5534B">
+            <rect x="288" y="55" width="15" height="4.5" rx="2.25" opacity="0.6" transform="rotate(-14 295 57)"/>
+            <rect x="308" y="68" width="12" height="4.5" rx="2.25" opacity="0.42" transform="rotate(20 314 70)"/>
+            <rect x="314" y="44" width="10" height="4.5" rx="2.25" opacity="0.28" transform="rotate(-32 319 46)"/>
+            <rect x="330" y="59" width="8" height="4.5" rx="2.25" opacity="0.16"/>
+          </g>
+        </svg>
+      </div>
+      <div class="n">02</div>
+      <h2>Key is lost</h2>
+      <p>The funds are mathematically unreachable. There is no recovery path.</p>
+    </section>
+
+    <!-- 03 — Compromised: heartbeat looks healthy, balance drains. -->
+    <section class="panel">
+      <div class="art">
+        <svg viewBox="0 0 360 132">
+          <!-- agent chip -->
+          <rect x="40" y="30" width="104" height="74" rx="6" fill="#16191D" stroke="#2B3238" stroke-width="2"/>
+          <g stroke="#2B3238" stroke-width="2.5" stroke-linecap="round">
+            <line x1="62" y1="30" x2="62" y2="20"/><line x1="92" y1="30" x2="92" y2="20"/>
+            <line x1="122" y1="30" x2="122" y2="20"/>
+            <line x1="62" y1="104" x2="62" y2="114"/><line x1="92" y1="104" x2="92" y2="114"/>
+            <line x1="122" y1="104" x2="122" y2="114"/>
+          </g>
+          <!-- heartbeat still ticking: the lie -->
+          <polyline points="56,70 74,70 80,70 86,54 94,88 100,70 128,70"
+                    fill="none" stroke="#7D858C" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- intrusion -->
+          <path d="M168 67 L206 67" stroke="#E5534B" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M196 57 L208 67 L196 77" fill="none" stroke="#E5534B" stroke-width="3.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- balance draining -->
+          <g>
+            <rect x="228" y="34" width="92" height="12" rx="3" fill="#E5534B" opacity="0.85"/>
+            <rect x="228" y="54" width="64" height="12" rx="3" fill="#E5534B" opacity="0.55"/>
+            <rect x="228" y="74" width="34" height="12" rx="3" fill="#E5534B" opacity="0.3"/>
+            <rect x="228" y="94" width="14" height="12" rx="3" fill="#E5534B" opacity="0.15"/>
+          </g>
+        </svg>
+      </div>
+      <div class="n">03</div>
+      <h2>Agent compromised</h2>
+      <p>The attacker holds the key. You learn it from the balance, not an alert.</p>
+    </section>
+  </div>
+
+  <!-- The punchline: three different causes, one identical on-chain state. -->
+  <div class="verdict">
+    <div class="verdict-label">
+      On-chain, all three look <em>identical</em>.<br />
+      Nothing distinguishes them. Nothing reacts.
+    </div>
+    <div class="readout">
+      <div class="row"><span class="k">BALANCE</span><span class="v">present</span></div>
+      <div class="row"><span class="k">FURTHER TX</span><span class="v none">none</span></div>
+      <div class="row"><span class="k">REACTION</span><span class="v none">none</span></div>
+    </div>
+    <div class="readout">
+      <div class="row"><span class="k">BALANCE</span><span class="v">present</span></div>
+      <div class="row"><span class="k">FURTHER TX</span><span class="v none">none</span></div>
+      <div class="row"><span class="k">REACTION</span><span class="v none">none</span></div>
+    </div>
+    <div class="readout">
+      <div class="row"><span class="k">BALANCE</span><span class="v">present</span></div>
+      <div class="row"><span class="k">FURTHER TX</span><span class="v none">none</span></div>
+      <div class="row"><span class="k">REACTION</span><span class="v none">none</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

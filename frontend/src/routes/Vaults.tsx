@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Plus, Vault as VaultIcon, Warning } from "@phosphor-icons/react";
 import {
@@ -5,12 +6,14 @@ import {
   formatAmountExact,
   formatCount,
   describeTimeout,
-  sameAddress,
   truncateAddress,
 } from "@/lib/format";
-import { PHASE_META, type VaultPhase, type VaultView } from "@/lib/vaultState";
-import { useMyVaults } from "@/hooks/useVault";
-import { useAddressName } from "@/lib/addressBook";
+import { PHASE_META, type VaultPhase } from "@/lib/vaultState";
+import { ROLE_LABEL } from "@/lib/discovery";
+import { useMyVaults, type RoledVaultView } from "@/hooks/useVault";
+import { useAddressName, useNameResolver } from "@/lib/addressBook";
+import { useDeadlineNotifications, type WatchedVault } from "@/hooks/useBrowserAlerts";
+import { AlertsToggle } from "@/components/app/ReminderPanel";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useWallet } from "@/hooks/useWallet";
 import { shortErrorText } from "@/lib/errors";
@@ -44,7 +47,7 @@ export function Vaults() {
   return (
     <WalletGate
       requireFactory
-      intent="Nostrom indexes vaults by the account that created them, so it needs to know which account you are before it can list anything."
+      intent="Nostrom lists every vault your account owns, created, sends heartbeats for, or receives recoveries from, so it needs to know which account you are first."
     >
       <VaultsInner />
     </WalletGate>
@@ -53,8 +56,18 @@ export function Vaults() {
 
 function VaultsInner() {
   const wallet = useWallet();
-  const { vaults: unsorted, isLoading, isError, error, isEmpty, isFetching, updatedAt, refetch } =
-    useMyVaults();
+  const {
+    vaults: unsorted,
+    isLoading,
+    isDiscovering,
+    isError,
+    error,
+    isEmpty,
+    isFetching,
+    updatedAt,
+    discovery,
+    refetch,
+  } = useMyVaults();
 
   // Most urgent first, then soonest deadline. Registry order is creation order,
   // which says nothing about which vault needs attention; a lapsed vault at the
@@ -81,6 +94,20 @@ function VaultsInner() {
     (v) => v.phase === "EXECUTABLE" || v.phase === "EXPIRING",
   );
 
+  // A list left open in a background tab is the main case browser alerts
+  // exist for, so every listed vault is watched.
+  const resolveName = useNameResolver(wallet.chainId);
+  const watched = useMemo<WatchedVault[]>(
+    () =>
+      unsorted.map((v) => ({
+        address: v.address,
+        phase: v.phase,
+        label: resolveName(v.address)?.name ?? truncateAddress(v.address, 4),
+      })),
+    [unsorted, resolveName],
+  );
+  useDeadlineNotifications(watched, wallet.chainId);
+
   return (
     <div className="flex flex-col gap-6">
       {/* --- Header --- */}
@@ -88,14 +115,16 @@ function VaultsInner() {
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Your vaults</h1>
           <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-text-dim">
-            Every vault created by{" "}
+            Every vault where{" "}
             <span className="tnum text-text" title={wallet.address}>
               {truncateAddress(wallet.address, 4)}
-            </span>
-            , with live countdowns and balances read straight from the chain.
+            </span>{" "}
+            is the owner, agent or recovery wallet, or that it created, with live countdowns and
+            balances read straight from the chain.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <AlertsToggle compact />
           <Freshness updatedAt={updatedAt} isFetching={isFetching} onRefresh={refetch} />
           <ButtonRouterLink to="/app/new" variant="primary" icon={<Plus size={14} aria-hidden />}>
             New vault
@@ -130,6 +159,28 @@ function VaultsInner() {
         </Notice>
       )}
 
+      {/* Coverage of the role search is a correctness fact: "not listed" only
+          means "no role" if the whole registry was examined. */}
+      {discovery.truncated && discovery.totalVaults !== undefined && (
+        <Notice tone="info" title="Role search covers part of the registry">
+          Vaults you created are always listed. Vaults where you are only the agent, recovery
+          wallet or a later owner are searched among the first{" "}
+          <span className="tnum text-text">{formatCount(discovery.scanned)}</span> of{" "}
+          <span className="tnum text-text">{formatCount(discovery.totalVaults)}</span> registry
+          entries. Open any other vault by address from{" "}
+          <Link to="/app/lookup" className="text-signal underline decoration-signal/30 underline-offset-2 hover:decoration-signal">
+            Look up
+          </Link>
+          .
+        </Notice>
+      )}
+      {discovery.failed > 0 && (
+        <Notice tone="warn" title="Part of the registry could not be searched">
+          Vaults you created are listed; some vaults where you hold another role may be missing
+          until the next refresh retries the failed reads.
+        </Notice>
+      )}
+
       {/* --- Portfolio summary. Four figures, not four cards. --- */}
       {!isEmpty && !isLoading && (
         <Panel>
@@ -140,11 +191,15 @@ function VaultsInner() {
               unit="BOT"
               title={`${formatAmountExact(totals.balance)} BOT`}
             />
-            <Stat label="Vaults" value={String(vaults.length)} hint="Created by this account" />
+            <Stat
+              label="Vaults"
+              value={String(vaults.length)}
+              hint={isDiscovering ? "Searching the registry…" : "Where you hold a role"}
+            />
             <Stat
               label="Alive"
               value={String(totals.alive)}
-              tone={totals.alive > 0 ? "signal" : "dim"}
+              tone={totals.alive > 0 ? "default" : "dim"}
               hint="Heartbeat current"
             />
             <Stat
@@ -187,7 +242,7 @@ function VaultsInner() {
           <EmptyState
             icon={<VaultIcon size={28} aria-hidden />}
             title="No vaults yet"
-            description="Give an agent a treasury it cannot strand. You choose the key it checks in with, the cold wallet that receives everything if it goes dark, and how much silence to tolerate. Takes one transaction."
+            description="This account does not own, operate or receive recoveries from any vault. Give an agent a treasury it cannot strand: you choose the key it checks in with, the cold wallet that receives everything if it goes dark, and how much silence to tolerate. Takes one transaction."
             action={
               <ButtonRouterLink
                 to="/app/new"
@@ -212,7 +267,7 @@ function VaultsInner() {
 
             <ul className="flex flex-col">
               {vaults.map((v) => (
-                <VaultRow key={v.address} view={v} account={wallet.address} chainId={wallet.chainId} />
+                <VaultRow key={v.address} view={v} chainId={wallet.chainId} />
               ))}
             </ul>
           </>
@@ -222,17 +277,15 @@ function VaultsInner() {
   );
 }
 
-function VaultRow({
-  view,
-  account,
-  chainId,
-}: {
-  view: VaultView;
-  account: string | undefined;
-  chainId: number;
-}) {
-  const transferredAway = !sameAddress(view.owner, account);
+function VaultRow({ view, chainId }: { view: RoledVaultView; chainId: number }) {
+  // A creator who handed the vault over still sees it (vaultsOf never
+  // forgets), but should know they no longer control it.
+  const transferredAway = view.roles.length === 1 && view.roles[0] === "creator";
   const saved = useAddressName(chainId, view.address);
+  const roleText = view.roles
+    .filter((r) => r !== "creator" || transferredAway)
+    .map((r) => ROLE_LABEL[r])
+    .join(" · ");
 
   return (
     <li className="border-b border-line last:border-b-0">
@@ -250,7 +303,7 @@ function VaultRow({
         <Link
           to={`/app/vault/${view.address}`}
           className="absolute inset-0 z-[1] rounded-none focus-visible:outline-offset-[-2px]"
-          aria-label={`Manage vault ${saved ? `${saved.name}, ` : ""}${truncateAddress(view.address, 4)}: ${PHASE_META[view.phase].label}, ${formatAmount(view.balance)} BOT`}
+          aria-label={`Manage vault ${saved ? `${saved.name}, ` : ""}${truncateAddress(view.address, 4)}: ${PHASE_META[view.phase].label}, ${formatAmount(view.balance)} BOT, your role ${roleText}`}
         />
         {/* Identity */}
         <div className="min-w-0">
@@ -265,11 +318,11 @@ function VaultRow({
             />
           </div>
           <p className="mt-1 text-[11px] text-text-faint">
-            {describeTimeout(view.timeoutPeriod)} timeout · {formatCount(view.pingCount)}{" "}
+            <span className={transferredAway ? "text-warn" : "text-text-dim"}>
+              {transferredAway ? "Created by you · now owned by another account" : `You: ${roleText}`}
+            </span>{" "}
+            · {describeTimeout(view.timeoutPeriod)} timeout · {formatCount(view.pingCount)}{" "}
             {view.pingCount === 1n ? "ping" : "pings"}
-            {transferredAway && (
-              <span className="ml-1.5 text-warn">· transferred to another owner</span>
-            )}
           </p>
         </div>
 

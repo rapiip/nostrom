@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import { Plugs, Warning, WifiSlash } from "@phosphor-icons/react";
+import { DeviceMobile, Plugs, Warning, WifiSlash } from "@phosphor-icons/react";
 import { defaultChain, supportedChains } from "@/config/chains";
 import { LINKS } from "@/config/contracts";
 import { useWallet } from "@/hooks/useWallet";
 import { Button, ButtonLink, ButtonRouterLink } from "@/components/ui/Button";
 import { EmptyState, Notice, Panel } from "@/components/ui/Panel";
 import { ConnectButton } from "./ConnectButton";
+import { OpenInWalletOptions, useIsMobileBrowser } from "./OpenInWallet";
 
 /**
  * Gate that renders `children` only once the wallet is usable, and explains the
@@ -29,6 +30,27 @@ export function WalletGate({
   intent?: string;
 }) {
   const wallet = useWallet();
+  const isMobile = useIsMobileBrowser();
+
+  if (wallet.status === "no-wallet" && isMobile) {
+    return (
+      <Panel>
+        <EmptyState
+          icon={<DeviceMobile size={28} aria-hidden />}
+          title="Open this page in your wallet app"
+          description="Phone browsers cannot talk to a wallet directly. Wallet apps such as MetaMask and Trust Wallet have their own browser that can, and this page works inside it. You can still watch any vault by address from here."
+          action={
+            <div className="flex w-full max-w-xs flex-col gap-3">
+              <OpenInWalletOptions />
+              <ButtonRouterLink to="/app/lookup" variant="ghost">
+                Watch a vault without a wallet
+              </ButtonRouterLink>
+            </div>
+          }
+        />
+      </Panel>
+    );
+  }
 
   if (wallet.status === "no-wallet") {
     return (

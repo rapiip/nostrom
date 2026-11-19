@@ -158,12 +158,19 @@ export function validateAmount(
   if (!/^\d*\.?\d*$/.test(v)) {
     return { ok: false, error: `${label} must be a number.` };
   }
+  // Checked explicitly: viem's parseEther ROUNDS excess decimals rather than
+  // throwing, so without this the amount signed would silently differ from
+  // the amount typed.
+  const fraction = v.split(".")[1] ?? "";
+  if (fraction.length > 18) {
+    return { ok: false, error: `${label} has too many decimal places (max 18).` };
+  }
 
   let wei: bigint;
   try {
     wei = parseEther(v);
   } catch {
-    return { ok: false, error: `${label} has too many decimal places (max 18).` };
+    return { ok: false, error: `${label} must be a number.` };
   }
 
   // ZeroAmount(): withdrawByOwner and deposit both reject zero.

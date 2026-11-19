@@ -12,7 +12,7 @@ import { useToast } from "./Toast";
  * Clipboard write with a fallback for non-secure contexts (plain-http preview
  * hosts, some embedded webviews) where navigator.clipboard is undefined.
  */
-async function writeClipboard(text: string): Promise<boolean> {
+export async function writeClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);

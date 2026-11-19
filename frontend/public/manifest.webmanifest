@@ -1,0 +1,17 @@
+{
+  "id": "/app",
+  "name": "Nostrom",
+  "short_name": "Nostrom",
+  "description": "Fail-safe vaults for autonomous agent treasuries on BOT Chain. Watch countdowns, send heartbeats and fire lapsed switches.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#08090A",
+  "theme_color": "#08090A",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
