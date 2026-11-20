@@ -113,7 +113,7 @@ function VaultsInner() {
       {/* --- Header --- */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Your vaults</h1>
+          <h1 className="font-display text-[22px] font-medium tracking-[-0.02em] text-text">Your vaults</h1>
           <p className="mt-1.5 max-w-[62ch] text-[13px] leading-relaxed text-text-dim">
             Every vault where{" "}
             <span className="tnum text-text" title={wallet.address}>

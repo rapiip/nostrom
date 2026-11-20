@@ -231,7 +231,7 @@ export function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="inline-flex min-h-[44px] items-center gap-2.5 no-underline">
               <Logo className="h-4 w-auto text-white" />
-              <span className="text-[15px] font-medium tracking-[-0.01em] text-text">Nostrom</span>
+              <span className="font-display text-[15px] font-semibold tracking-[-0.01em] text-text">Nostrom</span>
             </Link>
             <p className="mt-2 max-w-[34ch] text-[13px] leading-relaxed text-text-dim">
               Fail-safe vaults for autonomous agent treasuries. Silence is the trigger.

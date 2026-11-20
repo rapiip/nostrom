@@ -144,7 +144,7 @@ export function Nav() {
             aria-label="Nostrom home"
           >
             <Logo className="h-4 w-auto text-white" />
-            <span className="text-[15px] font-medium tracking-[-0.01em] text-text">Nostrom</span>
+            <span className="font-display text-[15px] font-semibold tracking-[-0.01em] text-text">Nostrom</span>
           </Link>
 
           <nav aria-label="Sections" className="hidden items-center gap-5 lg:flex">

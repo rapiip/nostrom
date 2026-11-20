@@ -217,7 +217,7 @@ function CreateVaultInner() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Create a vault</h1>
+        <h1 className="font-display text-[22px] font-medium tracking-[-0.02em] text-text">Create a vault</h1>
         <p className="mt-1.5 max-w-[68ch] text-[13px] leading-relaxed text-text-dim">
           Three decisions: who checks in, where the money goes if they stop, and how long to wait.
           You become the owner of a contract that holds only your funds.

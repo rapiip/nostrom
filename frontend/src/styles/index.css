@@ -41,7 +41,7 @@
   --color-text-faint: #7d858c;
 
   /* --- Semantic status --- */
-  --color-signal: #7dd3a0; /* ALIVE — also the single brand accent */
+  --color-signal: #84dfac; /* ALIVE — also the single brand accent */
   --color-signal-dim: #2f6b4d;
   --color-warn: #e3b341; /* grace low */
   --color-warn-dim: #6b5321;
@@ -58,6 +58,11 @@
   /* --- Typography --- */
   --font-sans:
     "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Display: geometric, engineered character for headlines and wordmarks.
+     Inter stays the body face; the contrast between the two carries hierarchy
+     without extra weight or size. */
+  --font-display:
+    "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 
@@ -104,11 +109,13 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Display type: tight tracking at large sizes reads as engineered rather
-     than friendly. Applied via the .display utility, not globally. */
+  /* Display type: Space Grotesk is already tightly fitted, so a touch less
+     negative tracking than Inter needed. Applied via the .display utility,
+     not globally. */
   .display {
+    font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.028em;
+    letter-spacing: -0.02em;
     line-height: 1.04;
     text-wrap: balance;
   }

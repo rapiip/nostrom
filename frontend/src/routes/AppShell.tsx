@@ -54,7 +54,7 @@ export function AppShell() {
               title="Back to the Nostrom overview"
             >
               <Logo className="h-4 w-auto text-white" />
-              <span className="text-[15px] font-medium tracking-[-0.01em] text-text">
+              <span className="font-display text-[15px] font-semibold tracking-[-0.01em] text-text">
                 Nostrom
               </span>
             </Link>

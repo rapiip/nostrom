@@ -109,22 +109,30 @@ motion (pulsing ring) on top of hue.
 
 ## Typography
 
-Two families. Both on Google Fonts.
+Three families. All self-hosted via `@fontsource` packages in `src/main.tsx`
+(no third-party font request; the CSP stays at `font-src 'self'`).
 
 | Role | Family | Notes |
 |---|---|---|
-| Display & UI | **Inter** | `.display` applies `-0.028em` tracking and `text-wrap: balance`. Tight tracking at large sizes reads engineered rather than friendly. |
-| All on-chain data | **IBM Plex Mono** | `.tnum` enables `font-variant-numeric: tabular-nums` so countdowns do not jitter and columns of balances align. |
+| Display (headings, wordmarks) | **Space Grotesk** 500/600 | Geometric, engineered character. The contrast with Inter carries hierarchy without extra weight or size. |
+| UI & body | **Inter** 400/500/600 | Neutral workhorse; `font-feature-settings: "cv05" 1` on `body`. |
+| All on-chain data | **IBM Plex Mono** 400/500/600 | `.tnum` enables `font-variant-numeric: tabular-nums` so countdowns do not jitter and columns of balances align. |
+
+The `--font-display` theme token resolves to `"Space Grotesk", "Inter", …`.
+Use `font-display` (Tailwind) or `.display` for every heading and the wordmark;
+never for data values.
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+--font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+--font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+--font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 ```
 
 ### Utility classes
 
 | Class | Definition |
 |---|---|
-| `.display` | 600 weight, `-0.028em` tracking, 1.04 line-height, balanced wrap |
+| `.display` | Space Grotesk, 600 weight, `-0.02em` tracking (Space Grotesk is already tightly fitted), 1.04 line-height, balanced wrap |
 | `.label` | IBM Plex Mono, **11px**, 500, `0.11em` tracking, uppercase, `text-faint` |
 | `.tnum` | IBM Plex Mono + tabular figures |
 

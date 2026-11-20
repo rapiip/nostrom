@@ -83,7 +83,7 @@ export function Lookup() {
   return (
     <div className="flex w-full max-w-xl flex-col gap-5">
       <div>
-        <h1 className="text-[22px] font-medium tracking-[-0.02em] text-text">Open a vault</h1>
+        <h1 className="font-display text-[22px] font-medium tracking-[-0.02em] text-text">Open a vault</h1>
         <p className="mt-1.5 text-[13px] leading-relaxed text-text-dim">
           Paste a vault address, or type the name you gave it. Watching is public, so no wallet is
           needed.
